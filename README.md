@@ -103,6 +103,21 @@ Notas finais
 - O docker-compose já está configurado para usar `image: nova-pat-web:latest` e `cache_from` — aproveite isso para builds mais rápidos.
 - Se quiser, aplico exemplos automáticos de CI/build que façam push da imagem para um registry para uso em máquinas sem a imagem local.
 
+## Como clonar e rodar (rápido)
+
+Instruções mínimas para um colega clonar e subir o projeto localmente usando Docker Compose:
+
+```bash
+git clone git@github.com:SEU-USER/NOME-DO-REPO.git
+cd NOME-DO-REPO
+cp .env.example .env
+docker compose up -d --build
+docker compose exec web python manage.py migrate
+docker compose exec web python manage.py createsuperuser
+```
+
+Altere `SEU-USER`/`NOME-DO-REPO` para os valores reais. Verifique o arquivo `.env.example` para variáveis necessárias.
+
 Notas sobre versão do Wagtail
 - Atualizado Wagtail para 7.3.1.
 - Leia as notas de release/upgrade: https://docs.wagtail.org/en/stable/releases/7.3.html#upgrade-considerations-changes-affecting-all-projects
