@@ -28,5 +28,5 @@ media/
 *.crt
 *.p12
 .env.local
-.env.*
+ # .env.* removed to not ignore .env.example
 secrets/
