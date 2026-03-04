@@ -102,3 +102,22 @@ Dicas rápidas / troubleshooting
 Notas finais
 - O docker-compose já está configurado para usar `image: nova-pat-web:latest` e `cache_from` — aproveite isso para builds mais rápidos.
 - Se quiser, aplico exemplos automáticos de CI/build que façam push da imagem para um registry para uso em máquinas sem a imagem local.
+
+Notas sobre versão do Wagtail
+- Atualizado Wagtail para 7.3.1.
+- Leia as notas de release/upgrade: https://docs.wagtail.org/en/stable/releases/7.3.html#upgrade-considerations-changes-affecting-all-projects
+- Ações recomendadas após atualizar a dependência:
+  1. Rebuild da imagem (para instalar a nova versão):
+     ```bash
+     docker compose build web
+     docker compose up -d
+     ```
+  2. Rodar migrações:
+     ```bash
+     docker compose exec web python manage.py migrate
+     ```
+  3. Testar o site / admin e revisar logs:
+     ```bash
+     docker compose logs -f web
+     ```
+- Se seu código usar APIs internas ou pontos que foram marcados como depreciados nas notas de release, siga as instruções no link acima para aplicar correções.
