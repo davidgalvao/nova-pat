@@ -9,7 +9,11 @@ services:
       - POSTGRES_PASSWORD=postgres
 
   web:
-    build: .
+    image: nova-pat-web:latest            # usa/gera a imagem com este nome
+    build:
+      context: .
+      cache_from:
+        - nova-pat-web:latest            # reaproveita camadas da imagem local ao buildar
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/code
@@ -17,5 +21,9 @@ services:
       - "8000:8000"
     environment:
       - DATABASE_URL=postgres://postgres:postgres@db:5432/postgres
+      - PYTHONUNBUFFERED=1           # Garante que o log do terminal atualize na hora
+      - WATCHMAN_USE_POLLING=true    # Força a verificação de mudanças em sistemas de arquivos montados
+      - RUN_MIGRATIONS=1             # Executa migrate no entrypoint (ativo em dev)
+      # - COLLECTSTATIC=1            # Habilite manualmente se quiser coletar estáticos na inicialização
     depends_on:
       - db

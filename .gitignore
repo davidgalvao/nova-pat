@@ -1,11 +1,16 @@
-# caches
+# Python (arquivos compilados / temporários)
 __pycache__/
-*.pyc
+*.py[cod]
+*.egg-info/
+*.sqlite3
 
-# ambiente virtual
-env/
-venv/
+# Ambiente
+.env
+
+# Docker / Banco de dados
+postgres_data/
+
+# Editor / SO
+.vscode/
+*.swp
 .venv/
-
-# postgres
-postgres_data

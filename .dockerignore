@@ -18,6 +18,9 @@ node_modules/
 .vscode
 coverage
 .python-version
+postgres_data
+.git
+
 
 # Distribution / packaging
 .Python
