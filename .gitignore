@@ -9,6 +9,7 @@ __pycache__/
 
 # Docker / Banco de dados
 postgres_data/
+postgres_data.bak
 
 # Editor / SO
 .vscode/
