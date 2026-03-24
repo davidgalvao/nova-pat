@@ -136,6 +136,3 @@ Requisitos
 
   - O `docker-compose.yml` está configurado para usar `image: nova-pat-web:latest` e `cache_from` para builds mais rápidos.
   - Consulte `CONTRIBUTING.md` e `CODE_OF_CONDUCT.md` para diretrizes de contribuição.
-
-  Se quiser, eu posso criar o commit com a mensagem proposta (não farei push). Deseja que eu crie o commit agora?
-Atenção: não comite arquivos com segredos (por exemplo `.env`); use `.env.example` como template.
