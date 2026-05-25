@@ -4,18 +4,102 @@
 {% block body_class %}template-homepage{% endblock %}
 
 {% block extra_css %}
-
-{% comment %}
-Delete the line below if you're just getting started and want to remove the welcome screen!
-{% endcomment %}
-<link rel="stylesheet" href="{% static 'css/welcome_page.css' %}">
+<link rel="stylesheet" href="{% static 'css/home_page.css' %}">
 {% endblock extra_css %}
 
 {% block content %}
 
-{% comment %}
-Delete the line below if you're just getting started and want to remove the welcome screen!
-{% endcomment %}
-{% include 'home/welcome_page.html' %}
+<header class="site-header">
+    <div class="container header-inner">
+        <a class="brand" href="/">Nova PAT</a>
+        <nav class="main-nav">
+            <a href="#">Home</a>
+            <a href="#">Sobre</a>
+            <a href="#">Contato</a>
+        </nav>
+        <div class="header-actions">
+            <button class="search-toggle" aria-label="Abrir busca">
+                <!-- simple magnifier icon -->
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                    <circle cx="11" cy="11" r="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                </svg>
+            </button>
+            <form class="search-bar" action="/search/" method="get" role="search">
+                <input type="search" name="q" placeholder="Buscar..." aria-label="Buscar" />
+                <button type="submit">OK</button>
+            </form>
+        </div>
+    </div>
+</header>
+
+<section class="superbanner" role="banner" aria-label="Superbanner">
+    <div class="superbanner-inner">
+        <h1>Superbanner Fullwidth</h1>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero.</p>
+        <a class="cta" href="#">Saiba mais</a>
+    </div>
+    <!-- imagem mock usando picsum - cover via CSS -->
+</section>
+
+<section class="categories container" aria-label="Rotinas de Estudo">
+    <h2 class="section-title">Rotinas de Estudo</h2>
+    <div class="categories-row">
+        <a class="cat-btn red" href="#">
+            <span class="cat-label">ENSINO FUNDAMENTAL I</span>
+            <span class="cat-ico">✿</span>
+        </a>
+        <a class="cat-btn yellow" href="#">
+            <span class="cat-label">ENSINO FUNDAMENTAL II</span>
+            <span class="cat-ico">✿</span>
+        </a>
+        <a class="cat-btn blue" href="#">
+            <span class="cat-label">ENSINO MÉDIO</span>
+            <span class="cat-ico">✿</span>
+        </a>
+    </div>
+</section>
+
+<section class="features container" aria-label="Seção de destaques">
+    <h2 class="section-title">Destaques</h2>
+    <div class="grid">
+        <article class="card">
+            <img src="https://picsum.photos/seed/1/600/400" alt="Imagem 1" />
+            <h3>Item 1</h3>
+            <p class="muted">Lorem ipsum dolor sit amet.</p>
+        </article>
+        <article class="card">
+            <img src="https://picsum.photos/seed/2/600/400" alt="Imagem 2" />
+            <h3>Item 2</h3>
+            <p class="muted">Lorem ipsum dolor sit amet.</p>
+        </article>
+        <article class="card">
+            <img src="https://picsum.photos/seed/3/600/400" alt="Imagem 3" />
+            <h3>Item 3</h3>
+            <p class="muted">Lorem ipsum dolor sit amet.</p>
+        </article>
+        <article class="card">
+            <img src="https://picsum.photos/seed/4/600/400" alt="Imagem 4" />
+            <h3>Item 4</h3>
+            <p class="muted">Lorem ipsum dolor sit amet.</p>
+        </article>
+        <article class="card">
+            <img src="https://picsum.photos/seed/5/600/400" alt="Imagem 5" />
+            <h3>Item 5</h3>
+            <p class="muted">Lorem ipsum dolor sit amet.</p>
+        </article>
+        <article class="card">
+            <img src="https://picsum.photos/seed/6/600/400" alt="Imagem 6" />
+            <h3>Item 6</h3>
+            <p class="muted">Lorem ipsum dolor sit amet.</p>
+        </article>
+    </div>
+</section>
 
 {% endblock content %}
+
+{% block extra_js %}
+<script src="{% static 'js/home_page.js' %}"></script>
+{% endblock extra_js %}

@@ -1,46 +1,60 @@
-{% load static wagtailcore_tags wagtailuserbar %}
+{% load static wagtailcore_tags wagtailimages_tags wagtailuserbar %}
 
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <title>
-            {% block title %}
-            {% if page.seo_title %}{{ page.seo_title }}{% else %}{{ page.title }}{% endif %}
-            {% endblock %}
-            {% block title_suffix %}
-            {% wagtail_site as current_site %}
-            {% if current_site and current_site.site_name %}- {{ current_site.site_name }}{% endif %}
-            {% endblock %}
-        </title>
-        {% if page.search_description %}
-        <meta name="description" content="{{ page.search_description }}" />
-        {% endif %}
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-        {# Force all links in the live preview panel to be opened in a new tab #}
-        {% if request.in_preview_panel %}
-        <base target="_blank">
-        {% endif %}
-
-        {# Global stylesheets #}
-        <link rel="stylesheet" type="text/css" href="{% static 'css/mysite.css' %}">
-
-        {% block extra_css %}
-        {# Override this in templates to add extra stylesheets #}
+<head>
+    <meta charset="utf-8" />
+    <title>
+        {% block title %}
+        {% if page.seo_title %}{{ page.seo_title }}{% else %}{{ page.title }}{% endif %}
         {% endblock %}
-    </head>
-
-    <body class="{% block body_class %}{% endblock %}">
-        {% wagtailuserbar %}
-
-        {% block content %}{% endblock %}
-
-        {# Global javascript #}
-        <script type="text/javascript" src="{% static 'js/mysite.js' %}"></script>
-
-        {% block extra_js %}
-        {# Override this in templates to add extra javascript #}
+        {% block title_suffix %}
+        {% wagtail_site as current_site %}
+        {% if current_site and current_site.site_name %}- {{ current_site.site_name }}{% endif %}
         {% endblock %}
-    </body>
+    </title>
+
+    {# SEO & Open Graph #}
+    <meta name="description" content="{% firstof page.search_description page.seo_description %}" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="{% wagtail_site as current_site %}{{ current_site.site_name }}" />
+    <meta property="og:url" content="{{ page.full_url }}" />
+    <meta property="og:title" content="{% firstof page.og_title page.seo_title page.title %}" />
+    <meta property="og:description"
+        content="{% firstof page.og_description page.search_description page.seo_description %}" />
+
+    {% if page.og_image %}
+    {% image page.og_image fill-1200x630 as og_img %}
+    <meta property="og:image" content="{{ og_img.url }}" />
+    {% endif %}
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    {# Force all links in the live preview panel to be opened in a new tab #}
+    {% if request.in_preview_panel %}
+    <base target="_blank">
+    {% endif %}
+
+    {# Global stylesheets #}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/mysite.css' %}">
+
+    {% block extra_css %}
+    {# Override this in templates to add extra stylesheets #}
+    {% endblock %}
+</head>
+
+<body class="{% block body_class %}{% endblock %}">
+    {% wagtailuserbar %}
+
+    {% block content %}{% endblock %}
+
+    {# Global javascript #}
+    <script type="text/javascript" src="{% static 'js/mysite.js' %}"></script>
+
+    {% block extra_js %}
+    {# Override this in templates to add extra javascript #}
+    {% endblock %}
+</body>
+
 </html>
