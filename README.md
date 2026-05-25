@@ -104,7 +104,16 @@ Requisitos
 
   - Postgres: `./postgres_data` (volume no host). Não comite esse diretório.
 
-  8) Variáveis de ambiente (exemplo)
+  8) Princípios de Arquitetura (Wagtail)
+
+  Para manter a manutenibilidade e escalabilidade do projeto, seguimos estes padrões:
+
+  - **BasePage Enxuta**: A `core.BasePage` deve conter apenas metadados (SEO, Open Graph) e controles de layout globais. Não adicione StreamFields de conteúdo ou lógica de negócio pesada aqui.
+  - **Header e Footer**: Gerenciados via `wagtail.contrib.settings` (Multisite) e Snippets, desacoplados dos modelos de página.
+  - **Campos de Layout**: Use as flags `hide_header` e `hide_footer` na `BasePage` para controlar a exibição de componentes globais em Landing Pages.
+  - **Localização**: O projeto está configurado para `pt-br` com fuso horário `America/Sao_Paulo`.
+
+  9) Variáveis de ambiente (exemplo)
 
   - Veja `.env.example`. Exemplo mínimo:
 
