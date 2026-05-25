@@ -1,0 +1,165 @@
+/* Estilos básicos para a home - superbanner, grid 3x2 e menu com busca */
+:root {
+    --container-width: 1100px;
+    --accent: #0077cc;
+}
+
+.container {
+    max-width: var(--container-width);
+    margin: 0 auto;
+    padding: 0 16px;
+}
+
+.site-header {
+    background: #fff;
+    border-bottom: 1px solid #eee;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+}
+
+.header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+}
+
+.brand {
+    font-weight: 700;
+    color: var(--accent);
+    text-decoration: none
+}
+
+.main-nav a {
+    margin-right: 16px;
+    color: #333;
+    text-decoration: none
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px
+}
+
+.search-toggle {
+    background: none;
+    border: 0;
+    cursor: pointer;
+    padding: 6px
+}
+
+.search-bar {
+    display: none;
+    align-items: center
+}
+
+.search-bar input {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px
+}
+
+.search-bar button {
+    margin-left: 8px;
+    padding: 8px 10px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 4px
+}
+
+.search-bar.active {
+    display: flex
+}
+
+.superbanner {
+    width: 100%;
+    color: #fff;
+    background-image: linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.35)), url('https://picsum.photos/1600/600?grayscale');
+    background-size: cover;
+    background-position: center;
+    padding: 80px 0;
+}
+
+.superbanner-inner {
+    max-width: var(--container-width);
+    margin: 0 auto;
+    padding: 0 16px
+}
+
+.superbanner h1 {
+    font-size: 42px;
+    margin: 0 0 12px
+}
+
+.superbanner p {
+    max-width: 650px
+}
+
+.superbanner .cta {
+    display: inline-block;
+    margin-top: 16px;
+    padding: 10px 16px;
+    background: var(--accent);
+    color: #fff;
+    border-radius: 6px;
+    text-decoration: none
+}
+
+.features {
+    padding: 48px 0
+}
+
+.section-title {
+    font-size: 24px;
+    margin: 0 0 24px
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px
+}
+
+.card {
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    overflow: hidden;
+    text-align: center;
+    padding-bottom: 16px
+}
+
+.card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    display: block
+}
+
+.card h3 {
+    margin: 12px 0 6px
+}
+
+.muted {
+    color: #666;
+    font-size: 14px
+}
+
+@media (max-width:900px) {
+    .grid {
+        grid-template-columns: repeat(2, 1fr)
+    }
+}
+
+@media (max-width:600px) {
+    .grid {
+        grid-template-columns: 1fr
+    }
+
+    .header-inner {
+        flex-wrap: wrap
+    }
+}

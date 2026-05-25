@@ -1,7 +1,8 @@
 from django.db import models
+from core.models import BasePage
 
-from wagtail.models import Page
-
-
-class HomePage(Page):
-    pass
+class HomePage(BasePage):
+    """
+    Página inicial que herda de BasePage.
+    """
+    template = "home/home_page.html"

@@ -2,7 +2,7 @@
 
 Objetivo: dar a um agente AI o contexto mínimo e ações concretas para ser produtivo neste projeto Django + Wagtail em Docker.
 
-- Projeto: Django (provavelmente Django 6.x) + Wagtail (ver `requirements.txt`: `wagtail==7.3.1`).
+- Projeto: Django (provavelmente Django 6.x) + Wagtail (ver `requirements.txt`: `wagtail==7.4.1`).
 - Execução local: via Docker Compose (arquivo `docker-compose.yml`) — código montado como volume `./:/code`.
 
 Pontos essenciais (o "porquê" e o fluxo):

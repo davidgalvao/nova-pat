@@ -1,0 +1,281 @@
+/* Estilos básicos para a home - superbanner, grid 3x2 e menu com busca */
+:root {
+    --container-width: 1100px;
+    --accent: #0077cc;
+}
+
+.container {
+    max-width: var(--container-width);
+    margin: 0 auto;
+    padding: 0 16px;
+}
+
+.site-header {
+    background: #fff;
+    border-bottom: 1px solid #eee;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+}
+
+.header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+}
+
+.brand {
+    font-weight: 700;
+    color: var(--accent);
+    text-decoration: none
+}
+
+.main-nav a {
+    margin-right: 16px;
+    color: #333;
+    text-decoration: none
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px
+}
+
+.search-toggle {
+    background: none;
+    border: 0;
+    cursor: pointer;
+    padding: 6px
+}
+
+.search-bar {
+    display: none;
+    align-items: center
+}
+
+.search-bar input {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px
+}
+
+.search-bar button {
+    margin-left: 8px;
+    padding: 8px 10px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 4px
+}
+
+.search-bar.active {
+    display: flex
+}
+
+.superbanner {
+    width: 100%;
+    color: #fff;
+    background-image: linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.35)), url('https://picsum.photos/1600/600?grayscale');
+    background-size: cover;
+    background-position: center;
+    padding: 80px 0;
+}
+
+.superbanner-inner {
+    max-width: var(--container-width);
+    margin: 0 auto;
+    padding: 0 16px
+}
+
+.superbanner h1 {
+    font-size: 42px;
+    margin: 0 0 12px
+}
+
+.superbanner p {
+    max-width: 650px
+}
+
+.superbanner .cta {
+    display: inline-block;
+    margin-top: 16px;
+    padding: 10px 16px;
+    background: var(--accent);
+    color: #fff;
+    border-radius: 6px;
+    text-decoration: none
+}
+
+.features {
+    padding: 48px 0
+}
+
+.categories {
+    padding: 26px 0 20px;
+}
+
+.categories .section-title {
+    margin-bottom: 14px;
+    position: relative;
+    padding-bottom: 8px;
+}
+
+.categories .section-title::after {
+    content: '';
+    display: block;
+    width: 72px;
+    height: 6px;
+    background: var(--accent);
+    border-radius: 3px;
+    margin-top: 8px;
+}
+
+.categories-row {
+    display: flex;
+    gap: 28px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.cat-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 18px 26px;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 8px;
+    box-shadow: 0 8px 0 rgba(0, 0, 0, 0.08), 0 6px 18px rgba(0, 0, 0, 0.12);
+    flex: 1 1 280px;
+    max-width: 360px;
+    min-width: 220px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    transition: transform .12s ease, box-shadow .12s ease;
+}
+
+.cat-btn:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 0 rgba(0, 0, 0, 0.08), 0 10px 26px rgba(0, 0, 0, 0.14)
+}
+
+.cat-btn .cat-label {
+    flex: 1;
+    text-align: center
+}
+
+.cat-btn .cat-ico {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.18);
+    border-radius: 6px;
+    color: #fff;
+    font-size: 18px
+}
+
+.cat-btn.red {
+    background: #c62828
+}
+
+.cat-btn.yellow {
+    background: #f0b71a;
+    color: #2b2b2b
+}
+
+.cat-btn.blue {
+    background: #2b78c9
+}
+
+@media (max-width:900px) {
+    .categories-row {
+        gap: 18px
+    }
+
+    .cat-btn {
+        max-width: 320px;
+        min-width: 200px
+    }
+}
+
+@media (max-width:600px) {
+    .categories-row {
+        flex-direction: column;
+        align-items: stretch
+    }
+
+    .cat-btn {
+        width: 100%;
+        max-width: none;
+        min-width: 0;
+        padding: 14px
+    }
+
+    .cat-btn .cat-label {
+        text-align: left;
+        padding-left: 8px
+    }
+
+    .cat-btn .cat-ico {
+        margin-left: 8px
+    }
+}
+
+.section-title {
+    font-size: 24px;
+    margin: 0 0 24px
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px
+}
+
+.card {
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    overflow: hidden;
+    text-align: center;
+    padding-bottom: 16px
+}
+
+.card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    display: block
+}
+
+.card h3 {
+    margin: 12px 0 6px
+}
+
+.muted {
+    color: #666;
+    font-size: 14px
+}
+
+@media (max-width:900px) {
+    .grid {
+        grid-template-columns: repeat(2, 1fr)
+    }
+}
+
+@media (max-width:600px) {
+    .grid {
+        grid-template-columns: 1fr
+    }
+
+    .header-inner {
+        flex-wrap: wrap
+    }
+}
