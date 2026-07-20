@@ -18,7 +18,7 @@
 | RF003 | Recomendação (IA) | 🆕 | Sem equivalente. Ver nota de tensão sobre "tecnologia livre e aberta" abaixo. |
 | RF004 | Fóruns de Discussão | 🆕 | Sem equivalente — `comentarios` do legado é comentário simples em conteúdo, não fórum com threads. |
 | RF005 | Leitor de PDF Integrado | 🆕 | Legado só oferece download; não há viewer embutido. |
-| RF006 | Relatórios de Uso (Admin) | ⚠️ | `qt_downloads`/`qt_access` já são contados por conteúdo (RN-L6), então o dado bruto existe. Dashboard/relatório em si é novo. |
+| RF006 | Relatórios de Uso (Admin) | ✅ | `qt_downloads`/`qt_access` já são contados por conteúdo (RN-L6), dado bruto existe. Dashboard em si é novo — ver app `analytics/`, seção "Decisões de arquitetura já fechadas". Não confundir com a importação de Google Sheets (direção oposta, ver seção `Document`). |
 | RF007 | Manutenção do Download | ✅ | Já é comportamento padrão do legado — manter. |
 | RF008 | Vídeos estilo "streaming" (série → episódios) | ✅ | Resolvido: `Serie` → `Temporada` → `ConteudoPage` (episódio). Renomeado de "Programa" para "Serie" para não colidir com o jargão já usado na equipe ("programa de TV" = peça isolada, ex: telejornal). Ver seção "Decisões de arquitetura já fechadas". |
 | RF009 | Gestão de Usuários e Perfis | ✅ | Roles já existem e são bem definidos (RN-L4). Modernizar UI/fluxo de cadastro, não a lógica de permissão. |
@@ -53,7 +53,7 @@
 
 ## Decisões de arquitetura já fechadas
 
-### ConteudoPage x AplicativoPage — não fundir
+### ConteudoPage x AplicativoEducacionalPage — não fundir
 Ficam como models separados. `aplicativos` é semanticamente um link de saída pra ferramenta externa (sem tipo de mídia, sem player, sem arquivo), enquanto `conteudos` é recurso de mídia com player. Compartilham uma base abstrata comum (`RecursoBasePage`) só para os campos realmente iguais: `canal`, `category`, `tags`, atribuição de usuário. Motivo: no legado as duas já têm `Policy` diferentes (`AplicativoPolicy` vs `ConteudoPolicy`), sinal de que são entidades de propósito distinto.
 
 ### ConteudoPage — troca de player por tipo: template condicional, não StreamField
@@ -102,6 +102,37 @@ Decisões que fecham o modelo:
 - Episódio **não é uma entidade nova** — é a própria `ConteudoPage` (mesmo model de vídeo que já existe), só posicionada na árvore como filha de uma `Temporada` em vez de um `CanalPage`. O indicador visual de "você está assistindo um episódio de uma série" (breadcrumb Serie › Temporada › Episódio, lista de outros episódios) é resolvido no template a partir da posição na árvore (`get_parent()`/`get_siblings()`), sem precisar de campo extra pra isso.
 - **Confirmado no schema legado**: `conteudos.canal_id` é FK direta (`nullable`, mas nunca múltipla) — não existe tabela pivô `conteudo_canal`. Um conteúdo pertence a no máximo um canal. Isso reforça manter `canal` como FK simples na `ConteudoPage` (não M2M), inclusive para episódios.
 - **Sobre o nome "Serie" (não "Programa")**: no legado, "Programa" já é o termo usado pela equipe pra uma peça de TV isolada (ex: um telejornal), sem relação com hierarquia de série/temporada. Pra não confundir curador nem dev, a entidade nova foi renomeada de `Programa` para `Serie`. Ver `canais/CLAUDE.md` para a nota completa sobre esse conflito de nomenclatura.
+
+---
+
+## Varredura de fechamento — entidades do legado ainda sem app atribuído
+Antes de escrever `importador/CLAUDE.md`, foi feita uma varredura cruzando todos os `Policies`/`Models` do legado contra os 8 apps já documentados (`core`, `canais`, `conteudos`, `series`, `curriculo`, `interacoes`, `aplicativos`, `usuarios`). Achados:
+
+### `PlayList` — correção de status do RF002
+**RF002 estava marcado 🆕 ("sem equivalente no legado") — errado.** `PlayList` existe (`app/Models/PlayList.php`, extends `Document`). Mas o legado implementa só **metade** do que o RF002 pede: a `PlayListPolicy::create()` restringe criação a `super-admin`/`admin` — bate com a parte do RF002 de "administradores/curadores podem criar playlists temáticas", mas **não existe** a outra metade pedida ("usuários logados podem criar suas próprias playlists"). Ou seja: playlist curada por admin é transposição; playlist pessoal de usuário comum é construção nova.
+
+**Anti-padrão a não replicar**: `PlayList` e `Document` (ver abaixo) compartilham a mesma tabela (`documents`) sem coluna discriminadora de tipo — são distinguidos só por convenção (prefixo `pl-` no slug). Pior ainda, a lista de conteúdos de uma playlist é um array de IDs dentro do campo jsonb (`document.ids: [...]`), não uma relação M2M de verdade — sem integridade referencial, sem cascade, sem lookup reverso fácil ("em quais playlists este conteúdo aparece"). **Não replicar esse padrão.** Na NOVA PAT, modelar `Playlist` como model próprio com M2M real pra `ConteudoPage` (through-model se precisar de campo `ordem`, já que a lista original é ordenada).
+
+### `Document` — integração com Google Sheets: duas necessidades separadas, não uma
+Confirmado com o dono do produto: são **duas direções distintas**, não devem virar o mesmo app.
+
+1. **Importação de planilha → conteúdo** (transposição, o que o legado já faz via `Document.getGoogleSpreadsheetsData()`): puxa dado de uma planilha Google pra dentro da PAT. Não justifica app próprio — é um método/service utilitário (usar `gspread` como dependência) chamado a partir de onde o dado importado é consumido. Atenção: `gspread` teve recentemente um aviso de busca por novos mantenedores no repositório oficial — checar status atual antes de travar essa dependência num projeto público de longo prazo.
+2. **BI/relatório de uso** (RF006, construção nova): a plataforma gera métrica própria (`qt_access`, `qt_downloads`, engajamento de `interacoes`) e expõe via painel — direção **oposta** à da importação. Ver app novo `analytics/` abaixo.
+
+### `analytics/` — app novo para RF006 (Geração de Relatórios de Uso)
+Consome dados já existentes em `conteudos` (`qt_access`, `qt_downloads`) e `interacoes` (likes, favoritos, avaliações), agregando para dashboard administrativo. Só leitura desses apps — não escreve neles. Se exportação para BI externo (Data Studio etc.) for confirmada como requisito real mais adiante, a direção do `gspread` aqui seria **exportar pra fora**, não importar — não confundir com a necessidade 1 acima. Painel administrativo básico pode ser resolvido nativamente (gráfico simples no admin do Wagtail ou lib de charting Python) sem depender de Sheets/BI externo para a primeira versão.
+
+### `Options` — configuração global do site
+Chave-valor (`name` + `meta_data` jsonb) pra configuração geral do site (o método `createDestaque`, restrito a `super-admin`, sugere que "destaques" da home são geridos por aqui). Restrito a `super-admin`/`admin`. Mapeia bem pro padrão nativo do Wagtail (`BaseSiteSetting`) em vez de precisar de app próprio — avaliar na hora de implementar.
+
+### `Contato` — formulário de contato
+Simples (`name`, `email`, `url`, `subject`, `message`, `action`). Criação aberta a qualquer um (`ContatoPolicy::create()` retorna `true` sempre, inclusive anônimo). Baixa complexidade, não decisão de arquitetura relevante — pode virar um app `contato/` enxuto ou form simples dentro de `core`.
+
+### `Resumo` — código morto, nada a transpor
+Existe `ResumoPolicy.php`, mas **o model `Resumo` não existe** no repositório — foi apagado (ou nunca criado) e a Policy ficou órfã. Não há nada para migrar aqui; mencionar só para não gerar confusão caso alguém veja a Policy e presuma que existe uma feature "Resumo" ativa.
+
+### Nomenclatura — nada de errado adicional encontrado
+Revisão cruzada de nomes de model/Policy contra os 8 `CLAUDE.md` já escritos não achou mais inconsistência de nome além das já corrigidas (`AplicativoPage` → `AplicativoEducacionalPage`, `Programa` → `Serie`, papéis reais `editor`/`convidado`).
 
 ---
 

@@ -53,7 +53,7 @@ Campos confirmados no legado (`Canal.php` + migration):
 
 ## Relações confirmadas
 - `conteudos` — hasMany (via `canal_id` em `ConteudoPage`, FK simples, **não M2M** — ver `docs/requisitos-vs-legado.md`, seção RF008, achado confirmado em produção).
-- `aplicativos` — hasMany (via `canal_id` em `AplicativoPage`).
+- `aplicativos` — hasMany (via `canal_id` em `AplicativoEducacionalPage`).
 - `categories` — hasMany, escopada por canal (`categories.canal_id`), só ativas, só raiz (com subcategorias aninhadas). Esta é a árvore de categoria de **conteúdo**, exclusiva desse domínio (ver `core/CLAUDE.md` — não confundir com a categoria de aplicativo).
 - `appsCategories` — hasMany de `AplicativoCategory`, também escopada por canal. Árvore **separada** da anterior (confirma achado do `core/CLAUDE.md`: categoria de conteúdo ≠ categoria de aplicativo, mesmo dentro do mesmo canal).
 - `filterCategoryCC` — M2M com `CurricularComponentCategory` via pivot `canal_cc_categories`. Um canal pode restringir quais categorias de componente curricular são relevantes pra ele (mesmo padrão de restrição de `tipo_conteudo`). Depende do app `curriculo` — coordenar com quem implementar aquele app antes de fechar essa M2M.

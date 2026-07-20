@@ -20,19 +20,19 @@ Base de SEO/Open Graph para **todas** as páginas do site. Contém *apenas*:
 Não adicione métodos vazios tipo `get_context()` só de placeholder — adicione só quando houver uso real.
 
 ### `RecursoBasePage(BasePage)` — abstrata
-Base para as duas entidades de recurso educacional que compartilham campos reais: `ConteudoPage` (app `conteudos`) e `AplicativoPage` (app `aplicativos`).
+Base para as duas entidades de recurso educacional que compartilham campos reais: `ConteudoPage` (app `conteudos`) e `AplicativoEducacionalPage` (app `aplicativos`).
 
 **Confirmado no schema legado** — o que é de fato compartilhado entre `conteudos` e `aplicativos`:
-- `canal` (FK para `CanalPage`, app `canais`) — os dois têm.
+- `canal` (FK para `CanalPage`, app `canais`) — os dois têm, **mas com comportamento diferente**: em `conteudos`, o canal é escolha real do autor/curador. Em `aplicativos`, o legado **fixa o canal por constante no código** (`Aplicativo::CANAL_ID = 9`, sempre o mesmo canal — provavelmente "Aplicativos Educacionais" na lista de 12 canais, ver `canais/CLAUDE.md`) — não é campo livre no formulário. Replicar essa fidelidade: `AplicativoEducacionalPage` não deveria oferecer campo de canal editável, deve fixar automaticamente na criação.
 - `autor` (FK para usuário publicador, `user_id` no legado) — os dois têm.
+- **Tags** — **correção de suposição anterior**: tags **são** compartilhadas de fato. `Aplicativo.php` tem `belongsToMany(Tag::class, 'aplicativo_tag', ...)` — é a mesma classe `Tag`, só pivot diferente (`aplicativo_tag` vs `conteudo_tag`). Isso é trivial no Django com `django-taggit` (o model de tag já é global por natureza), mas vale registrar que a intenção do legado é reuso real da mesma taxonomia de tag entre os dois domínios.
 
-**O que NÃO é compartilhado** (não colocar aqui, mesmo que pareça conveniente):
+**O que continua NÃO sendo compartilhado** (não colocar aqui, mesmo que pareça conveniente):
 - **Categoria**: `conteudos.category_id` aponta para `categories`; `aplicativos.category_id` aponta para `aplicativo_categories` — são **duas árvores de categoria diferentes** no legado, não uma só. Cada app tem seu próprio Snippet de categoria.
-- **Licença**: só `conteudos` tem `license_id`. `aplicativos` não tem licença no legado — não force esse campo em `AplicativoPage`.
-- **Tags**: só `conteudos` usa `tags` (M2M) no legado.
-- **Fluxo de aprovação** (`is_approved`, `is_featured`, `approving_user_id`): só existe em `conteudos` no legado. `aplicativos` não tem esses campos — não assumir que aplicativo passa por aprovação editorial do mesmo jeito.
+- **Licença**: só `conteudos` tem `license_id`. `aplicativos` não tem licença no legado — não force esse campo em `AplicativoEducacionalPage`.
+- **Fluxo de aprovação** (`is_approved`, `is_featured` como campo top-level, `approving_user_id`): confirmado que `aplicativos` **não tem workflow de aprovação** no legado — a policy de criação já restringe quem pode criar (só `super-admin`/`admin`/`coordenador`), então não existe o conceito de "pendente de aprovação" como em conteúdo. `is_featured` existe em `aplicativos`, mas dentro de `options` (jsonb), não como coluna própria — avaliar se estrutura como campo de verdade na NOVA PAT.
 
-Se `AplicativoPage` não usa `RecursoBasePage` (por ter pouquíssimo em comum — só canal e autor), fica a critério de quem implementar julgar se vale herança ou só repetir dois campos. Não é decisão fechada; se for repetir os dois campos, documentar aqui o porquê.
+Se `AplicativoEducacionalPage` não usa `RecursoBasePage` (por ter pouquíssimo em comum — só canal e autor), fica a critério de quem implementar julgar se vale herança ou só repetir dois campos. Não é decisão fechada; se for repetir os dois campos, documentar aqui o porquê.
 
 ### Taxonomias compartilhadas (Snippets)
 Confirmar antes de criar: um Snippet só entra em `core` se for usado por mais de um app. Candidatos identificados no schema legado que **são exclusivos de `conteudos`** (não devem morar em `core`): `Tipo` (com `options.formatos`, validação de extensão por tipo), `Licenca` (árvore), `NivelEnsino`, `CurricularComponent`. Esses ficam no app `conteudos` ou `curriculo`, não em `core`.
