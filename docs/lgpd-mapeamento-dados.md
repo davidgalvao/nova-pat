@@ -15,7 +15,7 @@ A arquitetura de dados já está fechada nos `CLAUDE.md` de cada app. Este docum
 | `role` | Pessoal | Execução de contrato | Não sensível isoladamente, mas define nível de acesso — vazamento revela estrutura de privilégio. |
 | `verification_token` | Pessoal (credencial temporária) | Execução de contrato | Token de verificação de e-mail — deve expirar, não ficar retido indefinidamente. |
 
-**⚠️ Idade do usuário não é coletada explicitamente** — nenhum campo de data de nascimento foi encontrado no schema legado. Como a plataforma atende Ensino Fundamental e Médio (confirmado em produção, ver `curriculo/CLAUDE.md`), é provável que **menores de idade se cadastrem diretamente**. A LGPD tem tratamento especial para dado de criança/adolescente (Art. 14) — **decisão pendente, não técnica**: confirmar com quem responde juridicamente pelo projeto se cadastro de estudante deve exigir consentimento de responsável, campo de idade, ou fluxo diferenciado. Não presumir que "não perguntamos idade" resolve o problema — geralmente é o oposto.
+**✅ Resolvido pelo jurídico**: a ausência de consentimento parental **não impede** o cadastro de menor de idade. Base legal aplicável: Art. 7º, II e III da LGPD (execução de política pública educacional pela própria Secretaria, combinado com Art. 23 — regime do Poder Público), não Art. 7º, I (consentimento). Recomendação do jurídico, a implementar tecnicamente: o sistema deve **identificar quando o tratamento envolve criança/adolescente**, aplicando princípio da necessidade — coletar só o estritamente necessário, sem campo/dado supérfluo. Continua valendo: nenhum campo de idade/data de nascimento existe no schema legado hoje — se a lógica de identificação de menor for implementada, precisa de um jeito de saber a idade (campo próprio ou inferência por nível de ensino vinculado).
 
 ### `interacoes`
 | Dado | Sensibilidade | Observação |
@@ -43,6 +43,7 @@ A LGPD tem um capítulo próprio para isso: **Capítulo IV (Art. 23 a 32), "Do T
 - **Publicidade do relatório de impacto (Art. 32)**: diferente do setor privado (onde o RIPD/DPIA normalmente só é entregue à ANPD se solicitado), **órgão público deve dar publicidade ao relatório de impacto à proteção de dados**. Se um RIPD formal vier a ser produzido para a Nova PAT, ele provavelmente precisa ser público, não só arquivado internamente — isso muda o nível de cuidado na redação dele.
 - **Interação com a Lei de Acesso à Informação (LAI, Lei nº 12.527/2011)**: o tratamento de dado pelo Poder Público precisa equilibrar **transparência** (LAI) com **proteção de dado pessoal** (LGPD) — a LAI tem limite explícito de que não autoriza fornecer dado pessoal de terceiro sem base legal. Isso importa se a Nova PAT algum dia expuser dado agregado publicamente (ex: relatório de uso do RF006) — precisa continuar agregado, nunca virar canal indireto de exposição de dado individual sob pretexto de transparência pública.
 - **Compartilhamento de dado entre órgãos públicos (Art. 26/27)**: se a Nova PAT algum dia compartilhar dado de usuário com outro sistema do governo (ex: SSO mencionado no ToR, seção de integrações mandatórias), esse compartilhamento tem regra própria no capítulo — não é o mesmo regime de compartilhar dado com um parceiro comercial privado.
+- **Integração com YouTube/Spotify — resolvido, não é compartilhamento**: confirmado que a integração é só link e incorporação (embed) de conteúdo dessas plataformas — via de mão única (conteúdo vindo de fora pra dentro), sem envio de dado de usuário da Nova PAT pra essas plataformas. Não se aplica Art. 26/27 (compartilhamento) a essa integração especificamente.
 
 **Recomendação prática**: como isso é regime jurídico específico de ente público, a leitura completa dos Art. 23-32 (não só o resumo acima) deveria ser feita por quem responde juridicamente pelo contrato — este documento é o levantamento técnico, não substitui essa leitura formal.
 
@@ -51,7 +52,7 @@ A LGPD garante ao titular direito de acesso, correção, exclusão e portabilida
 - **Resolvido**: exportação de dado pessoal do próprio usuário — botão no perfil que gera o download dos dados do usuário (perfil, comentários, avaliações, favoritos). Formato exato (JSON, PDF legível) e escopo exato do que entra no export ficam para quando a implementação for desenhada, mas o mecanismo em si (self-service, não pedido manual por e-mail) está decidido.
 - **Parcialmente resolvido, com uma exceção a confirmar**: fluxo de exclusão de conta com efeito real nos dados relacionados. Para `Like`, `FavoritoConteudo`, `AvaliacaoConteudo`: mantém a decisão de **apagar** (não anonimizar) ao excluir a conta — são métricas de engajamento puras, sem valor de conteúdo próprio, e anonimizar manteria a linha existindo, abrindo brecha para exploit de conta descartável inflando engajamento sem risco de reversão real.
 
-  **`Comentario` é diferente e levanta um ponto válido**: comentário carrega conteúdo substantivo (texto), não é só sinal de engajamento — apagar duro pode quebrar contexto de moderação (histórico do que foi publicado e por quem, útil se houver denúncia/investigação posterior) e, se no futuro houver resposta a comentário, apagar duro deixaria resposta órfã. **Proposta, pendente de confirmação sua antes de fechar**: anonimizar `Comentario` na exclusão de conta (mantém o texto e a trilha de moderação, remove/desvincula a identidade do autor), em vez de apagar. O risco de exploit que motivou "apagar" nos outros três models não se aplica da mesma forma aqui — não existe ganho relevante em "inflar contagem de comentário" com conta descartável, diferente de curtida/avaliação, que afetam métrica visível (`media_avaliacao`, contagem de like). Confirmar se essa diferenciação faz sentido pra você antes de tratar como fechado.
+  **`Comentario` é diferente — resolvido: anonimizar, não apagar.** Comentário carrega conteúdo substantivo (texto), não é só sinal de engajamento — apagar duro quebraria contexto de moderação (histórico do que foi publicado e por quem, útil se houver denúncia/investigação posterior) e, se no futuro houver resposta a comentário, apagar duro deixaria resposta órfã. Ao excluir a conta, `Comentario` mantém o texto e a trilha de moderação, mas remove/desvincula a identidade do autor. Atualizado em `interacoes/CLAUDE.md`.
 - Prazo de retenção — quanto tempo um dado de usuário inativo é mantido antes de expurgo. Não definido em nenhum documento até agora.
 
 ## Retenção e minimização — não existe TTL único fixado em lei
@@ -70,15 +71,26 @@ Pontos a decidir, não a inventar:
 - Não define texto de política de privacidade/termo de uso — isso é conteúdo jurídico, não arquitetura de dado.
 - Não resolve a pendência de consentimento de menor sozinho — precisa de decisão de quem responde legalmente pelo projeto.
 
-## O que ainda falta definir (atualizado)
-Depois desta rodada, a maior parte das pendências técnicas de retenção/exclusão está fechada. O que resta:
+## O que ainda falta definir (atualizado após resposta do jurídico)
 
-1. **Consentimento de menor de idade** — maior pendência, não é técnica, precisa de decisão jurídica (ver seção acima sobre ausência de campo de idade no cadastro).
-2. **Confirmação do cliente sobre 18 meses** de retenção de usuário inativo — se não vier resposta, implementar 18 meses por padrão, conforme decidido.
-3. **Confirmação sua sobre anonimizar `Comentario`** em vez de apagar na exclusão de conta (ver seção de exclusão acima).
-4. **Encarregado (DPO) designado** — achado novo: o Art. 23, III da LGPD exige que pessoa jurídica de direito público **indique um encarregado pelo tratamento de dados**. Isso não é decisão de arquitetura de software, é decisão organizacional de quem, na Secretaria da Educação, assume esse papel — mas o sistema pode precisar expor um canal de contato do encarregado (ex: e-mail visível na política de privacidade). Verificar se esse papel já existe formalmente antes do lançamento.
-5. **Procedimento de notificação de incidente de segurança** (Art. 48 — comunicação à ANPD e ao titular em caso de vazamento) — não documentado em lugar nenhum ainda. É mais próximo do runbook de segurança/BDR do que deste documento, mas precisa existir em algum lugar antes do lançamento.
-6. **Compartilhamento com terceiro privado** — se a integração com YouTube/Spotify (mencionada no ToR) envolver enviar dado de usuário (não só embed de player), isso é compartilhamento de dado com processador privado e tem regra própria (Art. 26/27) — checar se a integração planejada envia algum dado de usuário ou é só embed de conteúdo público.
+**Fechado:**
+1. ✅ Consentimento de menor de idade — Art. 7º II/III + Art. 23, sem consentimento parental geral.
+2. ✅ Comentário anonimizado (não apagado) na exclusão de conta.
+3. ✅ Compartilhamento com terceiros (YouTube/Spotify) — não há, é só embed via de mão única.
+4. ✅ Responsabilidade por notificação de incidente — é da Secretaria (controladora), PRODEB não assume automaticamente por ser operadora de infraestrutura.
+
+**Redirecionado — jurídico não tem essa informação, precisa ser resolvido internamente com SEC/IAT, não com o núcleo jurídico:**
+5. Quem é o Encarregado (DPO) designado — jurídico recomendou contato direto com a SEC.
+6. Política de retenção de usuário inativo — jurídico recomendou alinhar com política já existente da SEC (se houver) antes de fixar os 18 meses propostos, para não gerar dissonância entre PAT e outros sistemas da Secretaria.
+7. Formato de exportação de dados pessoais — jurídico não tem competência técnica, redirecionou para setor técnico da SEC.
+
+**Recusado pelo núcleo jurídico consultado (fora da competência dele) — decisão técnica sua, já direcionada no runbook:**
+8. Trilha de auditoria indefinida — ✅ decisão tomada e documentada em `docs/runbook-backup-dr.md`.
+9. Prazo de retenção de log de acesso bruto — ✅ proposta de ~90 dias documentada em `docs/runbook-backup-dr.md`, sujeita a padrão da PRODEB se já existir um.
+
+**Ainda em aberto, exige ação sua (não é decisão que se toma sozinha):**
+10. Procedimento formal de resposta a incidente de segurança — jurídico recomendou formalizar **antes de produção**: detecção, registro, contenção, avaliação de risco, comunicação interna, acionamento do Encarregado e, se cabível, comunicação à ANPD/titulares (prazo de 3 dias úteis, Resolução CD/ANPD nº 15/2024). Ainda não escrito em nenhum documento.
+11. RIPD (Relatório de Impacto) — jurídico recomendou elaborar **antes da entrada em produção**, dado o volume de dado e a presença de menor de idade. Não é obrigação automática de publicação total, mas recomenda versão pública distinta da versão técnica integral se houver informação sensível de segurança nela.
 
 ## Status
-🟡 Levantamento avançado. Pendências remanescentes têm dono definido (cliente, você, ou "verificar se existe" institucional) — não são mais lacunas em aberto sem direção.
+🟢 Maioria das decisões técnicas e jurídicas centrais fechada. Restam: 2 itens a resolver internamente com SEC/IAT (não é decisão que se toma sozinho), e 2 documentos formais ainda não escritos (procedimento de incidente, RIPD) — ambos recomendados pelo jurídico como pré-requisito antes de produção, não apenas "bom ter".
