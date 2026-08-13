@@ -26,7 +26,7 @@ class Comentario(models.Model):
     # soft delete — legado usa SoftDeletes, avaliar se replica via campo `deletado_em` ou lib de soft delete do Django
 ```
 
-**Pendente de confirmação (não implementar até fechar)**: ao excluir a conta de um usuário, `Comentario` pode precisar ser **anonimizado**, não apagado — diferente de `Like`/`FavoritoConteudo`/`AvaliacaoConteudo`, que são apagados. Ver `docs/lgpd-mapeamento-dados.md` para o raciocínio completo (comentário carrega conteúdo substantivo e trilha de moderação, os outros três são só sinal de engajamento vulnerável a exploit).
+**Resolvido**: ao excluir a conta de um usuário, `Comentario` é **anonimizado**, não apagado — diferente de `Like`/`FavoritoConteudo`/`AvaliacaoConteudo`, que são apagados (`on_delete=models.CASCADE`). Comentário carrega conteúdo substantivo e trilha de moderação, os outros três são só sinal de engajamento vulnerável a exploit de conta descartável. Implementar via `on_delete=models.SET_NULL` (ou campo `autor_removido` booleano) em vez de CASCADE nessa FK específica — ver `docs/lgpd-mapeamento-dados.md` para o raciocínio completo.
 
 Manter a abordagem de duas FKs nullable (fiel ao legado) em vez de introduzir `GenericForeignKey` do Django — para só dois alvos possíveis, a complexidade extra de `ContentType` não se paga. Se um terceiro tipo de alvo aparecer no futuro, reavaliar.
 
