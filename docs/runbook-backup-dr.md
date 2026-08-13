@@ -37,7 +37,7 @@ docker compose exec db pg_dump -U postgres postgres > backup_$(date +%Y%m%d).sql
 
 ### Segredo/credencial
 - Nunca versionar `.env` no Git (já é boa prática assumida, confirmar que `.gitignore` cobre isso).
-- `[DEFINIR]` onde a cópia de segurança de credenciais de produção vive.
+- `[DEFINIR]` onde a cópia de segurança de credenciais de produção vive fora da sua máquina pessoal — se você (EUquipe) for a única pessoa com acesso e sua máquina falhar, ninguém consegue nem repor o backup do banco por falta de credencial.
 
 ## Procedimento de restauração (rascunho — testar quando infra existir)
 
@@ -56,6 +56,19 @@ Passos gerais:
 
 ## Teste de restauração — obrigação do ToR, ainda não agendado
 O ToR exige "testes de recuperação periódicos (simulações de desastre)". Isso não pode ficar só no papel — **agendar pelo menos um teste de restauração completo, em ambiente separado de produção, antes do lançamento**, e depois periodicamente (frequência a definir, trimestral é ponto de partida razoável para um projeto deste porte). Um backup nunca testado é um backup de confiabilidade desconhecida.
+
+## Logs e trilha de auditoria — retenção (decisão fechada)
+Duas categorias distintas de log, com regra de retenção diferente cada uma (ver raciocínio completo em `docs/lgpd-mapeamento-dados.md`):
+
+### Trilha de auditoria (quem criou/editou/excluiu o quê)
+**Retenção: indefinida.** Justificativa: é accountability de sistema público (LGPD Art. 6º, X — responsabilização e prestação de contas), não rastreamento de comportamento de usuário. Deve registrar o mínimo necessário para a finalidade (ex: ID do usuário que fez a ação, não o perfil completo) para minimizar exposição de dado pessoal dentro do próprio log. Nunca apagar por rotina automática — só por decisão explícita caso a caso, se algum dia justificada.
+
+### Log de acesso bruto (IP, timestamp de requisição, sem ligação a uma mudança específica de dado)
+**Retenção proposta: ~90 dias.** Justificativa: a finalidade (detectar abuso/ataque em tempo próximo ao evento) se esgota depois de um tempo relativamente curto — diferente da trilha de auditoria, aqui não há razão de accountability de longo prazo para manter IP bruto indefinidamente. Ajustar esse número se a equipe de segurança/infraestrutura (PRODEB) tiver política própria já estabelecida — não foi confirmado se PRODEB já tem um padrão corporativo para isso; se tiver, esse padrão prevalece sobre a proposta de 90 dias.
+
+### O que implementar tecnicamente
+- Trilha de auditoria: pode usar solução nativa do Django (`django-simple-history` ou similar) ou log estruturado próprio — decisão de implementação, não muda a regra de retenção acima.
+- Log de acesso bruto: geralmente fica em nível de infraestrutura (servidor web/WAF), não em model de aplicação — se a infraestrutura for da PRODEB, confirmar com eles se há rotina de expurgo automática já configurada antes de assumir que a Nova PAT precisa implementar isso por conta própria.
 
 ## O que este documento NÃO resolve sozinho
 - Não define provedor de hosting/infraestrutura — decisão de projeto ainda em aberto.
