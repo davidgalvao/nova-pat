@@ -1,0 +1,1 @@
+# Deixe este arquivo vazio, ele apenas indica que 'canais' é um pacote Python.

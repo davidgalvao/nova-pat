@@ -1,7 +1,9 @@
 from django.db import models
+from django.conf import settings
 from wagtail.models import Page
 from wagtail.admin.panels import FieldPanel, MultiFieldPanel
 from wagtail.images import get_image_model_string
+from taggit.managers import TaggableManager
 
 
 class FlexLayoutMixin(models.Model):
@@ -84,6 +86,53 @@ class BasePage(Page):
     def canonical_url(self):
         """Retorna a URL absoluta para a tag canonical."""
         return self.get_full_url()
+
+    class Meta:
+        abstract = True
+
+
+class RecursoBasePage(BasePage):
+    """
+    Classe abstrata base para recursos educacionais compartilhados entre
+    `ConteudoPage` (app `conteudos`) e `AplicativoEducacionalPage` (app `aplicativos`).
+
+    Campos confirmados no schema legado como compartilhados:
+    - `canal` (FK para `CanalPage`, app `canais`) — comportamento difere:
+      * Em `conteudos`: escolha real do autor/curador
+      * Em `aplicativos`: fixo por constante (CANAL_ID = 9, "Aplicativos Educacionais")
+    - `autor` (FK para usuário publicador, `user_id` no legado)
+    - `tags` — mesma taxonomia global (`django-taggit`), pivots diferentes
+      (`conteudo_tag` vs `aplicativo_tag` no legado)
+    """
+
+    canal = models.ForeignKey(
+        'canais.CanalPage',
+        on_delete=models.PROTECT,
+        verbose_name="Canal",
+        help_text="Canal ao qual este recurso pertence."
+    )
+
+    autor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        verbose_name="Autor",
+        related_name='%(class)s_autor',
+        help_text="Usuário que publicou este recurso."
+    )
+
+    tags = TaggableManager(
+        blank=True,
+        verbose_name="Tags",
+        help_text="Tags para categorização e busca."
+    )
+
+    content_panels = BasePage.content_panels + [
+        MultiFieldPanel([
+            FieldPanel("canal"),
+            FieldPanel("autor"),
+            FieldPanel("tags"),
+        ], heading="Informações do Recurso"),
+    ]
 
     class Meta:
         abstract = True

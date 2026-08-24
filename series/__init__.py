@@ -1,0 +1,1 @@
+# Deixe este arquivo vazio, ele apenas indica que 'series' é um pacote Python.

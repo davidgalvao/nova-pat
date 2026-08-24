@@ -29,6 +29,13 @@ INSTALLED_APPS = [
     "core",
     "home",
     "search",
+    "conteudos",
+    "canais",
+    "curriculo",
+    "series",
+    "aplicativos",
+    "interacoes",
+    "usuarios",
     "wagtail.contrib.forms",
     "wagtail.contrib.redirects",
     "wagtail.embeds",
@@ -164,6 +171,9 @@ STORAGES = {
 # can exceed this limit within Wagtail's page editor.
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10_000
 
+
+# Custom User Model
+AUTH_USER_MODEL = "usuarios.User"
 
 # Wagtail settings
 
