@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags wagtailimages_tags static %}
+
+{% block body_class %}template-canal{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/canal_page.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="canal-main" role="main">
+    <header class="canal-header">
+        <div class="canal-branding">
+            {% if page.capa %}
+            {% image page.capa fill-1200x400 as capa_img %}
+            <img src="{{ capa_img.url }}" alt="{{ page.title }}" class="canal-capa" />
+            {% endif %}
+            <div class="canal-info">
+                <h1 class="canal-title">{{ page.title }}</h1>
+                {% if page.description %}
+                <div class="canal-description">{{ page.description|richtext }}</div>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <nav class="canal-tabs" aria-label="Abas do canal">
+        <button class="tab-btn active" data-tab="conteudos" role="tab" aria-selected="true">
+            Conteúdos
+        </button>
+        <button class="tab-btn" data-tab="aplicativos" role="tab" aria-selected="false">
+            Aplicativos
+        </button>
+        {% if page.categories.all %}
+        <button class="tab-btn" data-tab="categorias" role="tab" aria-selected="false">
+            Categorias
+        </button>
+        {% endif %}
+    </nav>
+
+    <div class="canal-content">
+        {% block canal_conteudos %}
+        <section class="tab-panel active" id="tab-conteudos" role="tabpanel" aria-labelledby="tab-conteudos-btn">
+            <div class="conteudos-filters">
+                <form method="get" class="filter-form">
+                    <div class="filter-group">
+                        <label for="tipo">Tipo</label>
+                        <select name="tipo" id="tipo">
+                            <option value="">Todos os tipos</option>
+                            {% for tipo in page.tipos_permitidos.all %}
+                            <option value="{{ tipo.slug }}">{{ tipo.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="categoria">Categoria</label>
+                        <select name="categoria" id="categoria">
+                            <option value="">Todas as categorias</option>
+                            {% for cat in page.categories.all %}
+                            <option value="{{ cat.slug }}">{{ cat.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="componente">Componente Curricular</label>
+                        <select name="componente" id="componente">
+                            <option value="">Todos os componentes</option>
+                            {% for comp_cat in page.categorias_componente_permitidas.all %}
+                            <optgroup label="{{ comp_cat.name }}">
+                                {% for comp in comp_cat.componentes.all %}
+                                <option value="{{ comp.id }}">{{ comp.name }} ({{ comp.nivel.name }})</option>
+                                {% endfor %}
+                            </optgroup>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-filter">Filtrar</button>
+                    <a href="{{ page.url }}" class="btn btn-clear">Limpar</a>
+                </form>
+            </div>
+
+            <div class="conteudos-grid">
+                {% for conteudo in conteudos %}
+                <article class="conteudo-card">
+                    {% if conteudo.capa %}
+                    <a href="{{ conteudo.url }}" class="conteudo-card-image">
+                        {% image conteudo.capa fill-400x225 as card_img %}
+                        <img src="{{ card_img.url }}" alt="{{ conteudo.title }}" />
+                    </a>
+                    {% endif %}
+                    <div class="conteudo-card-content">
+                        <div class="conteudo-card-meta">
+                            {% if conteudo.tipo %}
+                            <span class="tipo-badge">{{ conteudo.tipo.name }}</span>
+                            {% endif %}
+                            {% if conteudo.numero_episodio %}
+                            <span class="episodio-badge">Ep. {{ conteudo.numero_episodio }}</span>
+                            {% endif %}
+                        </div>
+                        <h2 class="conteudo-card-title">
+                            <a href="{{ conteudo.url }}">{{ conteudo.title }}</a>
+                        </h2>
+                        {% if conteudo.search_description %}
+                        <p class="conteudo-card-excerpt">{{ conteudo.search_description|truncatewords:30 }}</p>
+                        {% endif %}
+                        <div class="conteudo-card-footer">
+                            {% if conteudo.autor %}
+                            <span class="card-autor">{{ conteudo.autor.get_full_name|default:conteudo.autor.username
+                                }}</span>
+                            {% endif %}
+                            {% if conteudo.first_published_at %}
+                            <time datetime="{{ conteudo.first_published_at|date:'c' }}">{{
+                                conteudo.first_published_at|date:"d/m/Y" }}</time>
+                            {% endif %}
+                        </div>
+                    </div>
+                </article>
+                {% empty %}
+                <p class="no-results">Nenhum conteúdo encontrado.</p>
+                {% endfor %}
+            </div>
+
+            {% if conteudos.has_other_pages %}
+            <nav class="pagination" aria-label="Paginação">
+                {% if conteudos.has_previous %}
+                <a href="?page={{ conteudos.previous_page_number }}" class="page-link">Anterior</a>
+                {% endif %}
+                <span class="page-info">Página {{ conteudos.number }} de {{ conteudos.paginator.num_pages }}</span>
+                {% if conteudos.has_next %}
+                <a href="?page={{ conteudos.next_page_number }}" class="page-link">Próxima</a>
+                {% endif %}
+            </nav>
+            {% endif %}
+        </section>
+        {% endblock %}
+
+        {% block canal_aplicativos %}
+        <section class="tab-panel" id="tab-aplicativos" role="tabpanel" aria-labelledby="tab-aplicativos-btn" hidden>
+            <div class="aplicativos-grid">
+                {% for app in aplicativos %}
+                <article class="aplicativo-card">
+                    {% if app.image %}
+                    <a href="{{ app.url }}" target="_blank" rel="noopener" class="aplicativo-card-image">
+                        {% image app.image fill-400x225 as app_img %}
+                        <img src="{{ app_img.url }}" alt="{{ app.title }}" />
+                    </a>
+                    {% endif %}
+                    <div class="aplicativo-card-content">
+                        {% if app.category %}
+                        <span class="categoria-badge">{{ app.category.name }}</span>
+                        {% endif %}
+                        <h2 class="aplicativo-card-title">
+                            <a href="{{ app.url }}" target="_blank" rel="noopener">{{ app.title }}</a>
+                        </h2>
+                        {% if app.description %}
+                        <p class="aplicativo-card-excerpt">{{ app.description|truncatewords:30 }}</p>
+                        {% endif %}
+                        <div class="aplicativo-card-footer">
+                            <a href="{{ app.url }}" target="_blank" rel="noopener" class="btn btn-primary">Acessar</a>
+                        </div>
+                    </div>
+                </article>
+                {% empty %}
+                <p class="no-results">Nenhum aplicativo encontrado.</p>
+                {% endfor %}
+            </div>
+        </section>
+        {% endblock %}
+
+        {% block canal_categorias %}
+        <section class="tab-panel" id="tab-categorias" role="tabpanel" aria-labelledby="tab-categorias-btn" hidden>
+            <div class="categorias-tree">
+                {% for cat in page.categories.all %}
+                {% if not cat.parent %}
+                {% include "canais/includes/categoria_tree.html" with categoria=cat %}
+                {% endif %}
+                {% endfor %}
+            </div>
+        </section>
+        {% endblock %}
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/canal_page.js' %}"></script>
+{% endblock %}

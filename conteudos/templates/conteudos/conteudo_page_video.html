@@ -1,0 +1,18 @@
+{% extends "conteudos/conteudo_page_base.html" %}
+{% load wagtailcore_tags wagtailimages_tags %}
+
+{% block conteudo_player %}
+<div class="conteudo-player video-player">
+    {% if page.arquivo %}
+    <video controls preload="metadata" class="video-js vjs-fluid"
+        poster="{% if page.capa %}{% image page.capa fill-1280x720 %}{% endif %}">
+        <source src="{{ page.arquivo.url }}" type="video/mp4">
+        Seu navegador não suporta o elemento de vídeo.
+    </video>
+    {% else %}
+    <div class="player-placeholder">
+        <p>Vídeo não disponível.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

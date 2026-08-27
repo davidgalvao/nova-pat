@@ -4,7 +4,9 @@ from django.utils.translation import gettext_lazy as _
 from wagtail.admin.panels import FieldPanel, MultiFieldPanel
 from wagtail.fields import RichTextField
 from wagtail.images import get_image_model_string
+from wagtail.models import Page
 from wagtail.snippets.models import register_snippet
+from wagtail.search import index
 
 from core.models import RecursoBasePage
 
@@ -12,7 +14,7 @@ from core.models import RecursoBasePage
 @register_snippet
 class AplicativoCategory(models.Model):
     """
-    Categoria de aplicativo educacional — árvore própria, separada de conteudos.Categoria.
+    Categoria de aplicativo educacional — árvore própria, separada de conteudos.CategoriaConteudo.
     Legado: tabela `aplicativo_categories` com parent_id para hierarquia.
     """
 
@@ -119,6 +121,31 @@ class AplicativoEducacionalPage(RecursoBasePage):
         ),
     ]
 
+    # Configurações de busca
+    search_fields = Page.search_fields + [
+        # Campos para filtro na busca avançada (RF001)
+        index.FilterField("canal_id"),
+        index.FilterField("category_id"),
+        index.FilterField("is_featured"),
+        index.FilterField("first_published_at"),
+        # Campos de busca textual
+        index.SearchField("title", partial_match=True, boost=2.0),
+        index.SearchField("search_description", partial_match=True),
+        index.SearchField("description", partial_match=True),
+        index.RelatedFields("category", [
+            index.SearchField("name", partial_match=True, boost=1.5),
+            index.FilterField("id"),
+        ]),
+        index.RelatedFields("canal", [
+            index.SearchField("title", partial_match=True, boost=1.5),
+            index.FilterField("id"),
+        ]),
+        index.RelatedFields("tags", [
+            index.SearchField("name", partial_match=True),
+            index.FilterField("id"),
+        ]),
+    ]
+
     class Meta:
         verbose_name = _("aplicativo educacional")
         verbose_name_plural = _("aplicativos educacionais")
@@ -144,16 +171,20 @@ class AplicativoEducacionalPage(RecursoBasePage):
 
         # Validação de tags: 3 a 15 (diferente de conteudos: 3-50)
         # O TaggableManager não valida quantidade no clean, faremos aqui
-        if self.pk:  # Só valida se já tem PK (tags já associadas)
+        # Só valida se o objeto já tem PK (tags só podem ser acessadas com PK)
+        # e se tags foram explicitamente adicionadas (count > 0)
+        # Isso permite criar a página sem tags inicialmente e adicionar depois
+        if self.pk:
             tag_count = self.tags.count()
-            if tag_count < 3:
-                raise ValidationError(
-                    {"tags": _("Mínimo 3 tags obrigatórias (atual: %(count)d).") % {"count": tag_count}}
-                )
-            if tag_count > 15:
-                raise ValidationError(
-                    {"tags": _("Máximo 15 tags permitidas (atual: %(count)d).") % {"count": tag_count}}
-                )
+            if tag_count > 0:
+                if tag_count < 3:
+                    raise ValidationError(
+                        {"tags": _("Mínimo 3 tags obrigatórias (atual: %(count)d).") % {"count": tag_count}}
+                    )
+                if tag_count > 15:
+                    raise ValidationError(
+                        {"tags": _("Máximo 15 tags permitidas (atual: %(count)d).") % {"count": tag_count}}
+                    )
 
         # Validação de URL ativa (equivalente a active_url do Laravel)
         # Checa se a URL resolve (DNS + HTTP HEAD/GET)

@@ -1,0 +1,30 @@
+{% extends "conteudos/conteudo_page_base.html" %}
+{% load wagtailcore_tags wagtailimages_tags %}
+
+{% block conteudo_player %}
+<div class="conteudo-player apresentacao-player">
+    {% if page.arquivo %}
+    <div class="apresentacao-preview">
+        {% if page.arquivo.url|endswith:".pdf" %}
+        <iframe src="{{ page.arquivo.url }}" class="pdf-viewer" title="{{ page.title }}"></iframe>
+        {% else %}
+        <div class="apresentacao-placeholder">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M2 3h20"></path>
+                <path d="M21 3v18"></path>
+                <path d="M2 21h20"></path>
+                <path d="M2 3v18"></path>
+                <line x1="8" y1="11" x2="16" y2="11"></line>
+                <line x1="8" y1="15" x2="16" y2="15"></line>
+            </svg>
+            <p>Visualização de apresentação não disponível.</p>
+        </div>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="player-placeholder">
+        <p>Apresentação não disponível.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

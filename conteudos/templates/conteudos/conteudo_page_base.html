@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags wagtailimages_tags static %}
+
+{% block body_class %}template-conteudo{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/conteudo_page.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="conteudo-main" role="main">
+    <article class="conteudo-article">
+        {% block conteudo_header %}
+        <header class="conteudo-header">
+            <div class="conteudo-meta">
+                {% if page.canal %}
+                <a href="{{ page.canal.url }}" class="conteudo-canal-badge"
+                    style="background-color: {{ page.canal.options.cor|default:'#007bff' }};">
+                    {{ page.canal.title }}
+                </a>
+                {% endif %}
+
+                {% if page.tipo %}
+                <span class="conteudo-tipo-badge">{{ page.tipo.name }}</span>
+                {% endif %}
+            </div>
+
+            <h1 class="conteudo-title">{{ page.title }}</h1>
+
+            {% if page.search_description %}
+            <p class="conteudo-description">{{ page.search_description }}</p>
+            {% endif %}
+
+            <div class="conteudo-meta-details">
+                {% if page.autor %}
+                <span class="conteudo-autor">Por {{ page.autor.get_full_name|default:page.autor.username }}</span>
+                {% endif %}
+
+                {% if page.first_published_at %}
+                <time class="conteudo-data" datetime="{{ page.first_published_at|date:'c' }}">
+                    {{ page.first_published_at|date:"d/m/Y" }}
+                </time>
+                {% endif %}
+
+                {% if page.qt_access %}
+                <span class="conteudo-acessos">{{ page.qt_access }} acessos</span>
+                {% endif %}
+            </div>
+        </header>
+        {% endblock %}
+
+        {% block conteudo_player %}
+        <div class="conteudo-player">
+            {# Template específico por tipo sobrescreve este bloco #}
+            <p class="player-placeholder">Player para {{ page.tipo.name|default:"conteúdo" }} não implementado.</p>
+        </div>
+        {% endblock %}
+
+        {% block conteudo_info %}
+        <section class="conteudo-info">
+            <div class="conteudo-tags">
+                {% for tag in page.tags.all %}
+                <a href="{% url 'search' %}?tag={{ tag.slug }}" class="tag">{{ tag.name }}</a>
+                {% endfor %}
+            </div>
+
+            {% if page.category %}
+            <div class="conteudo-category">
+                <strong>Categoria:</strong> <a href="{{ page.category.get_absolute_url }}">{{ page.category.name }}</a>
+            </div>
+            {% endif %}
+
+            {% if page.license %}
+            <div class="conteudo-license">
+                <strong>Licença:</strong> <a href="{{ page.license.url }}" target="_blank" rel="noopener">{{
+                    page.license.name }}</a>
+            </div>
+            {% endif %}
+
+            {% if page.componentes_curriculares.all %}
+            <div class="conteudo-componentes">
+                <strong>Componentes Curriculares:</strong>
+                <ul>
+                    {% for comp in page.componentes_curriculares.all %}
+                    <li>{{ comp.name }} ({{ comp.nivel.name }})</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </section>
+        {% endblock %}
+
+        {% block conteudo_serie_indicator %}
+        {# Indicador de série/episódio - só aparece se for filho de Temporada #}
+        {% if page.get_parent.specific_class.__name__ == 'Temporada' %}
+        <nav class="conteudo-episodio-nav" aria-label="Navegação do episódio">
+            <div class="episodio-breadcrumb">
+                {% with temporada=page.get_parent.specific serie=temporada.get_parent.specific %}
+                <a href="{{ serie.url }}">{{ serie.title }}</a>
+                <span class="separator">›</span>
+                <a href="{{ temporada.url }}">Temporada {{ temporada.numero }}</a>
+                <span class="separator">›</span>
+                <span class="current">Episódio {{ page.numero_episodio }}</span>
+                {% endwith %}
+            </div>
+
+            <div class="episodio-siblings">
+                <h3>Outros episódios desta temporada</h3>
+                <ul>
+                    {% for ep in page.get_siblings.specific %}
+                    {% if ep.numero_episodio %}
+                    <li>
+                        <a href="{{ ep.url }}" class="{% if ep == page %}current{% endif %}">
+                            Episódio {{ ep.numero_episodio }}: {{ ep.title }}
+                        </a>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+                </ul>
+            </div>
+        </nav>
+        {% endif %}
+        {% endblock %}
+
+        {% block conteudo_actions %}
+        <div class="conteudo-actions">
+            {% if user.is_authenticated %}
+            <button class="btn btn-favorite" data-conteudo-id="{{ page.id }}" aria-label="Favoritar">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path
+                        d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
+                    </path>
+                </svg>
+                Favoritar
+            </button>
+
+            <button class="btn btn-like" data-conteudo-id="{{ page.id }}" aria-label="Curtir">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path
+                        d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
+                    </path>
+                </svg>
+                Curtir
+            </button>
+
+            <div class="avaliacao-widget" data-conteudo-id="{{ page.id }}">
+                <label>Avaliar:</label>
+                <div class="estrelas" role="radiogroup" aria-label="Avaliação de 1 a 5 estrelas">
+                    {% for i in "12345" %}
+                    <button type="button" class="estrela" data-nota="{{ i }}"
+                        aria-label="{{ i }} estrela{% if i != '1' %}s{% endif %}">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                        </svg>
+                    </button>
+                    {% endfor %}
+                </div>
+                <span class="media-avaliacao">{{ page.media_avaliacao|floatformat:1 }} ({{ page.total_avaliacoes }}
+                    avaliações)</span>
+            </div>
+            {% endif %}
+
+            {% if page.arquivo %}
+            <a href="{{ page.arquivo.url }}" class="btn btn-download" download>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Baixar
+            </a>
+            {% endif %}
+        </div>
+        {% endblock %}
+    </article>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/conteudo_page.js' %}"></script>
+{% endblock %}

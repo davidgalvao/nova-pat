@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags wagtailimages_tags static %}
+
+{% block body_class %}template-temporada{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/temporada_page.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="temporada-main" role="main">
+    <header class="temporada-header">
+        <nav class="temporada-breadcrumb" aria-label="Navegação">
+            <a href="{{ serie.url }}">{{ serie.title }}</a>
+            <span class="separator">›</span>
+            <span class="current">Temporada {{ page.numero }}</span>
+        </nav>
+
+        {% if page.capa %}
+        <div class="temporada-capa-wrapper">
+            {% image page.capa fill-1200x400 as capa_img %}
+            <img src="{{ capa_img.url }}" alt="Temporada {{ page.numero }} de {{ serie.title }}"
+                class="temporada-capa" />
+        </div>
+        {% endif %}
+
+        <div class="temporada-info">
+            <h1 class="temporada-title">Temporada {{ page.numero }}</h1>
+            {% if page.sinopse %}
+            <div class="temporada-sinopse">{{ page.sinopse|richtext }}</div>
+            {% endif %}
+            <div class="temporada-meta">
+                <span class="episodios-count">{{ episodios.count }} episódio{% if episodios.count != 1 %}s{% endif
+                    %}</span>
+            </div>
+        </div>
+    </header>
+
+    <section class="temporada-episodios" aria-label="Episódios">
+        <h2>Episódios</h2>
+        <div class="episodios-list">
+            {% for episodio in episodios %}
+            <article class="episodio-item">
+                <div class="episodio-number">
+                    <span class="ep-badge">Ep. {{ episodio.numero_episodio }}</span>
+                </div>
+                <div class="episodio-content">
+                    {% if episodio.capa %}
+                    <a href="{{ episodio.url }}" class="episodio-thumb">
+                        {% image episodio.capa fill-160x90 as ep_img %}
+                        <img src="{{ ep_img.url }}" alt="{{ episodio.title }}" />
+                    </a>
+                    {% endif %}
+                    <div class="episodio-details">
+                        <h3 class="episodio-title">
+                            <a href="{{ episodio.url }}">{{ episodio.title }}</a>
+                        </h3>
+                        {% if episodio.search_description %}
+                        <p class="episodio-excerpt">{{ episodio.search_description|truncatewords:20 }}</p>
+                        {% endif %}
+                        <div class="episodio-meta">
+                            {% if episodio.tipo %}
+                            <span class="tipo-badge">{{ episodio.tipo.name }}</span>
+                            {% endif %}
+                            {% if episodio.qt_access %}
+                            <span class="acessos">{{ episodio.qt_access }} acessos</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="episodio-actions">
+                    <a href="{{ episodio.url }}" class="btn btn-primary">Assistir</a>
+                </div>
+            </article>
+            {% empty %}
+            <p class="no-results">Esta temporada ainda não possui episódios.</p>
+            {% endfor %}
+        </div>
+    </section>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/temporada_page.js' %}"></script>
+{% endblock %}

@@ -1,5 +1,10 @@
 Django>=6,<6.1
 wagtail==7.4.1
+wagtail-modeladmin
 psycopg2-binary>=2.9
 django-browser-reload
 dj-database-url
+requests
+django-filter>=23.0
+pytest
+pytest-django

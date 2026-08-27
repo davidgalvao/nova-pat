@@ -1,0 +1,23 @@
+{% extends "conteudos/conteudo_page_base.html" %}
+{% load wagtailcore_tags wagtailimages_tags %}
+
+{% block conteudo_player %}
+<div class="conteudo-player audio-player">
+    {% if page.arquivo %}
+    <audio controls preload="metadata" class="audio-js">
+        <source src="{{ page.arquivo.url }}" type="audio/mpeg">
+        Seu navegador não suporta o elemento de áudio.
+    </audio>
+    {% if page.capa %}
+    <div class="audio-capa">
+        {% image page.capa fill-300x300 as capa_img %}
+        <img src="{{ capa_img.url }}" alt="{{ page.title }}" />
+    </div>
+    {% endif %}
+    {% else %}
+    <div class="player-placeholder">
+        <p>Áudio não disponível.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -9,6 +9,7 @@ from wagtail.admin.panels import FieldPanel, MultiFieldPanel, InlinePanel
 from wagtail.snippets.models import register_snippet
 from wagtail.images import get_image_model_string
 from wagtail.fields import RichTextField
+from wagtail.search import index
 
 # Import do core para herdar de RecursoBasePage
 from core.models import RecursoBasePage
@@ -105,10 +106,10 @@ class Licenca(models.Model):
 
 
 @register_snippet
-class Categoria(models.Model):
+class CategoriaConteudo(models.Model):
     """
     Árvore de categorias escopada por canal.
-    Distinta da categoria de aplicativo (AplicativoCategoria) — não fundir.
+    Distinta da categoria de aplicativo (AplicativoCategory) — não fundir.
     """
 
     name = models.CharField(max_length=150, verbose_name="Nome")
@@ -142,13 +143,13 @@ class Categoria(models.Model):
     ]
 
     class Meta:
-        verbose_name = "Categoria"
-        verbose_name_plural = "Categorias"
+        verbose_name = "Categoria de Conteúdo"
+        verbose_name_plural = "Categorias de Conteúdo"
         ordering = ["canal", "ordem", "name"]
         constraints = [
             models.UniqueConstraint(
                 fields=["slug", "canal"],
-                name="unique_categoria_slug_per_canal",
+                name="unique_categoriaconteudo_slug_per_canal",
             ),
         ]
 
@@ -171,7 +172,7 @@ class ConteudoPage(RecursoBasePage):
     )
 
     category = models.ForeignKey(
-        "conteudos.Categoria",
+        "conteudos.CategoriaConteudo",
         on_delete=models.PROTECT,
         verbose_name="Categoria",
         help_text="Categoria do conteúdo (árvore escopada por canal).",
@@ -316,7 +317,47 @@ class ConteudoPage(RecursoBasePage):
 
     # Configurações de busca
     search_fields = Page.search_fields + [
-        # Adicionar campos de busca conforme necessário
+        # Campos para filtro na busca avançada (RF001)
+        index.FilterField("canal_id"),
+        index.FilterField("tipo_id"),
+        index.FilterField("category_id"),
+        index.FilterField("license_id"),
+        index.FilterField("componentes_curriculares"),
+        index.FilterField("is_approved"),
+        index.FilterField("is_featured"),
+        index.FilterField("is_site"),
+        index.FilterField("first_published_at"),
+        # Campos de busca textual
+        index.SearchField("title", partial_match=True, boost=2.0),
+        index.SearchField("search_description", partial_match=True),
+        index.SearchField("authors", partial_match=True),
+        index.SearchField("source", partial_match=True),
+        index.RelatedFields("tipo", [
+            index.SearchField("name", partial_match=True, boost=1.5),
+            index.SearchField("description", partial_match=True),
+        ]),
+        index.RelatedFields("category", [
+            index.SearchField("name", partial_match=True, boost=1.5),
+        ]),
+        index.RelatedFields("license", [
+            index.SearchField("name", partial_match=True),
+        ]),
+        index.RelatedFields("canal", [
+            index.SearchField("title", partial_match=True, boost=1.5),
+            index.FilterField("id"),
+        ]),
+        index.RelatedFields("componentes_curriculares", [
+            index.SearchField("name", partial_match=True),
+            index.FilterField("id"),
+            index.RelatedFields("nivel", [
+                index.SearchField("name", partial_match=True),
+                index.FilterField("id"),
+            ]),
+            index.RelatedFields("category", [
+                index.SearchField("name", partial_match=True),
+                index.FilterField("id"),
+            ]),
+        ]),
     ]
 
     class Meta:

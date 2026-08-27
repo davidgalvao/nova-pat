@@ -1,38 +1,815 @@
 {% extends "base.html" %}
-{% load static wagtailcore_tags %}
+{% load static wagtailcore_tags wagtailimages_tags %}
 
 {% block body_class %}template-searchresults{% endblock %}
 
-{% block title %}Search{% endblock %}
+{% block title %}Busca Avançada{% endblock %}
 
 {% block content %}
-<h1>Search</h1>
+<div class="search-page container">
+    <header class="search-header">
+        <h1>Busca Avançada</h1>
+        <p class="search-subtitle">Encontre conteúdos e aplicativos educacionais</p>
+    </header>
 
-<form action="{% url 'search' %}" method="get">
-    <input type="text" name="query"{% if search_query %} value="{{ search_query }}"{% endif %}>
-    <input type="submit" value="Search" class="button">
-</form>
+    <!-- Formulário de Busca Principal -->
+    <form action="{% url 'search' %}" method="get" class="search-form-main" role="search" id="search-form-main">
+        <div class="search-input-group">
+            <label for="id_query" class="visually-hidden">Termo de busca</label>
+            <input type="text" name="query" id="id_query" value="{{ search_query }}"
+                placeholder="Digite palavras-chave, títulos, autores..." class="search-input" autocomplete="off">
+            <button type="submit" class="search-submit">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true">
+                    <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2" />
+                    <path d="M21 21L16.65 16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                </svg>
+                <span class="visually-hidden">Buscar</span>
+            </button>
+        </div>
 
-{% if search_results %}
-<ul>
-    {% for result in search_results %}
-    <li>
-        <h4><a href="{% pageurl result %}">{{ result }}</a></h4>
-        {% if result.search_description %}
-        {{ result.search_description }}
+        <!-- Filtros Ativos (Tags Removíveis) -->
+        {% if search_query or canal or tipo or categoria_conteudo or categoria_aplicativo or licenca or componente %}
+        <div class="search-filters-summary">
+            <strong>Filtros ativos:</strong>
+            {% if search_query %}
+            <span class="filter-tag">"{{ search_query }}" <a
+                    href="{% url 'search' %}?{{ current_filters|cut:'query='|cut:'&query=' }}" class="filter-remove"
+                    aria-label="Remover termo de busca">×</a></span>
+            {% endif %}
+            {% if canal %}
+            <span class="filter-tag">{{ canal.name }} <a
+                    href="{% url 'search' %}?{{ current_filters|cut:'canal='|cut:'&canal=' }}" class="filter-remove"
+                    aria-label="Remover filtro de canal">×</a></span>
+            {% endif %}
+            {% if tipo %}
+            <span class="filter-tag">{{ tipo.name }} <a
+                    href="{% url 'search' %}?{{ current_filters|cut:'tipo='|cut:'&tipo=' }}" class="filter-remove"
+                    aria-label="Remover filtro de tipo de mídia">×</a></span>
+            {% endif %}
+            {% if categoria_conteudo %}
+            <span class="filter-tag">{{ categoria_conteudo.name }} <a
+                    href="{% url 'search' %}?{{ current_filters|cut:'categoria_conteudo='|cut:'&categoria_conteudo=' }}"
+                    class="filter-remove" aria-label="Remover filtro de categoria de conteúdo">×</a></span>
+            {% endif %}
+            {% if categoria_aplicativo %}
+            <span class="filter-tag">{{ categoria_aplicativo.name }} <a
+                    href="{% url 'search' %}?{{ current_filters|cut:'categoria_aplicativo='|cut:'&categoria_aplicativo=' }}"
+                    class="filter-remove" aria-label="Remover filtro de categoria de aplicativo">×</a></span>
+            {% endif %}
+            {% if licenca %}
+            <span class="filter-tag">{{ licenca.name }} <a
+                    href="{% url 'search' %}?{{ current_filters|cut:'licenca='|cut:'&licenca=' }}" class="filter-remove"
+                    aria-label="Remover filtro de licença">×</a></span>
+            {% endif %}
+            {% if componente %}
+            <span class="filter-tag">{{ componente.nivel.name }} › {{ componente.category.name }} › {{ componente.name
+                }} <a href="{% url 'search' %}?{{ current_filters|cut:'componente='|cut:'&componente=' }}"
+                    class="filter-remove" aria-label="Remover filtro de componente curricular">×</a></span>
+            {% endif %}
+            <a href="{% url 'search' %}" class="clear-all-filters">Limpar todos</a>
+        </div>
         {% endif %}
-    </li>
-    {% endfor %}
-</ul>
+    </form>
 
-{% if search_results.has_previous %}
-<a href="{% url 'search' %}?query={{ search_query|urlencode }}&amp;page={{ search_results.previous_page_number }}">Previous</a>
-{% endif %}
+    <!-- Filtros Avançados (Accordion) -->
+    <details class="search-filters-accordion" open>
+        <summary class="search-filters-toggle">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true">
+                <path d="M3 9L12 18L21 9" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round" />
+            </svg>
+            <span>Filtros Avançados</span>
+        </summary>
 
-{% if search_results.has_next %}
-<a href="{% url 'search' %}?query={{ search_query|urlencode }}&amp;page={{ search_results.next_page_number }}">Next</a>
-{% endif %}
-{% elif search_query %}
-No results found
-{% endif %}
+        <div class="search-filters-grid">
+            <!-- Filtro: Canal (RF001 - obrigatório) -->
+            <fieldset class="filter-group">
+                <legend>Canal <span class="required" aria-hidden="true">*</span></legend>
+                <div class="filter-options">
+                    <label class="filter-option">
+                        <input type="radio" name="canal" value="" {% if not canal %}checked{% endif %}>
+                        <span>Todos os canais</span>
+                    </label>
+                    {% for c in canais %}
+                    <label class="filter-option">
+                        <input type="radio" name="canal" value="{{ c.id }}" {% if canal and canal.id == c.id %}checked{% endif %}>
+                        <span>{{ c.name }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </fieldset>
+
+            <!-- Filtro: Tipo de Mídia (apenas para conteúdos) -->
+            <fieldset class="filter-group">
+                <legend>Tipo de Mídia</legend>
+                <div class="filter-options">
+                    <label class="filter-option">
+                        <input type="radio" name="tipo" value="" {% if not tipo %}checked{% endif %}>
+                        <span>Todos</span>
+                    </label>
+                    {% for t in tipos %}
+                    <label class="filter-option">
+                        <input type="radio" name="tipo" value="{{ t.id }}" {% if tipo and tipo.id == t.id %}checked{% endif %}>
+                        <span>{{ t.name }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </fieldset>
+
+            <!-- Filtro: Categoria de Conteúdo -->
+            <fieldset class="filter-group">
+                <legend>Categoria de Conteúdo</legend>
+                <div class="filter-options">
+                    <label class="filter-option">
+                        <input type="radio" name="categoria_conteudo" value="" {% if not categoria_conteudo %}checked{% endif %}>
+                        <span>Todas</span>
+                    </label>
+                    {% for cat in categorias_conteudo %}
+                    <label class="filter-option">
+                        <input type="radio" name="categoria_conteudo" value="{{ cat.id }}" {% if categoria_conteudo and categoria_conteudo.id == cat.id %}checked{% endif %}>
+                        <span>{{ cat.canal.name }} › {{ cat.name }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </fieldset>
+
+            <!-- Filtro: Categoria de Aplicativo -->
+            <fieldset class="filter-group">
+                <legend>Categoria de Aplicativo</legend>
+                <div class="filter-options">
+                    <label class="filter-option">
+                        <input type="radio" name="categoria_aplicativo" value="" {% if not categoria_aplicativo %}checked{% endif %}>
+                        <span>Todas</span>
+                    </label>
+                    {% for cat in categorias_aplicativo %}
+                    <label class="filter-option">
+                        <input type="radio" name="categoria_aplicativo" value="{{ cat.id }}" {% if categoria_aplicativo and categoria_aplicativo.id == cat.id %}checked{% endif %}>
+                        <span>{{ cat.name }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </fieldset>
+
+            <!-- Filtro: Licença -->
+            <fieldset class="filter-group">
+                <legend>Licença</legend>
+                <div class="filter-options">
+                    <label class="filter-option">
+                        <input type="radio" name="licenca" value="" {% if not licenca %}checked{% endif %}>
+                        <span>Todas</span>
+                    </label>
+                    {% for l in licencas %}
+                    <label class="filter-option">
+                        <input type="radio" name="licenca" value="{{ l.id }}" {% if licenca and licenca.id == l.id %}checked{% endif %}>
+                        <span>{{ l.name }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </fieldset>
+
+            <!-- Filtro: Componente Curricular -->
+            <fieldset class="filter-group">
+                <legend>Componente Curricular</legend>
+                <div class="filter-options">
+                    <label class="filter-option">
+                        <input type="radio" name="componente" value="" {% if not componente %}checked{% endif %}>
+                        <span>Todos</span>
+                    </label>
+                    {% for comp in componentes %}
+                    <label class="filter-option">
+                        <input type="radio" name="componente" value="{{ comp.id }}" {% if componente and componente.id == comp.id %}checked{% endif %}>
+                        <span>{{ comp.nivel.name }} › {{ comp.category.name }} › {{ comp.name }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </fieldset>
+        </div>
+
+        <div class="search-filters-actions">
+            <button type="submit" form="search-form-main" class="btn btn-primary">Aplicar Filtros</button>
+            <a href="{% url 'search' %}" class="btn btn-secondary">Limpar</a>
+        </div>
+    </details>
+
+    <!-- Resultados -->
+    <section class="search-results" aria-live="polite">
+        <header class="results-header">
+            <h2>Resultados da Busca</h2>
+            {% if search_results %}
+            <p class="results-count">
+                {{ search_results.paginator.count }} resultado{{ search_results.paginator.count|pluralize:"s" }}
+                encontrado{{ search_results.paginator.count|pluralize:"s" }}
+                {% if search_query %} para "{{ search_query }}"{% endif %}
+            </p>
+            {% endif %}
+        </header>
+
+        {% if search_results %}
+        <div class="results-grid">
+            {% for result in search_results %}
+            <article
+                class="result-card {% if result.content_type == 'conteudos.conteudopage' %}result-conteudo{% else %}result-aplicativo{% endif %}">
+                {% if result.content_type == 'conteudos.conteudopage' %}
+                {% include "search/includes/result_conteudo.html" with conteudo=result %}
+                {% else %}
+                {% include "search/includes/result_aplicativo.html" with aplicativo=result %}
+                {% endif %}
+            </article>
+            {% empty %}
+            <div class="no-results">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true">
+                    <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="1.5" />
+                    <path d="M21 21L16.65 16.65" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                    <path d="M9 9L15 15M15 9L9 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                </svg>
+                <h3>Nenhum resultado encontrado</h3>
+                <p>Tente ajustar seus filtros ou usar termos de busca diferentes.</p>
+                <a href="{% url 'search' %}" class="btn btn-primary">Limpar filtros e buscar novamente</a>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Paginação -->
+        {% if search_results.paginator.num_pages > 1 %}
+        <nav class="pagination" aria-label="Paginação dos resultados">
+            {% if search_results.has_previous %}
+            <a href="?{{ current_filters }}&page={{ search_results.previous_page_number }}" class="page-link prev"
+                rel="prev">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true">
+                    <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                </svg>
+                Anterior
+            </a>
+            {% endif %}
+
+            <span class="page-info">
+                Página {{ search_results.number }} de {{ search_results.paginator.num_pages }}
+            </span>
+
+            {% if search_results.has_next %}
+            <a href="?{{ current_filters }}&page={{ search_results.next_page_number }}" class="page-link next"
+                rel="next">
+                Próxima
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true">
+                    <path d="M9 6L15 12L9 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                </svg>
+            </a>
+            {% endif %}
+        </nav>
+        {% endif %}
+        {% elif search_query %}
+        <div class="no-results">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true">
+                <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="1.5" />
+                <path d="M21 21L16.65 16.65" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                <path d="M9 9L15 15M15 9L9 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+            </svg>
+            <h3>Nenhum resultado para "{{ search_query }}"</h3>
+            <p>Tente termos diferentes ou ajuste os filtros.</p>
+        </div>
+        {% else %}
+        <div class="search-initial-state">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true">
+                <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="1.5" />
+                <path d="M21 21L16.65 16.65" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+            </svg>
+            <h3>Busque por conteúdos e aplicativos</h3>
+            <p>Use a busca acima ou os filtros avançados para encontrar o que precisa.</p>
+        </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Search Page Styles */
+    .search-page {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    .search-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .search-header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--color-text-primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .search-subtitle {
+        color: var(--color-text-secondary);
+        font-size: 1.1rem;
+    }
+
+    /* Search Form */
+    .search-form-main {
+        background: var(--color-surface);
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: var(--shadow-sm);
+        margin-bottom: 1.5rem;
+    }
+
+    .search-input-group {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .search-input {
+        flex: 1;
+        padding: 0.875rem 1rem;
+        border: 2px solid var(--color-border);
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 3px var(--color-primary-light);
+    }
+
+    .search-submit {
+        padding: 0.875rem 1.5rem;
+        background: var(--color-primary);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s;
+    }
+
+    .search-submit:hover {
+        background: var(--color-primary-dark);
+    }
+
+    /* Active Filters Summary */
+    .search-filters-summary {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: center;
+        padding-top: 1rem;
+        border-top: 1px solid var(--color-border);
+        font-size: 0.875rem;
+        color: var(--color-text-secondary);
+    }
+
+    .filter-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        background: var(--color-primary-light);
+        color: var(--color-primary-dark);
+        padding: 0.25rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.8rem;
+    }
+
+    .filter-remove {
+        color: inherit;
+        text-decoration: none;
+        margin-left: 0.25rem;
+        font-weight: bold;
+        line-height: 1;
+    }
+
+    .filter-remove:hover {
+        opacity: 0.7;
+    }
+
+    .clear-all-filters {
+        margin-left: auto;
+        color: var(--color-primary);
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.8rem;
+    }
+
+    .clear-all-filters:hover {
+        text-decoration: underline;
+    }
+
+    /* Filters Accordion */
+    .search-filters-accordion {
+        background: var(--color-surface);
+        border-radius: 12px;
+        box-shadow: var(--shadow-sm);
+        margin-bottom: 2rem;
+        overflow: hidden;
+    }
+
+    .search-filters-toggle {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        width: 100%;
+        padding: 1rem 1.5rem;
+        background: none;
+        border: none;
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--color-text-primary);
+        cursor: pointer;
+        text-align: left;
+    }
+
+    .search-filters-toggle svg {
+        flex-shrink: 0;
+        transition: transform 0.2s;
+    }
+
+    .search-filters-accordion[open] .search-filters-toggle svg {
+        transform: rotate(180deg);
+    }
+
+    .search-filters-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        padding: 1.5rem;
+        border-top: 1px solid var(--color-border);
+    }
+
+    .filter-group {
+        border: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .filter-group legend {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--color-text-primary);
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .required {
+        color: var(--color-error);
+    }
+
+    .filter-options {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .filter-option {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        font-size: 0.875rem;
+        color: var(--color-text-secondary);
+        transition: color 0.2s;
+    }
+
+    .filter-option:hover {
+        color: var(--color-text-primary);
+    }
+
+    .filter-option input[type="radio"] {
+        accent-color: var(--color-primary);
+        width: 16px;
+        height: 16px;
+    }
+
+    .filter-option optgroup {
+        font-weight: 600;
+        font-size: 0.8rem;
+        color: var(--color-text-tertiary);
+        margin-top: 0.5rem;
+    }
+
+    .search-filters-actions {
+        display: flex;
+        gap: 0.75rem;
+        padding: 1rem 1.5rem;
+        border-top: 1px solid var(--color-border);
+        justify-content: flex-end;
+    }
+
+    /* Results */
+    .results-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .results-header h2 {
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .results-count {
+        color: var(--color-text-secondary);
+        font-size: 0.95rem;
+    }
+
+    .results-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    /* Result Cards */
+    .result-card {
+        background: var(--color-surface);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+        transition: transform 0.2s, box-shadow 0.2s;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .result-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .result-conteudo .result-thumbnail {
+        aspect-ratio: 16/9;
+        background: var(--color-bg-tertiary);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .result-conteudo .result-thumbnail img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .result-conteudo .result-type-badge {
+        position: absolute;
+        top: 0.75rem;
+        left: 0.75rem;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .result-content {
+        padding: 1rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .result-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--color-text-primary);
+        margin-bottom: 0.5rem;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .result-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        font-size: 0.8rem;
+        color: var(--color-text-tertiary);
+        margin-bottom: 0.75rem;
+    }
+
+    .result-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .result-meta-item svg {
+        width: 14px;
+        height: 14px;
+        flex-shrink: 0;
+    }
+
+    .result-description {
+        font-size: 0.875rem;
+        color: var(--color-text-secondary);
+        line-height: 1.5;
+        flex: 1;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        margin-bottom: 1rem;
+    }
+
+    .result-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 0.75rem;
+        border-top: 1px solid var(--color-border);
+    }
+
+    .result-canal {
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--color-primary);
+        background: var(--color-primary-light);
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+    }
+
+    .result-link {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--color-primary);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        transition: opacity 0.2s;
+    }
+
+    .result-link:hover {
+        opacity: 0.8;
+    }
+
+    /* Aplicativo Result */
+    .result-aplicativo .result-thumbnail {
+        aspect-ratio: 1/1;
+        background: var(--color-bg-tertiary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+    }
+
+    .result-aplicativo .result-thumbnail img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+
+    .result-aplicativo .result-type-badge {
+        background: var(--color-primary);
+    }
+
+    /* No Results / Initial State */
+    .no-results,
+    .search-initial-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--color-text-tertiary);
+    }
+
+    .no-results svg,
+    .search-initial-state svg {
+        margin-bottom: 1.5rem;
+        opacity: 0.5;
+    }
+
+    .no-results h3,
+    .search-initial-state h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--color-text-primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .no-results p,
+    .search-initial-state p {
+        margin-bottom: 1.5rem;
+    }
+
+    /* Pagination */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 1rem;
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--color-border);
+    }
+
+    .page-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: 8px;
+        color: var(--color-text-primary);
+        text-decoration: none;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+
+    .page-link:hover {
+        background: var(--color-primary);
+        border-color: var(--color-primary);
+        color: white;
+    }
+
+    .page-link svg {
+        flex-shrink: 0;
+    }
+
+    .page-info {
+        color: var(--color-text-secondary);
+        font-size: 0.875rem;
+    }
+
+    /* Buttons */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.625rem 1.25rem;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-primary {
+        background: var(--color-primary);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: var(--color-primary-dark);
+    }
+
+    .btn-secondary {
+        background: var(--color-surface);
+        color: var(--color-text-primary);
+        border: 1px solid var(--color-border);
+    }
+
+    .btn-secondary:hover {
+        background: var(--color-bg-tertiary);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .search-page {
+            padding: 1rem;
+        }
+
+        .search-filters-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .results-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .search-input-group {
+            flex-direction: column;
+        }
+
+        .search-submit {
+            width: 100%;
+        }
+    }
+</style>
 {% endblock %}

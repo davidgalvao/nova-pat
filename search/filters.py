@@ -1,0 +1,67 @@
+import django_filters
+from wagtail.models import Page
+from conteudos.models import ConteudoPage, Tipo, CategoriaConteudo, Licenca
+from aplicativos.models import AplicativoEducacionalPage, AplicativoCategory
+from canais.models import CanalPage
+from curriculo.models import CurricularComponent
+
+
+class SafeModelChoiceFilter(django_filters.ModelChoiceFilter):
+    """
+    ModelChoiceFilter que ignora valores inválidos em vez de lançar erro.
+    Útil para parâmetros de URL que podem vir manipulados pelo usuário.
+    """
+    def clean(self, value):
+        """
+        Valida e limpa o valor antes de usar no queryset.
+        Retorna None para valores inválidos, o que faz o filter ser ignorado.
+        """
+        if not value:
+            return None
+        try:
+            # Tenta converter para int para validar
+            int(value)
+        except (ValueError, TypeError):
+            # Valor inválido - retorna None para ignorar o filtro
+            return None
+        # Valor válido - usa a validação padrão do ModelChoiceFilter
+        return super().clean(value)
+
+
+class BaseSearchFilterSet(django_filters.FilterSet):
+    query = django_filters.CharFilter(method='filter_search_query', label='Busca')
+    canal = SafeModelChoiceFilter(
+        queryset=CanalPage.objects.live().filter(is_active=True),
+        field_name='canal', label='Canal'
+    )
+
+    class Meta:
+        model = Page
+        fields = []
+
+    def filter_search_query(self, queryset, name, value):
+        if value:
+            # Wagtail's search() returns PostgresSearchResults, get page IDs and filter queryset
+            search_results = queryset.search(value)
+            page_ids = [page.id for page in search_results]
+            return queryset.filter(id__in=page_ids)
+        return queryset
+
+
+class ConteudoSearchFilterSet(BaseSearchFilterSet):
+    tipo = SafeModelChoiceFilter(queryset=Tipo.objects.filter(is_active=True), field_name='tipo', label='Tipo de Mídia')
+    categoria_conteudo = SafeModelChoiceFilter(queryset=CategoriaConteudo.objects.filter(is_active=True), field_name='category', label='Categoria')
+    licenca = SafeModelChoiceFilter(queryset=Licenca.objects.filter(is_active=True), field_name='license', label='Licença')
+    componente = SafeModelChoiceFilter(queryset=CurricularComponent.objects.filter(is_active=True), field_name='componentes_curriculares', label='Componente Curricular')
+
+    class Meta(BaseSearchFilterSet.Meta):
+        model = ConteudoPage
+        fields = []
+
+
+class AplicativoSearchFilterSet(BaseSearchFilterSet):
+    categoria_aplicativo = SafeModelChoiceFilter(queryset=AplicativoCategory.objects.filter(is_active=True), field_name='category', label='Categoria')
+
+    class Meta(BaseSearchFilterSet.Meta):
+        model = AplicativoEducacionalPage
+        fields = []

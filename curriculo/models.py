@@ -2,6 +2,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from wagtail.snippets.models import register_snippet
 from wagtail.admin.panels import FieldPanel
+from wagtail.search import index
 
 
 @register_snippet
@@ -51,6 +52,13 @@ class NivelEnsino(models.Model):
     def __str__(self):
         return self.name
 
+    # Wagtail search fields for snippets
+    search_fields = [
+        index.SearchField("name"),
+        index.FilterField("is_active"),
+        index.FilterField("ordem"),
+    ]
+
 
 @register_snippet
 class CurricularComponentCategory(models.Model):
@@ -89,6 +97,17 @@ class CurricularComponentCategory(models.Model):
         verbose_name="Ativa",
     )
 
+    # Tree structure (parent_id) — schema legado: categories é árvore
+    parent = models.ForeignKey(
+        "self",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="children",
+        verbose_name="Categoria Pai",
+        help_text="Categoria pai para estrutura hierárquica.",
+    )
+
     # M2M com CanalPage — filtro de categorias de componente por canal
     # Legado: pivot 'canal_cc_categories'
     # Direção inversa definida em canais.CanalPage.categorias_componente_permitidas
@@ -100,6 +119,7 @@ class CurricularComponentCategory(models.Model):
         FieldPanel("description"),
         FieldPanel("ordem"),
         FieldPanel("is_active"),
+        FieldPanel("parent"),
     ]
 
     class Meta:
@@ -109,6 +129,14 @@ class CurricularComponentCategory(models.Model):
 
     def __str__(self):
         return self.name
+
+    # Wagtail search fields for snippets
+    search_fields = [
+        index.SearchField("name"),
+        index.SearchField("description"),
+        index.FilterField("is_active"),
+        index.FilterField("ordem"),
+    ]
 
 
 @register_snippet
@@ -190,3 +218,19 @@ class CurricularComponent(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.nivel.name})"
+
+    # Wagtail search fields for snippets
+    search_fields = [
+        index.SearchField("name"),
+        index.SearchField("description"),
+        index.FilterField("is_active"),
+        index.FilterField("ordem"),
+        index.RelatedFields("nivel", [
+            index.SearchField("name"),
+            index.FilterField("is_active"),
+        ]),
+        index.RelatedFields("category", [
+            index.SearchField("name"),
+            index.FilterField("is_active"),
+        ]),
+    ]

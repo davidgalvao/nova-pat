@@ -77,7 +77,12 @@ class Serie(RecursoBasePage):
         Adiciona ao contexto as temporadas desta série para templates.
         """
         context = super().get_context(request, *args, **kwargs)
-        context["temporadas"] = self.get_children().live().type(Temporada).order_by("numero")
+        # Get specific Temporada instances and order by numero
+        # We need to get the specific pages first, then order by the specific field
+        from django.db.models import Prefetch
+        temporadas = list(self.get_children().live().type(Temporada).specific())
+        temporadas.sort(key=lambda t: t.numero)
+        context["temporadas"] = temporadas
         return context
 
 
