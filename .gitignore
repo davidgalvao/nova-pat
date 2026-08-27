@@ -31,3 +31,17 @@ media/
 .env.local
  # .env.* removed to not ignore .env.example
 secrets/
+
+# Assistentes de IA e Ferramentas Locais
+.roo/
+.sixth/
+
+# Django Static (coletados)
+static/
+
+# Ignora arquivos temporários do VS Code, mas permite compartilhar settings.json / extensions.json
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json

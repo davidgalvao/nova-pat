@@ -1,7 +1,6 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
 from wagtail import hooks
-from wagtail.admin.menu import MenuItem
 from wagtail.admin.panels import FieldPanel, MultiFieldPanel
 from wagtail.snippets.views.snippets import SnippetViewSet
 from wagtail_modeladmin.options import ModelAdmin, modeladmin_register
@@ -157,14 +156,3 @@ hooks.register("register_snippet_viewset", CategoriaConteudoSnippetViewSet)
 
 # Registrar ModelAdmin
 modeladmin_register(ConteudoPageModelAdmin)
-
-
-# Menu personalizado para o app conteudos
-@hooks.register("register_admin_menu_item")
-def register_conteudos_menu_item():
-    return MenuItem(
-        _("Conteúdos"),
-        "/admin/conteudos/conteudopage/",
-        classnames="icon icon-doc-full",
-        order=200
-    )

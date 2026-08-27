@@ -1,9 +1,7 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
-from wagtail import hooks
-from wagtail.admin.menu import MenuItem
 from wagtail.admin.panels import FieldPanel, MultiFieldPanel
-from wagtail_modeladmin.options import ModelAdmin, modeladmin_register
+from wagtail_modeladmin.options import ModelAdmin, ModelAdminGroup, modeladmin_register
 
 from .models import Serie, Temporada
 
@@ -105,15 +103,14 @@ class TemporadaModelAdmin(ModelAdmin):
         return user.role and user.role.slug in ("super-admin", "admin")
 
 
-modeladmin_register(SerieModelAdmin)
-modeladmin_register(TemporadaModelAdmin)
-
-
-@hooks.register("register_admin_menu_item")
-def register_series_menu_item():
-    return MenuItem(
-        _("Séries"),
-        "/admin/series/serie/",
-        classnames="icon icon-list-ol",
-        order=400
+class SeriesModelAdminGroup(ModelAdminGroup):
+    items = (
+        SerieModelAdmin,
+        TemporadaModelAdmin,
     )
+    menu_label = _("Séries")
+    menu_icon = "list-ol"
+    menu_order = 400
+
+
+modeladmin_register(SeriesModelAdminGroup)

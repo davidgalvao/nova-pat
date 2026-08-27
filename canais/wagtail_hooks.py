@@ -1,7 +1,6 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
 from wagtail import hooks
-from wagtail.admin.menu import MenuItem
 from wagtail.admin.panels import FieldPanel, MultiFieldPanel
 from wagtail_modeladmin.options import ModelAdmin, modeladmin_register
 
@@ -61,13 +60,3 @@ class CanalPageModelAdmin(ModelAdmin):
 
 
 modeladmin_register(CanalPageModelAdmin)
-
-
-@hooks.register("register_admin_menu_item")
-def register_canais_menu_item():
-    return MenuItem(
-        _("Canais"),
-        "/admin/canais/canalpage/",
-        classnames="icon icon-site",
-        order=100
-    )

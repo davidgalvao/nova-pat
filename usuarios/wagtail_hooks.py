@@ -1,8 +1,6 @@
 from django.utils.translation import gettext_lazy as _
-from wagtail import hooks
-from wagtail.admin.menu import MenuItem
 from wagtail.admin.panels import FieldPanel, MultiFieldPanel
-from wagtail_modeladmin.options import ModelAdmin, modeladmin_register
+from wagtail_modeladmin.options import ModelAdmin, ModelAdminGroup, modeladmin_register
 
 from .models import Role, User, UserCanal
 
@@ -136,16 +134,15 @@ class UserCanalModelAdmin(ModelAdmin):
         return user.role and user.role.slug in ("super-admin", "admin")
 
 
-modeladmin_register(RoleModelAdmin)
-modeladmin_register(UserModelAdmin)
-modeladmin_register(UserCanalModelAdmin)
-
-
-@hooks.register("register_admin_menu_item")
-def register_usuarios_menu_item():
-    return MenuItem(
-        _("Usuários e Permissões"),
-        "/admin/usuarios/user/",
-        classnames="icon icon-user",
-        order=700
+class UsuariosModelAdminGroup(ModelAdminGroup):
+    items = (
+        RoleModelAdmin,
+        UserModelAdmin,
+        UserCanalModelAdmin,
     )
+    menu_label = _("Usuários e Permissões")
+    menu_icon = "user"
+    menu_order = 700
+
+
+modeladmin_register(UsuariosModelAdminGroup)

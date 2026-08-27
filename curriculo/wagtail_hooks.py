@@ -1,10 +1,8 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
 from wagtail import hooks
-from wagtail.admin.menu import MenuItem
 from wagtail.admin.panels import FieldPanel, MultiFieldPanel
-from wagtail.snippets.views.snippets import SnippetViewSet
-from wagtail_modeladmin.options import ModelAdmin, modeladmin_register
+from wagtail.snippets.views.snippets import SnippetViewSet, SnippetViewSetGroup
 
 from .models import NivelEnsino, CurricularComponentCategory, CurricularComponent
 
@@ -58,16 +56,15 @@ class CurricularComponentSnippetViewSet(SnippetViewSet):
     ]
 
 
-hooks.register("register_snippet_viewset", NivelEnsinoSnippetViewSet)
-hooks.register("register_snippet_viewset", CurricularComponentCategorySnippetViewSet)
-hooks.register("register_snippet_viewset", CurricularComponentSnippetViewSet)
-
-
-@hooks.register("register_admin_menu_item")
-def register_curriculo_menu_item():
-    return MenuItem(
-        _("Currículo"),
-        "/admin/snippets/curriculo/",
-        classnames="icon icon-pilcrow",
-        order=300
+class CurriculoSnippetViewSetGroup(SnippetViewSetGroup):
+    items = (
+        NivelEnsinoSnippetViewSet,
+        CurricularComponentCategorySnippetViewSet,
+        CurricularComponentSnippetViewSet,
     )
+    menu_label = _("Currículo")
+    menu_icon = "pilcrow"
+    menu_order = 300
+
+
+hooks.register("register_snippet_viewset", CurriculoSnippetViewSetGroup)

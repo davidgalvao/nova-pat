@@ -1,7 +1,5 @@
 from django.utils.translation import gettext_lazy as _
-from wagtail import hooks
-from wagtail.admin.menu import MenuItem
-from wagtail_modeladmin.options import ModelAdmin, modeladmin_register
+from wagtail_modeladmin.options import ModelAdmin, ModelAdminGroup, modeladmin_register
 
 from .models import Comentario, Like, FavoritoConteudo, AvaliacaoConteudo
 
@@ -117,17 +115,16 @@ class AvaliacaoConteudoModelAdmin(ModelAdmin):
         return user.role and user.role.slug in ("super-admin", "admin")
 
 
-modeladmin_register(ComentarioModelAdmin)
-modeladmin_register(LikeModelAdmin)
-modeladmin_register(FavoritoConteudoModelAdmin)
-modeladmin_register(AvaliacaoConteudoModelAdmin)
-
-
-@hooks.register("register_admin_menu_item")
-def register_interacoes_menu_item():
-    return MenuItem(
-        _("Interações"),
-        "/admin/interacoes/comentario/",
-        classnames="icon icon-comment",
-        order=600
+class InteracoesModelAdminGroup(ModelAdminGroup):
+    items = (
+        ComentarioModelAdmin,
+        LikeModelAdmin,
+        FavoritoConteudoModelAdmin,
+        AvaliacaoConteudoModelAdmin,
     )
+    menu_label = _("Interações")
+    menu_icon = "comment"
+    menu_order = 600
+
+
+modeladmin_register(InteracoesModelAdminGroup)
