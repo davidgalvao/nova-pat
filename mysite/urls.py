@@ -1,3 +1,22 @@
+"""
+Configuração de rotas (URLconf) do projeto Nova PAT.
+
+Ordem das rotas (importante — o Django processa na ordem):
+
+1. `django-admin/` — admin nativo do Django (não Wagtail).
+2. `admin/` — admin do Wagtail (interface de gestão de conteúdo).
+3. `documents/` — biblioteca de documentos do Wagtail.
+4. `search/` — busca avançada customizada (RF001, ver `search/views.py`).
+5. `__reload__/` — django-browser-reload para hot-reload em desenvolvimento.
+6. (DEBUG) static/media — servidos pelo runserver em desenvolvimento.
+7. `""` (catch-all) — **deve ser a última rota**: delega ao mecanismo de
+   serving de páginas do Wagtail (`wagtail_urls`). Qualquer rota não capturada
+   acima vira uma Page do Wagtail.
+
+Não alterar a ordem sem entender as implicações — o catch-all do Wagtail
+precisa ficar por último.
+"""
+
 from django.conf import settings
 from django.urls import include, path
 from django.contrib import admin

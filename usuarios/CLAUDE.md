@@ -18,6 +18,8 @@ Confirmado em `roles` (migration) + `Users/*.php` (cada subtipo com `role_id` fi
 | 4 | `editor` | **Achado após busca exaustiva no repo**: a string `'editor'` aparece em **apenas dois lugares** em todo o código do legado — o comentário da migration de `roles` (listando o nome) e `Users/EditorUser.php` (o global scope que filtra `role_id = 4`). Nenhuma `Policy`, `Controller`, `Middleware` ou `Request` checa esse papel em lugar nenhum. Ou seja: o papel existe no banco e tem uma classe de conveniência, mas **não tem nenhuma permissão implementada de fato** no comportamento observável do sistema — não libera nada que os outros papéis não liberem por si só, nem é bloqueado especificamente em lugar nenhum (segue as regras padrão, que já excluem `create` de conteúdo/aplicativo por não estar na lista de papéis liberados). Pode ser papel reservado para uso futuro que nunca foi implementado, ou vestígio. Não presumir capacidade nenhuma para `editor` além do que as Policies já listadas concedem a "qualquer papel não citado". Se aparecer necessidade de dar propósito a esse papel na NOVA PAT, é decisão de produto nova, não achado do legado. |
 | 5 | `convidado` | **papel padrão de novo cadastro** (`User::USER_DEFAULT_ROLE = 5`). Sem evidência de permissão de criação de conteúdo/aplicativo nas policies revisadas. |
 
+> **Decisão (D2, fechada) sobre o papel `editor`**: na fase de transposição, `editor` permanece **sem permissão de curadoria** (comportamento igual a `convidado`). Dar a esse papel a capacidade de "criar conteúdo com aprovação pendente" é uma **mudança deliberada de regra de negócio** (contradiz a RN-L1), vinculada ao ADR-004 — só implementar se for decisão de produto explícita e separada. Ver `docs/adr/README.md` (seção D2) e `docs/adr/0004-workflow-aprovacao-role-explicita.md`.
+
 **Não existe papel chamado "professor"** — isso foi terminologia errada usada em versões anteriores desta análise (documentos já corrigidos). Usar sempre os 5 nomes reais acima.
 
 ## Model `User` (ou model de usuário do Django/Wagtail estendido)
@@ -42,7 +44,11 @@ Todo cadastro novo entra como `convidado` (role padrão) — replicar isso.
 `RolePolicy`: criar, editar, deletar, listar papéis é ação exclusiva de `super-admin`. Nem `admin` mexe na estrutura de papéis em si (só nos usuários que os têm).
 
 ## Vínculo usuário-canal (`user_canal`)
-Pivot simples (`user_id`, `canal_id`, chave composta) — liga um usuário a um ou mais canais específicos. **Semântica exata não confirmada**: pode ser "usuário só gerencia conteúdo dos canais a que está vinculado" (escopo de curadoria por canal), mas isso não foi visto em nenhuma Policy revisada até agora (as Policies checadas usam só `role`, não checam `user_canal`). Não presumir a regra — se for implementar essa restrição de escopo, confirmar o comportamento real em produção primeiro (criar um usuário `coordenador` vinculado a um canal só, tentar mexer em conteúdo de outro canal, ver se é bloqueado).
+Pivot simples (`user_id`, `canal_id`, chave composta) — liga um usuário a um ou mais canais específicos.
+
+**Decisão (D1, fechada)**: `user_canal` é mantido como **vínculo informativo, sem efeito de permissão** na fase atual. As Policies do legado checam apenas `role`, nunca `user_canal` (achado confirmado por busca exaustiva no código). Implementar escopo de curadoria por canal seria *inventar* comportamento que não existe no sistema real — o anti-padrão que os `CLAUDE.md` alertam para evitar.
+
+O model é preservado para manter o dado herdado e permitir, no futuro, ativar o escopo por canal (cenário: `coordenador` só gerencia conteúdo dos canais a que está vinculado) **sem migração destrutiva**, caso o comportamento real em produção confirme essa restrição. Essa reavaliação depende de acesso ao admin de produção — não é decisão que se toma só com leitura de código. Ver `docs/adr/README.md` (seção D1).
 
 ## O que NÃO fazer neste app
 - Não usar "professor" como nome de papel — são `super-admin`, `admin`, `coordenador`, `editor`, `convidado`.

@@ -36,7 +36,7 @@
 | Criar playlist curada (admin) | ✅ | ✅ | ❌ (não confirmado) | ❌ | ❌ |
 | Criar playlist pessoal (própria, construção nova) | ✅ | ✅ | ✅ | ✅ | ✅ (qualquer logado) |
 
-`*` = comportamento de `editor` nestas linhas é **assumido igual a `convidado`** por não ter permissão diferenciada confirmada no legado — não é achado confirmado, é o valor padrão mais seguro até decisão em contrário.
+`*` = comportamento de `editor` nestas linhas é **igual a `convidado`** — decisão fechada (D2). Na fase de transposição, `editor` permanece sem permissão de curadoria, fiel ao legado (busca exaustiva confirmou que o papel não é checado em nenhuma Policy). Dar a `editor` a capacidade de "criar com aprovação pendente" seria mudança deliberada de regra de negócio, vinculada ao ADR-004 — ver `docs/adr/README.md` (seção D2).
 
 ## Regras que não são só "sim/não" — cuidado ao consultar esta tabela isoladamente
 - **Aprovação de conteúdo não é sobre poder editar, é sobre poder pular a fila.** `coordenador` pra cima publica direto; abaixo disso, no legado, nem chega a criar (RN-L1 em `conteudos/CLAUDE.md`).

@@ -305,6 +305,19 @@ class AplicativoEducacionalPage(RecursoBasePage):
         super().save(*args, **kwargs)
 
     def get_context(self, request, *args, **kwargs):
+        """
+        Adiciona a instância do aplicativo ao contexto do template.
+
+        Disponibiliza `aplicativo` no template da página para acesso direto aos
+        campos do model (ex: `url`, `description`, `image`).
+
+        Args:
+            request: HttpRequest da requisição.
+            *args, **kwargs: Argumentos adicionais repassados ao super().
+
+        Returns:
+            dict de contexto com a chave `aplicativo`.
+        """
         context = super().get_context(request, *args, **kwargs)
         context["aplicativo"] = self
         return context

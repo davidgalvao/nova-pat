@@ -1,3 +1,15 @@
+"""
+FilterSets da busca avançada (RF001).
+
+Define os filtros aplicáveis a `ConteudoPage` e `AplicativoEducacionalPage`,
+reutilizando uma base comum (`BaseSearchFilterSet`) para os filtros compartilhados
+(`query` e `canal`). Os filtros específicos de cada domínio ficam no FilterSet
+correspondente (ex: `tipo`/`licenca`/`componente` só existem em conteúdo).
+
+`SafeModelChoiceFilter` ignora valores de URL inválidos em vez de lançar erro,
+protegendo a view contra parâmetros manipulados pelo usuário.
+"""
+
 import django_filters
 from wagtail.models import Page
 from conteudos.models import ConteudoPage, Tipo, CategoriaConteudo, Licenca
@@ -40,6 +52,23 @@ class BaseSearchFilterSet(django_filters.FilterSet):
         fields = []
 
     def filter_search_query(self, queryset, name, value):
+        """
+        Aplica a busca textual via Wagtail search.
+
+        `queryset.search(value)` retorna um `PostgresSearchResults` (não um
+        QuerySet comum), então extraímos os IDs dos resultados e re-filtramos o
+        queryset original por esses IDs. Isso permite combinar a busca full-text
+        do Wagtail com os demais filtros do FilterSet.
+
+        Args:
+            queryset: QuerySet base do FilterSet.
+            name: Nome do campo (`query`).
+            value: Termo de busca digitado pelo usuário.
+
+        Returns:
+            QuerySet filtrado pelos IDs dos resultados de busca, ou o queryset
+            original se `value` estiver vazio.
+        """
         if value:
             # Wagtail's search() returns PostgresSearchResults, get page IDs and filter queryset
             search_results = queryset.search(value)

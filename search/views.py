@@ -1,3 +1,13 @@
+"""
+View de busca avançada (RF001).
+
+Orquestra a inferência de tipo de conteúdo (ver `search.services.resolver_tipo_busca`),
+a aplicação dos filtros (ver `search.filters`) e a paginação dos resultados.
+
+Decisão de arquitetura sobre o modo "ambos" (combinação por IDs, não `union()`):
+ver `docs/adr/0003-busca-ambos-por-ids.md`.
+"""
+
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.shortcuts import render
 from wagtail.models import Page
@@ -10,6 +20,23 @@ from aplicativos.models import AplicativoCategory, AplicativoEducacionalPage
 
 
 def search(request):
+    """
+    Renderiza a página de busca avançada.
+
+    Determina o tipo de busca (`conteudo`/`aplicativo`/`ambos`) a partir dos
+    filtros preenchidos (inferência sem lookup de ID — ver `search.services`),
+    aplica o FilterSet correspondente e pagina os resultados (12 por página).
+
+    No modo `ambos`, os resultados de `ConteudoPage` e `AplicativoEducacionalPage`
+    são combinados por IDs (ver ADR-003), sacrificando a ordenação por relevância
+    do Wagtail search em favor de simplicidade.
+
+    Args:
+        request: HttpRequest com os parâmetros de filtro em `request.GET`.
+
+    Returns:
+        HttpResponse renderizado com o template `search/search.html`.
+    """
     # Determinar tipo de busca baseado nos filtros preenchidos (inferência)
     tipo_busca = resolver_tipo_busca(request.GET)
 

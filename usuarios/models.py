@@ -215,22 +215,32 @@ class User(AbstractUser):
 
     @property
     def is_super_admin(self) -> bool:
+        """True se o usuário tem o papel `super-admin` (irrestrito)."""
         return self.role and self.role.slug == "super-admin"
 
     @property
     def is_admin(self) -> bool:
+        """True se o usuário tem o papel `admin` (quase irrestrito)."""
         return self.role and self.role.slug == "admin"
 
     @property
     def is_coordenador(self) -> bool:
+        """True se o usuário tem o papel `coordenador` (curadoria de conteúdo)."""
         return self.role and self.role.slug == "coordenador"
 
     @property
     def is_editor(self) -> bool:
+        """
+        True se o usuário tem o papel `editor`.
+
+        Nota: o papel `editor` não tem permissão implementada no legado (igual a
+        `convidado`). Ver decisão D2 em `docs/adr/README.md` e `usuarios/CLAUDE.md`.
+        """
         return self.role and self.role.slug == "editor"
 
     @property
     def is_convidado(self) -> bool:
+        """True se o usuário tem o papel `convidado` (padrão de cadastro público)."""
         return self.role and self.role.slug == "convidado"
 
     def can_manage_roles(self) -> bool:
