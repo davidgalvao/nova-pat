@@ -28,6 +28,8 @@ public const CANAL_ID = 9;
 ```
 Todo aplicativo criado recebe esse `canal_id` fixo, independente do que o formulário mandar — não é campo editável na prática. `id=9` é muito provavelmente o canal "Aplicativos Educacionais" (um dos 12 canais confirmados em produção, ver `canais/CLAUDE.md`), mas isso não foi confirmado com certeza absoluta (não temos acesso direto ao banco de produção) — **confirmar no admin antes de fechar**. Ao implementar `AplicativoEducacionalPage`, não expor campo de canal editável no formulário de criação — fixar automaticamente, replicando o comportamento real.
 
+**Implementação (ADR-002)**: o valor está centralizado nas constantes `CANAL_ID = 9` e `CANAL_SLUG_FALLBACK = "aplicativos-educacionais"`, definidas no topo de [`aplicativos/models.py`](../aplicativos/models.py) e consumidas pelo `save()` da `AplicativoEducacionalPage`. O número mágico `9` não aparece inline no código — só na declaração da constante. O fallback por slug é mantido exclusivamente como contingência de ambiente (se o canal `id=9` não existir no banco), e é a segunda fonte de verdade documentada na ADR-002. Se o id real do canal "Aplicativos Educacionais" diferir de `9`, apenas a constante `CANAL_ID` precisa mudar.
+
 ### Sem license, sem workflow de aprovação
 Confirmado: `aplicativos` não tem `license_id` nem fluxo de `is_approved`/`approving_user_id` no legado. Isso é coerente com a regra de autorização abaixo — só quem já é privilegiado pode criar aplicativo, então não existe "pendente de aprovação" como em conteúdo comum.
 

@@ -10,6 +10,19 @@ from wagtail.search import index
 
 from core.models import RecursoBasePage
 
+# Constante do canal fixo para aplicativos (ADR-002).
+# No legado (Laravel), `Aplicativo::CANAL_ID = 9` fixa o canal de todo
+# aplicativo educacional por constante no código — não é escolha do usuário
+# no formulário. Mantemos o mesmo comportamento, centralizando o valor em uma
+# única constante nomeada para eliminar o número mágico inline no save().
+# Pendência: confirmar no admin de produção que o canal id=9 é de fato
+# "Aplicativos Educacionais" antes de fechar como definitivo.
+CANAL_ID = 9
+
+# Fallback por slug mantido como contingência de ambiente (se o canal id=9 não
+# existir no banco). Documentado como segunda fonte de verdade — ver ADR-002.
+CANAL_SLUG_FALLBACK = "aplicativos-educacionais"
+
 
 @register_snippet
 class AplicativoCategory(models.Model):
@@ -273,29 +286,30 @@ class AplicativoEducacionalPage(RecursoBasePage):
     def save(self, *args, **kwargs):
         """
         Sobrescreve save para:
-        1. Forçar canal_id=9 (Aplicativos Educacionais) — não editável pelo usuário
+        1. Forçar canal_id=CANAL_ID (Aplicativos Educacionais) — não editável pelo usuário
         2. Garantir qt_access=0 na criação (já é default, mas reforça)
         3. Não chamar validação de tags aqui (já feita no clean)
         """
-        # Forçar canal fixo (id=9)
+        # Forçar canal fixo (CANAL_ID)
         # Importa aqui para evitar circular import
         from canais.models import CanalPage
 
         try:
-            canal_fixo = CanalPage.objects.get(pk=9)
+            canal_fixo = CanalPage.objects.get(pk=CANAL_ID)
             self.canal = canal_fixo
         except CanalPage.DoesNotExist:
-            # Se o canal 9 não existe, tenta buscar pelo slug provável
+            # Se o canal CANAL_ID não existe, tenta buscar pelo slug de contingência
             # ou levanta erro claro
             try:
-                canal_fixo = CanalPage.objects.get(slug="aplicativos-educacionais")
+                canal_fixo = CanalPage.objects.get(slug=CANAL_SLUG_FALLBACK)
                 self.canal = canal_fixo
             except CanalPage.DoesNotExist:
                 raise ValidationError(
                     _(
-                        "Canal fixo para aplicativos (id=9 ou slug='aplicativos-educacionais') não encontrado. "
+                        "Canal fixo para aplicativos (id=%(id)d ou slug='%(slug)s') não encontrado. "
                         "Crie o canal 'Aplicativos Educacionais' antes de adicionar aplicativos."
                     )
+                    % {"id": CANAL_ID, "slug": CANAL_SLUG_FALLBACK}
                 )
 
         # qt_access já tem default=0, mas garantimos na criação
