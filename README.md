@@ -122,7 +122,7 @@ Para manter a manutenibilidade e escalabilidade do projeto, seguimos estes padr�
 
 - **BasePage Enxuta**: A `core.BasePage` deve conter apenas metadados (SEO, Open Graph) e controles de layout globais. Não adicione StreamFields de conteúdo ou lógica de negócio pesada aqui.
 - **Header e Footer**: Gerenciados via `wagtail.contrib.settings` (Multisite) e Snippets, desacoplados dos modelos de página.
-- **Campos de Layout**: Use as flags `hide_header` e `hide_footer` na `BasePage` (via `FlexLayoutMixin`) para controlar a exibição de componentes globais em Landing Pages.
+- **Campos de Layout**: As flags `hide_header` e `hide_footer` vivem no `FlexLayoutMixin`, **não** na `BasePage`. O `FlexLayoutMixin` é um mixin abstrato (mantido sem uso atual — decisão D5) que documenta a intenção de suportar landing pages com layout flexível, e **não** deve ser aplicado em conteúdo (`ConteudoPage`/`AplicativoEducacionalPage`). Ver `core/models.py` e `core/CLAUDE.md`.
 - **Localização**: O projeto está configurado para `pt-br` com fuso horário `America/Sao_Paulo`.
 
 ## 9) Variáveis de ambiente (exemplo)
@@ -160,11 +160,21 @@ DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
 
 ## Documentação de arquitetura e decisões
 
-Documentação técnica e decisões de arquitetura vivem em `docs/`:
+A documentação técnica e as decisões de arquitetura do projeto vivem em `docs/`. Índice completo:
 
-- [`docs/schema-legado.md`](docs/schema-legado.md) — schema e regras de negócio do sistema legado (fonte da verdade).
-- [`docs/requisitos-vs-legado.md`](docs/requisitos-vs-legado.md) — cruzamento entre requisitos e comportamento legado.
-- [`docs/matriz-permissoes-rbac.md`](docs/matriz-permissoes-rbac.md) — matriz de permissões por papel.
-- [`docs/lgpd-mapeamento-dados.md`](docs/lgpd-mapeamento-dados.md) — conformidade LGPD.
-- [`docs/runbook-backup-dr.md`](docs/runbook-backup-dr.md) — backup e recuperação de desastres.
-- [`docs/adr/`](docs/adr/README.md) — Architecture Decision Records (ADRs) das decisões de arquitetura.
+### Documentos gerais
+
+- [`docs/schema-legado.md`](docs/schema-legado.md) — schema e regras de negócio do sistema legado (Laravel 9 + Postgres), fonte da verdade sobre o que o sistema atual realmente faz.
+- [`docs/requisitos-vs-legado.md`](docs/requisitos-vs-legado.md) — cruzamento entre o `Levantamento de Requisitos NOVA PAT` (V1.0) e o comportamento real do legado; separa o que é "modernizar" do que é "construir do zero".
+- [`docs/matriz-permissoes-rbac.md`](docs/matriz-permissoes-rbac.md) — matriz de permissões (RBAC) consolidada, mapeando ações por papel (`super-admin`, `admin`, `coordenador`, `editor`, `convidado`).
+- [`docs/lgpd-mapeamento-dados.md`](docs/lgpd-mapeamento-dados.md) — mapeamento de dados pessoais (LGPD) por app, com inventário, base legal e decisões pendentes de conformidade.
+- [`docs/runbook-backup-dr.md`](docs/runbook-backup-dr.md) — runbook de backup e recuperação de desastres (RTO/RPO, procedimentos, pontos de decisão).
+
+### Architecture Decision Records (ADRs)
+
+- [`docs/adr/README.md`](docs/adr/README.md) — índice e guia de uso dos ADRs (formato Contexto → Decisão → Consequências).
+- [`docs/adr/0001-aplicativo-herda-recurso-base-page.md`](docs/adr/0001-aplicativo-herda-recurso-base-page.md) — `AplicativoEducacionalPage` herda `RecursoBasePage`.
+- [`docs/adr/0002-canal-fixo-aplicativos.md`](docs/adr/0002-canal-fixo-aplicativos.md) — canal fixo `id=9` para aplicativos (constante `CANAL_ID`).
+- [`docs/adr/0003-busca-ambos-por-ids.md`](docs/adr/0003-busca-ambos-por-ids.md) — busca "ambos" combina por IDs, não `union()`.
+- [`docs/adr/0004-workflow-aprovacao-role-explicita.md`](docs/adr/0004-workflow-aprovacao-role-explicita.md) — workflow de aprovação por lógica de role explícita (replica RN-L1).
+- [`docs/adr/0005-trilha-auditoria-django-simple-history.md`](docs/adr/0005-trilha-auditoria-django-simple-history.md) — trilha de auditoria com `django-simple-history`.

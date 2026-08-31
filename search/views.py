@@ -9,6 +9,7 @@ ver `docs/adr/0003-busca-ambos-por-ids.md`.
 """
 
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from wagtail.models import Page
 from .filters import ConteudoSearchFilterSet, AplicativoSearchFilterSet
@@ -19,7 +20,7 @@ from curriculo.models import CurricularComponent
 from aplicativos.models import AplicativoCategory, AplicativoEducacionalPage
 
 
-def search(request):
+def search(request: HttpRequest) -> HttpResponse:
     """
     Renderiza a página de busca avançada.
 

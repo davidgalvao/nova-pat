@@ -10,7 +10,10 @@ correspondente (ex: `tipo`/`licenca`/`componente` só existem em conteúdo).
 protegendo a view contra parâmetros manipulados pelo usuário.
 """
 
+from typing import Any
+
 import django_filters
+from django.db.models import QuerySet
 from wagtail.models import Page
 from conteudos.models import ConteudoPage, Tipo, CategoriaConteudo, Licenca
 from aplicativos.models import AplicativoEducacionalPage, AplicativoCategory
@@ -23,10 +26,19 @@ class SafeModelChoiceFilter(django_filters.ModelChoiceFilter):
     ModelChoiceFilter que ignora valores inválidos em vez de lançar erro.
     Útil para parâmetros de URL que podem vir manipulados pelo usuário.
     """
-    def clean(self, value):
+    def clean(self, value: Any) -> Any:
         """
         Valida e limpa o valor antes de usar no queryset.
-        Retorna None para valores inválidos, o que faz o filter ser ignorado.
+
+        Retorna ``None`` para valores inválidos, o que faz o filtro ser
+        ignorado. Valores válidos seguem para a validação padrão do
+        ``ModelChoiceFilter``.
+
+        Args:
+            value: Valor cru recebido do parâmetro de URL.
+
+        Returns:
+            Valor validado (convertido) ou ``None`` se inválido.
         """
         if not value:
             return None
@@ -51,7 +63,9 @@ class BaseSearchFilterSet(django_filters.FilterSet):
         model = Page
         fields = []
 
-    def filter_search_query(self, queryset, name, value):
+    def filter_search_query(
+        self, queryset: QuerySet, name: str, value: str
+    ) -> QuerySet:
         """
         Aplica a busca textual via Wagtail search.
 

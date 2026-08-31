@@ -21,6 +21,7 @@ Gerado por `django-admin startproject` (Django 5.2.11) e customizado para o proj
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 from pathlib import Path
+from typing import Any, Dict, List
 
 PROJECT_DIR = Path(__file__).resolve().parent.parent
 BASE_DIR = PROJECT_DIR.parent
@@ -32,7 +33,7 @@ BASE_DIR = PROJECT_DIR.parent
 
 # Application definition
 
-INSTALLED_APPS = [
+INSTALLED_APPS: List[str] = [
     "django.contrib.postgres",
     "django_browser_reload",
     "core",
@@ -67,7 +68,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
 ]
 
-MIDDLEWARE = [
+MIDDLEWARE: List[str] = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -81,7 +82,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "mysite.urls"
 
-TEMPLATES = [
+TEMPLATES: List[Dict[str, Any]] = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [
@@ -108,7 +109,7 @@ WSGI_APPLICATION = "mysite.wsgi.application"
 import dj_database_url
 import os
 
-DATABASES = {
+DATABASES: Dict[str, Any] = {
     'default': dj_database_url.config(
         default=os.environ.get('DATABASE_URL', 'sqlite:///db.sqlite3'),
         conn_max_age=600
@@ -119,7 +120,7 @@ DATABASES = {
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
-AUTH_PASSWORD_VALIDATORS = [
+AUTH_PASSWORD_VALIDATORS: List[Dict[str, str]] = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
@@ -150,12 +151,12 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATICFILES_FINDERS = [
+STATICFILES_FINDERS: List[str] = [
     "django.contrib.staticfiles.finders.FileSystemFinder",
     "django.contrib.staticfiles.finders.AppDirectoriesFinder",
 ]
 
-STATICFILES_DIRS = [
+STATICFILES_DIRS: List[Path] = [
     PROJECT_DIR / "static",
 ]
 
@@ -167,7 +168,7 @@ MEDIA_URL = "/media/"
 
 # Default storage settings
 # See https://docs.djangoproject.com/en/5.2/ref/settings/#std-setting-STORAGES
-STORAGES = {
+STORAGES: Dict[str, Dict[str, str]] = {
     "default": {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
     },
@@ -190,7 +191,7 @@ WAGTAIL_SITE_NAME = "mysite"
 
 # Search
 # https://docs.wagtail.org/en/stable/topics/search/backends.html
-WAGTAILSEARCH_BACKENDS = {
+WAGTAILSEARCH_BACKENDS: Dict[str, Dict[str, str]] = {
     "default": {
         "BACKEND": "wagtail.search.backends.database",
     }
@@ -204,4 +205,4 @@ WAGTAILADMIN_BASE_URL = "http://example.com"
 # This can be omitted to allow all files, but note that this may present a security risk
 # if untrusted users are allowed to upload files -
 # see https://docs.wagtail.org/en/stable/advanced_topics/deploying.html#user-uploaded-files
-WAGTAILDOCS_EXTENSIONS = ['csv', 'docx', 'key', 'odt', 'pdf', 'pptx', 'rtf', 'txt', 'xlsx', 'zip']
+WAGTAILDOCS_EXTENSIONS: List[str] = ['csv', 'docx', 'key', 'odt', 'pdf', 'pptx', 'rtf', 'txt', 'xlsx', 'zip']

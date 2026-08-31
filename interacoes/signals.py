@@ -14,11 +14,11 @@ de atualização junto da entidade que dispara o evento. Este módulo de
 `InteracoesConfig.ready()`.
 """
 
-# O signal já está definido em models.py com @receiver
-# Este arquivo existe para garantir que o módulo seja importado
-# e os signals registrados quando o app carrega.
-
-# Importa os models para garantir que os signals sejam conectados
+# A importação abaixo é o único propósito funcional deste módulo: ao importar
+# os models de `interacoes.models`, o decorador `@receiver` que registra o
+# signal `atualizar_media_avaliacao` é executado, conectando o handler ao sinal
+# de pós-save de `AvaliacaoConteudo`. Sem esta importação (feita por
+# `InteracoesConfig.ready()`), o signal não seria registrado.
 from interacoes.models import (  # noqa: F401
     AvaliacaoConteudo,
     atualizar_media_avaliacao,

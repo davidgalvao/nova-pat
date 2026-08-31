@@ -1,8 +1,11 @@
+from typing import Any, Optional
+
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import QuerySet
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -70,8 +73,15 @@ class Role(models.Model):
         return self.name
 
     @classmethod
-    def get_default_role(cls):
-        """Retorna o role padrão para novos cadastros (convidado)."""
+    def get_default_role(cls) -> "Role":
+        """
+        Retorna o role padrão para novos cadastros.
+
+        Cria o papel ``convidado`` se ainda não existir (``get_or_create``).
+
+        Returns:
+            Instância de :class:`Role` correspondente ao papel ``convidado``.
+        """
         return cls.objects.get_or_create(
             slug="convidado",
             defaults={
@@ -82,8 +92,15 @@ class Role(models.Model):
         )[0]
 
     @classmethod
-    def get_privileged_roles(cls):
-        """Retorna roles que podem criar/aprovar conteúdo (super-admin, admin, coordenador)."""
+    def get_privileged_roles(cls) -> QuerySet:
+        """
+        Retorna os papéis que podem criar/aprovar conteúdo.
+
+        Papéis privilegiados: ``super-admin``, ``admin`` e ``coordenador``.
+
+        Returns:
+            QuerySet de :class:`Role` com os papéis privilegiados.
+        """
         return cls.objects.filter(slug__in=["super-admin", "admin", "coordenador"])
 
 
@@ -182,27 +199,50 @@ class User(AbstractUser):
     def __str__(self) -> str:
         return self.get_full_name() or self.username
 
-    def clean(self):
+    def clean(self) -> None:
+        """
+        Valida o usuário antes de salvar.
+
+        Garante um ``role`` padrão (``convidado``) quando nenhum foi definido.
+        """
         super().clean()
         # Garante role padrão se não definido
         if not self.role_id:
             self.role = Role.get_default_role()
 
-    def save(self, *args, **kwargs):
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        """
+        Salva o usuário definindo o ``role`` padrão na criação.
+
+        Args:
+            *args, **kwargs: Argumentos repassados ao ``super().save()``.
+        """
         # Define role padrão na criação se não definido
         if not self.pk and not self.role_id:
             self.role = Role.get_default_role()
         super().save(*args, **kwargs)
 
-    def soft_delete(self, deleted_by=None):
-        """Exclusão lógica (soft delete) — mantém dados para LGPD/auditoria."""
+    def soft_delete(self, deleted_by: Optional["User"] = None) -> None:
+        """
+        Exclusão lógica (soft delete) — mantém os dados para LGPD/auditoria.
+
+        Marca ``is_active=False`` e preenche ``deleted_at``/``deleted_by`` sem
+        remover o registro do banco.
+
+        Args:
+            deleted_by: Usuário que realizou a exclusão lógica (opcional).
+        """
         self.is_active = False
         self.deleted_at = timezone.now()
         self.deleted_by = deleted_by
         self.save(update_fields=["is_active", "deleted_at", "deleted_by"])
 
-    def restore(self):
-        """Restaura usuário soft-deletado."""
+    def restore(self) -> None:
+        """
+        Restaura um usuário previamente excluído (soft delete).
+
+        Reativa o usuário e limpa ``deleted_at``/``deleted_by``.
+        """
         self.is_active = True
         self.deleted_at = None
         self.deleted_by = None
@@ -244,10 +284,24 @@ class User(AbstractUser):
         return self.role and self.role.slug == "convidado"
 
     def can_manage_roles(self) -> bool:
-        """Só super-admin gerencia estrutura de papéis (RolePolicy do legado)."""
+        """
+        Verifica se o usuário pode gerenciar a estrutura de papéis.
+
+        Somente ``super-admin`` gerencia papéis (``RolePolicy`` do legado).
+
+        Returns:
+            ``True`` se o usuário for ``super-admin``.
+        """
         return self.is_super_admin
 
     def can_manage_users(self) -> bool:
-        """Super-admin e admin gerenciam usuários de terceiros (UserPolicy do legado)."""
+        """
+        Verifica se o usuário pode gerenciar usuários de terceiros.
+
+        ``super-admin`` e ``admin`` gerenciam usuários (``UserPolicy`` do legado).
+
+        Returns:
+            ``True`` se o usuário for ``super-admin`` ou ``admin``.
+        """
         return self.is_super_admin or self.is_admin
 

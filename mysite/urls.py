@@ -17,8 +17,10 @@ Não alterar a ordem sem entender as implicações — o catch-all do Wagtail
 precisa ficar por último.
 """
 
+from typing import List
+
 from django.conf import settings
-from django.urls import include, path
+from django.urls import URLPattern, include, path
 from django.contrib import admin
 
 from wagtail.admin import urls as wagtailadmin_urls
@@ -27,7 +29,7 @@ from wagtail.documents import urls as wagtaildocs_urls
 
 from search import views as search_views
 
-urlpatterns = [
+urlpatterns: List[URLPattern] = [
     path("django-admin/", admin.site.urls),
     path("admin/", include(wagtailadmin_urls)),
     path("documents/", include(wagtaildocs_urls)),

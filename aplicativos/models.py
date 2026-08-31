@@ -8,6 +8,9 @@ from wagtail.models import Page
 from wagtail.snippets.models import register_snippet
 from wagtail.search import index
 
+from typing import Any, Dict
+
+from django.http import HttpRequest
 from core.models import RecursoBasePage
 
 # Constante do canal fixo para aplicativos (ADR-002).
@@ -163,7 +166,15 @@ class AplicativoEducacionalPage(RecursoBasePage):
         verbose_name = _("aplicativo educacional")
         verbose_name_plural = _("aplicativos educacionais")
 
-    def clean(self):
+    def clean(self) -> None:
+        """
+        Valida o aplicativo antes de salvar.
+
+        Aplica as regras do legado (``AplicativoRequest::rules()``):
+        descrição com no mínimo 140 caracteres (ignorando tags HTML), quantidade
+        de tags entre 3 e 15 (somente quando já há ``pk`` e tags), e validação
+        de URL ativa e da imagem quando presentes.
+        """
         super().clean()
 
         # Validação de descrição: mínimo 140 caracteres (legado: AplicativoRequest::rules())
@@ -208,10 +219,17 @@ class AplicativoEducacionalPage(RecursoBasePage):
         if self.image:
             self._validar_imagem()
 
-    def _validar_url_ativa(self):
+    def _validar_url_ativa(self) -> None:
         """
         Valida se a URL resolve de fato (DNS + resposta HTTP).
-        Equivalente à regra 'active_url' do Laravel.
+
+        Equivalente à regra ``active_url`` do Laravel: resolve o domínio via
+        DNS e tenta uma requisição HTTP (HEAD, com fallback para GET), lançando
+        :class:`ValidationError` se a URL não responder corretamente.
+
+        Raises:
+            ValidationError: Se a URL for malformada, o DNS não resolver ou a
+                resposta HTTP for maior/igual a 400.
         """
         import socket
         from urllib.parse import urlparse
@@ -250,9 +268,15 @@ class AplicativoEducacionalPage(RecursoBasePage):
                 {"url": _("Erro ao validar a URL: %(error)s") % {"error": str(e)}}
             )
 
-    def _validar_imagem(self):
+    def _validar_imagem(self) -> None:
         """
-        Valida formato e tamanho da imagem (max 1MB, formatos: jpeg, png, jpg, svg).
+        Valida formato e tamanho da imagem.
+
+        Limite de 1MB e formatos aceitos ``jpeg``/``png``/``jpg``/``svg``.
+
+        Raises:
+            ValidationError: Se a imagem exceder 1MB ou tiver extensão não
+                permitida.
         """
         if not self.image or not self.image.file:
             return
@@ -283,12 +307,21 @@ class AplicativoEducacionalPage(RecursoBasePage):
                     }
                 )
 
-    def save(self, *args, **kwargs):
+    def save(self, *args: Any, **kwargs: Any) -> None:
         """
-        Sobrescreve save para:
-        1. Forçar canal_id=CANAL_ID (Aplicativos Educacionais) — não editável pelo usuário
-        2. Garantir qt_access=0 na criação (já é default, mas reforça)
-        3. Não chamar validação de tags aqui (já feita no clean)
+        Sobrescreve ``save`` para forçar canal fixo e contador inicial.
+
+        1. Força ``canal_id=CANAL_ID`` (Aplicativos Educacionais), não editável
+           pelo usuário (com fallback para ``CANAL_SLUG_FALLBACK``).
+        2. Garante ``qt_access=0`` na criação (já é padrão, mas reforça).
+        3. Não valida tags aqui (já feita no ``clean``).
+
+        Args:
+            *args, **kwargs: Argumentos repassados ao ``super().save()``.
+
+        Raises:
+            ValidationError: Se nenhum canal fixo (id=9 ou slug de contingência)
+                existir no banco.
         """
         # Forçar canal fixo (CANAL_ID)
         # Importa aqui para evitar circular import
@@ -318,7 +351,9 @@ class AplicativoEducacionalPage(RecursoBasePage):
 
         super().save(*args, **kwargs)
 
-    def get_context(self, request, *args, **kwargs):
+    def get_context(
+        self, request: HttpRequest, *args: Any, **kwargs: Any
+    ) -> Dict[str, Any]:
         """
         Adiciona a instância do aplicativo ao contexto do template.
 
