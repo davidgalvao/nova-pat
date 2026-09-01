@@ -1,0 +1,1 @@
+# Deixe este arquivo vazio, ele apenas indica que 'commands' é um pacote Python.

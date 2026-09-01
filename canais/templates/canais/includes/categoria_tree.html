@@ -1,12 +1,10 @@
 {% load wagtailcore_tags %}
 
 <li class="categoria-item">
-    <a href="{{ categoria.get_absolute_url }}" class="categoria-link">
-        {{ categoria.name }}
-    </a>
-    {% if categoria.get_children %}
+    <span>{{ categoria.name }}</span>
+    {% if categoria.subcategorias.all %}
     <ul class="categoria-children">
-        {% for child in categoria.get_children %}
+        {% for child in categoria.subcategorias.all %}
         {% include "canais/includes/categoria_tree.html" with categoria=child %}
         {% endfor %}
     </ul>

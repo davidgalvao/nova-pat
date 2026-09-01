@@ -2,11 +2,11 @@ from django import forms
 from django.db import models
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator, MinLengthValidator, MaxLengthValidator
+from django.template.loader import select_template
 from django.utils.translation import gettext_lazy as _
 from modelcluster.fields import ParentalManyToManyField
 from wagtail.models import Page
 from wagtail.admin.panels import FieldPanel, MultiFieldPanel, InlinePanel
-from wagtail.snippets.models import register_snippet
 from wagtail.images import get_image_model_string
 from wagtail.fields import RichTextField
 from wagtail.search import index
@@ -15,7 +15,6 @@ from wagtail.search import index
 from core.models import RecursoBasePage
 
 
-@register_snippet
 class Tipo(models.Model):
     """
     Tipo de mídia do conteúdo (vídeo, documento, podcast, etc.).
@@ -64,7 +63,6 @@ class Tipo(models.Model):
         return extensao.lower().lstrip(".") in [f.lower().lstrip(".") for f in formatos]
 
 
-@register_snippet
 class Licenca(models.Model):
     """
     Árvore de licenças (modelo tipo Creative Commons — licença pode ter sublicenças).
@@ -105,7 +103,6 @@ class Licenca(models.Model):
         return self.name
 
 
-@register_snippet
 class CategoriaConteudo(models.Model):
     """
     Árvore de categorias escopada por canal.
@@ -367,11 +364,18 @@ class ConteudoPage(RecursoBasePage):
     def get_template(self, request, *args, **kwargs):
         """
         Escolhe o template pelo slug do tipo (decisão fechada).
+
         Um conteúdo tem um tipo só — StreamField descartado para este caso.
+        O template específico é ``conteudos/conteudo_page_<slug>.html``. Se o
+        arquivo não existir (tipo criado por curador sem template dedicado
+        ainda), cai num template genérico ``conteudos/conteudo_page.html`` para
+        nunca disparar ``TemplateDoesNotExist`` durante a renderização.
         """
+        fallback = "conteudos/conteudo_page.html"
         if self.tipo and self.tipo.slug:
-            return f"conteudos/conteudo_page_{self.tipo.slug}.html"
-        return "conteudos/conteudo_page.html"
+            especifico = f"conteudos/conteudo_page_{self.tipo.slug}.html"
+            return select_template([especifico, fallback]).template.name
+        return fallback
 
     def clean(self):
         """Validações de nível de model (RN-L3, RN-L5)."""

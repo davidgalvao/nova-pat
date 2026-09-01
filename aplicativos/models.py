@@ -5,7 +5,6 @@ from wagtail.admin.panels import FieldPanel, MultiFieldPanel
 from wagtail.fields import RichTextField
 from wagtail.images import get_image_model_string
 from wagtail.models import Page
-from wagtail.snippets.models import register_snippet
 from wagtail.search import index
 
 from typing import Any, Dict
@@ -27,7 +26,6 @@ CANAL_ID = 9
 CANAL_SLUG_FALLBACK = "aplicativos-educacionais"
 
 
-@register_snippet
 class AplicativoCategory(models.Model):
     """
     Categoria de aplicativo educacional — árvore própria, separada de conteudos.CategoriaConteudo.

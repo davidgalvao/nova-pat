@@ -1,7 +1,7 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
-from wagtail import hooks
-from wagtail.admin.panels import FieldPanel, MultiFieldPanel
+from wagtail.admin.panels import FieldPanel
+from wagtail.snippets.models import register_snippet
 from wagtail.snippets.views.snippets import SnippetViewSet, SnippetViewSetGroup
 
 from .models import NivelEnsino, CurricularComponentCategory, CurricularComponent
@@ -67,4 +67,4 @@ class CurriculoSnippetViewSetGroup(SnippetViewSetGroup):
     menu_order = 300
 
 
-hooks.register("register_snippet_viewset", CurriculoSnippetViewSetGroup)
+register_snippet(CurriculoSnippetViewSetGroup)

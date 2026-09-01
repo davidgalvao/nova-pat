@@ -72,9 +72,15 @@ Confirmado em `roles` (migration + `Users/*.php`, cada subtipo com `role_id` fix
 `ConteudoPage.get_template()` escolhe o template pelo slug do `tipo`:
 ```python
 def get_template(self, request, *args, **kwargs):
-    return f"conteudos/conteudo_page_{self.tipo.slug}.html"
+    fallback = "conteudos/conteudo_page.html"
+    if self.tipo and self.tipo.slug:
+        especifico = f"conteudos/conteudo_page_{self.tipo.slug}.html"
+        return select_template([especifico, fallback]).template.name
+    return fallback
 ```
 Um conteúdo tem **um tipo só** (fiel ao legado). StreamField foi descartado para este caso — não reabrir essa discussão sem motivo novo real (ver `docs/requisitos-vs-legado.md` para o raciocínio completo).
+
+O fallback `conteudo_page.html` garante que um `Tipo` criado por curador sem template dedicado ainda renderize (nunca dispara `TemplateDoesNotExist`). Os slugs com template próprio são: `video`, `audio`, `documento`, `apresentacao` (todos herdam de `conteudo_page_base.html`).
 
 ## Episódio de série (RF008) — o que muda aqui
 Quando `ConteudoPage.get_parent()` é uma `Temporada` (app `series`), o template deve exibir indicador de série (breadcrumb Serie › Temporada › Episódio, navegação para outros episódios via `get_siblings()`). Isso é resolvido no template a partir da posição na árvore — **não** criar campo extra tipo `is_episodio`, é derivável.

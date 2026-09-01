@@ -1,74 +1,25 @@
 {% extends "base.html" %}
-{% load wagtailcore_tags wagtailimages_tags static %}
+{% load wagtailcore_tags %}
 
 {% block body_class %}template-serie{% endblock %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/serie_page.css' %}">
-{% endblock %}
-
 {% block content %}
-<main class="serie-main" role="main">
-    <header class="serie-header">
-        {% if page.capa %}
-        <div class="serie-capa-wrapper">
-            {% image page.capa fill-1200x400 as capa_img %}
-            <img src="{{ capa_img.url }}" alt="{{ page.title }}" class="serie-capa" />
-        </div>
-        {% endif %}
-        <div class="serie-info">
-            <h1 class="serie-title">{{ page.title }}</h1>
-            {% if page.sinopse %}
-            <div class="serie-sinopse">{{ page.sinopse|richtext }}</div>
-            {% endif %}
-            <div class="serie-meta">
-                {% if page.canal %}
-                <a href="{{ page.canal.url }}" class="serie-canal-badge"
-                    style="background-color: {{ page.canal.options.cor|default:'#007bff' }};">
-                    {{ page.canal.title }}
-                </a>
-                {% endif %}
-                {% if page.autor %}
-                <span class="serie-autor">Por {{ page.autor.get_full_name|default:page.autor.username }}</span>
-                {% endif %}
-                <span class="serie-temporadas-count">{{ temporadas.count }} temporada{% if temporadas.count != 1 %}s{%
-                    endif %}</span>
-            </div>
-        </div>
-    </header>
+<main role="main">
+    <h1>{{ page.title }}</h1>
+    {% if page.sinopse %}
+    <p>{{ page.sinopse }}</p>
+    {% endif %}
 
-    <section class="serie-temporadas" aria-label="Temporadas">
-        <h2>Temporadas</h2>
-        <div class="temporadas-grid">
-            {% for temporada in temporadas %}
-            <article class="temporada-card">
-                {% if temporada.capa %}
-                <a href="{{ temporada.url }}" class="temporada-card-image">
-                    {% image temporada.capa fill-400x225 as temp_img %}
-                    <img src="{{ temp_img.url }}" alt="Temporada {{ temporada.numero }} de {{ page.title }}" />
-                </a>
-                {% endif %}
-                <div class="temporada-card-content">
-                    <h3 class="temporada-card-title">
-                        <a href="{{ temporada.url }}">Temporada {{ temporada.numero }}</a>
-                    </h3>
-                    {% if temporada.sinopse %}
-                    <p class="temporada-card-sinopse">{{ temporada.sinopse|truncatewords:30 }}</p>
-                    {% endif %}
-                    <div class="temporada-card-meta">
-                        <span class="episodios-count">{{ temporada.episodios.count }} episódio{% if
-                            temporada.episodios.count != 1 %}s{% endif %}</span>
-                    </div>
-                </div>
-            </article>
-            {% empty %}
-            <p class="no-results">Esta série ainda não possui temporadas.</p>
-            {% endfor %}
-        </div>
-    </section>
+    <h2>Temporadas</h2>
+    <ul>
+        {% for temporada in temporadas %}
+        <li>
+            <a href="{{ temporada.url }}">Temporada {{ temporada.numero }}</a>
+            {% if temporada.sinopse %}<p>{{ temporada.sinopse }}</p>{% endif %}
+        </li>
+        {% empty %}
+        <li>Esta série ainda não possui temporadas.</li>
+        {% endfor %}
+    </ul>
 </main>
-{% endblock %}
-
-{% block extra_js %}
-<script src="{% static 'js/serie_page.js' %}"></script>
 {% endblock %}

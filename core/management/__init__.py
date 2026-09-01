@@ -1,0 +1,1 @@
+# Deixe este arquivo vazio, ele apenas indica que 'management' é um pacote Python.

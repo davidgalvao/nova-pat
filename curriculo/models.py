@@ -1,11 +1,9 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from wagtail.snippets.models import register_snippet
 from wagtail.admin.panels import FieldPanel
 from wagtail.search import index
 
 
-@register_snippet
 class NivelEnsino(models.Model):
     """
     Nível de ensino (ex: "1º ano do Ensino Médio", "5º ano do Ensino Fundamental").
@@ -60,7 +58,6 @@ class NivelEnsino(models.Model):
     ]
 
 
-@register_snippet
 class CurricularComponentCategory(models.Model):
     """
     Categoria de componente curricular — agrupador de disciplinas
@@ -139,7 +136,6 @@ class CurricularComponentCategory(models.Model):
     ]
 
 
-@register_snippet
 class CurricularComponent(models.Model):
     """
     Componente curricular (disciplina) — combinação fixa de disciplina + nível.
