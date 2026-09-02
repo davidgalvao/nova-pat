@@ -47,7 +47,13 @@
 <body class="{% block body_class %}{% endblock %}">
     {% wagtailuserbar %}
 
-    {% block content %}{% endblock %}
+    {% include "includes/header.html" %}
+
+    <main id="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    {% include "includes/footer.html" %}
 
     {# Global javascript #}
     <script type="text/javascript" src="{% static 'js/mysite.js' %}"></script>

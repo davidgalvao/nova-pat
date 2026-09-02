@@ -1,0 +1,91 @@
+{% load wagtailcore_tags %}
+<header class="site-header" role="banner">
+    <div class="site-header__inner container">
+        {# Marca / Início #}
+        <div class="site-header__brand">
+            {% slugurl 'home' as home_url %}
+            {% if home_url %}
+            <a href="{{ home_url }}" class="site-header__logo" aria-label="Nova PAT — Página inicial">
+                <span class="site-header__logo-text">Nova PAT</span>
+            </a>
+            {% endif %}
+        </div>
+
+        {# Navegação principal (Consumo de Conteúdo) #}
+        <nav class="site-header__nav" aria-label="Navegação principal">
+            <ul class="site-header__menu">
+                {% slugurl 'home' as home_url %}
+                {% if home_url %}
+                <li class="site-header__menu-item">
+                    <a href="{{ home_url }}" class="site-header__link{% if request.path == home_url %} is-active{% endif %}"
+                        {% if request.path == home_url %}aria-current="page"{% endif %}>Início</a>
+                </li>
+                {% endif %}
+
+                {% slugurl 'canais' as canais_url %}
+                {% if canais_url %}
+                <li class="site-header__menu-item">
+                    <a href="{{ canais_url }}" class="site-header__link{% if request.path == canais_url %} is-active{% endif %}"
+                        {% if request.path == canais_url %}aria-current="page"{% endif %}>Canais</a>
+                </li>
+                {% endif %}
+
+                {# Tipos de Conteúdo #}
+                <li class="site-header__menu-item site-header__menu-item--has-submenu">
+                    <a href="#" class="site-header__link" aria-haspopup="true" aria-expanded="false">Tipos de Conteúdo</a>
+                    <ul class="site-header__submenu" role="menu" aria-label="Tipos de Conteúdo">
+                        {% slugurl 'videos' as videos_url %}
+                        {% if videos_url %}
+                        <li role="none"><a href="{{ videos_url }}" class="site-header__submenu-link" role="menuitem">Vídeos</a></li>
+                        {% endif %}
+                        {% slugurl 'audios' as audios_url %}
+                        {% if audios_url %}
+                        <li role="none"><a href="{{ audios_url }}" class="site-header__submenu-link" role="menuitem">Áudios</a></li>
+                        {% endif %}
+                        {% slugurl 'documentos' as documentos_url %}
+                        {% if documentos_url %}
+                        <li role="none"><a href="{{ documentos_url }}" class="site-header__submenu-link" role="menuitem">Documentos</a></li>
+                        {% endif %}
+                        {% slugurl 'jogos' as jogos_url %}
+                        {% if jogos_url %}
+                        <li role="none"><a href="{{ jogos_url }}" class="site-header__submenu-link" role="menuitem">Jogos</a></li>
+                        {% endif %}
+                        {% slugurl 'aplicativos' as aplicativos_url %}
+                        {% if aplicativos_url %}
+                        <li role="none"><a href="{{ aplicativos_url }}" class="site-header__submenu-link" role="menuitem">Aplicativos</a></li>
+                        {% endif %}
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+
+        {# Atalhos para subsites da rede #}
+        <nav class="site-header__subsites" aria-label="Subsites da rede">
+            <ul class="site-header__subsites-list">
+                {% slugurl 'tv-anisio-teixeira' as tv_url %}
+                {% if tv_url %}
+                <li><a href="{{ tv_url }}" class="site-header__subsite-link">TV Anísio Teixeira</a></li>
+                {% endif %}
+                {% slugurl 'radio-anisio-teixeira' as radio_url %}
+                {% if radio_url %}
+                <li><a href="{{ radio_url }}" class="site-header__subsite-link">Rádio Anísio Teixeira</a></li>
+                {% endif %}
+                {% slugurl 'blog-da-rede' as blog_url %}
+                {% if blog_url %}
+                <li><a href="{{ blog_url }}" class="site-header__subsite-link">Blog da Rede</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+
+        {# Busca global #}
+        <div class="site-header__search">
+            <form action="{% url 'search' %}" method="get" role="search" class="site-header__search-form">
+                <label for="site-search" class="visually-hidden">Buscar conteúdos e aplicativos</label>
+                <input type="search" name="query" id="site-search" class="site-header__search-input"
+                    placeholder="Buscar..." autocomplete="off" aria-describedby="site-search-hint">
+                <button type="submit" class="site-header__search-button">Buscar</button>
+            </form>
+            <span id="site-search-hint" class="visually-hidden">Digite um termo para buscar conteúdos e aplicativos educacionais.</span>
+        </div>
+    </div>
+</header>
