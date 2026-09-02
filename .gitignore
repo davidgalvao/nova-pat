@@ -45,3 +45,6 @@ static/
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+
+#PAT Legado
+pat_legado/
