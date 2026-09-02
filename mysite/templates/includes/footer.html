@@ -1,75 +1,79 @@
-{% load wagtailcore_tags %}
-<footer class="site-footer" role="contentinfo">
-    <div class="site-footer__inner container">
-        <div class="site-footer__grid">
+{% load wagtailcore_tags navigation_tags %}
+{% get_footer_items as footer_items %}
+<footer class="bg-gray-900 text-gray-300" role="contentinfo">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
 
             {# Sobre a PAT #}
-            <nav class="site-footer__section" aria-label="Sobre a PAT">
-                <h2 class="site-footer__heading">Sobre a PAT</h2>
-                <ul class="site-footer__list">
+            <nav aria-label="Sobre a PAT">
+                <h2 class="text-white font-semibold mb-4">Sobre a PAT</h2>
+                <ul class="space-y-2 text-sm">
                     {% slugurl 'sobre' as sobre_url %}
                     {% if sobre_url %}
-                    <li><a href="{{ sobre_url }}" class="site-footer__link">O que é a PAT</a></li>
+                    <li><a href="{{ sobre_url }}" class="hover:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 rounded">O que é a PAT</a></li>
                     {% endif %}
                     {% slugurl 'institucional' as institucional_url %}
                     {% if institucional_url %}
-                    <li><a href="{{ institucional_url }}" class="site-footer__link">Institucional</a></li>
+                    <li><a href="{{ institucional_url }}" class="hover:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 rounded">Institucional</a></li>
                     {% endif %}
                     {% slugurl 'contato' as contato_url %}
                     {% if contato_url %}
-                    <li><a href="{{ contato_url }}" class="site-footer__link">Contato</a></li>
+                    <li><a href="{{ contato_url }}" class="hover:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 rounded">Contato</a></li>
                     {% endif %}
                 </ul>
             </nav>
 
             {# Licenciamento e REA #}
-            <nav class="site-footer__section" aria-label="Licenciamento e Recursos Educacionais Abertos">
-                <h2 class="site-footer__heading">Licenciamento e REA</h2>
-                <ul class="site-footer__list">
+            <nav aria-label="Licenciamento e Recursos Educacionais Abertos">
+                <h2 class="text-white font-semibold mb-4">Licenciamento e REA</h2>
+                <ul class="space-y-2 text-sm">
                     {% slugurl 'licenciamento' as licenciamento_url %}
                     {% if licenciamento_url %}
-                    <li><a href="{{ licenciamento_url }}" class="site-footer__link">Política de Licenciamento</a></li>
+                    <li><a href="{{ licenciamento_url }}" class="hover:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 rounded">Política de Licenciamento</a></li>
                     {% endif %}
                     <li>
-                        <a href="https://creativecommons.org/licenses/by/4.0/deed.pt-br" class="site-footer__link"
+                        <a href="https://creativecommons.org/licenses/by/4.0/deed.pt-br"
+                            class="hover:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 rounded"
                             rel="license noopener noreferrer" target="_blank">
                             Licenças Creative Commons
                         </a>
                     </li>
                     {% slugurl 'rea' as rea_url %}
                     {% if rea_url %}
-                    <li><a href="{{ rea_url }}" class="site-footer__link">Recursos Educacionais Abertos</a></li>
+                    <li><a href="{{ rea_url }}" class="hover:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 rounded">Recursos Educacionais Abertos</a></li>
                     {% endif %}
                 </ul>
             </nav>
 
             {# Termos de Uso e Privacidade (LGPD) #}
-            <nav class="site-footer__section" aria-label="Termos de Uso e Privacidade">
-                <h2 class="site-footer__heading">Termos e Privacidade</h2>
-                <ul class="site-footer__list">
+            <nav aria-label="Termos de Uso e Privacidade">
+                <h2 class="text-white font-semibold mb-4">Termos e Privacidade</h2>
+                <ul class="space-y-2 text-sm">
                     {% slugurl 'termos-de-uso' as termos_url %}
                     {% if termos_url %}
-                    <li><a href="{{ termos_url }}" class="site-footer__link">Termos de Uso</a></li>
+                    <li><a href="{{ termos_url }}" class="hover:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 rounded">Termos de Uso</a></li>
                     {% endif %}
                     {% slugurl 'politica-de-privacidade' as privacidade_url %}
                     {% if privacidade_url %}
-                    <li><a href="{{ privacidade_url }}" class="site-footer__link">Política de Privacidade (LGPD)</a></li>
+                    <li><a href="{{ privacidade_url }}" class="hover:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 rounded">Política de Privacidade (LGPD)</a></li>
                     {% endif %}
                 </ul>
             </nav>
 
             {# Governança #}
-            <nav class="site-footer__section" aria-label="Governança">
-                <h2 class="site-footer__heading">Governança</h2>
-                <ul class="site-footer__list">
+            <nav aria-label="Governança">
+                <h2 class="text-white font-semibold mb-4">Governança</h2>
+                <ul class="space-y-2 text-sm">
                     <li>
-                        <a href="https://institutoanisioteixeira.org.br" class="site-footer__link"
+                        <a href="https://institutoanisioteixeira.org.br"
+                            class="hover:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 rounded"
                             rel="noopener noreferrer" target="_blank">
                             Instituto Anísio Teixeira (IAT)
                         </a>
                     </li>
                     <li>
-                        <a href="https://www.educacao.ba.gov.br" class="site-footer__link"
+                        <a href="https://www.educacao.ba.gov.br"
+                            class="hover:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 rounded"
                             rel="noopener noreferrer" target="_blank">
                             Secretaria da Educação do Estado da Bahia (SEC-BA)
                         </a>
@@ -78,8 +82,26 @@
             </nav>
         </div>
 
-        <div class="site-footer__bottom">
-            <p class="site-footer__copyright">
+        {# Itens dinâmicos do footer (snippet NavigationItem) #}
+        {% if footer_items %}
+        <nav aria-label="Links institucionais adicionais" class="mt-8 pt-8 border-t border-gray-700">
+            <ul class="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+                {% for item in footer_items %}
+                {% if item.url %}
+                <li>
+                    <a href="{{ item.url }}"
+                        class="hover:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 rounded">
+                        {{ item.title }}
+                    </a>
+                </li>
+                {% endif %}
+                {% endfor %}
+            </ul>
+        </nav>
+        {% endif %}
+
+        <div class="mt-8 pt-8 border-t border-gray-700">
+            <p class="text-sm text-gray-400">
                 &copy; {% now "Y" %} Nova PAT — Plataforma Anísio Teixeira. Conteúdo sob licenças livres (Creative Commons).
             </p>
         </div>

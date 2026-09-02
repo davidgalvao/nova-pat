@@ -144,3 +144,86 @@ class RecursoBasePage(BasePage):
 
     class Meta:
         abstract = True
+
+
+class NavigationItem(models.Model):
+    """
+    Snippet para itens de navegação editáveis no admin (header e footer).
+
+    Cada item pode apontar para uma página do Wagtail (`page`) ou para uma
+    URL externa/arbitrária (`link_url`). Se `page` estiver preenchida, ela tem
+    prioridade sobre `link_url`. A ordenação é controlada por `sort_order`.
+
+    **Decisão de desambiguação**: o campo `position` (choices `header`/`footer`)
+    é o discriminador explícito de onde o item deve aparecer — nunca inferimos
+    isso a partir de IDs ou de outros campos (ver skill data-modeling-guardrails).
+    """
+
+    POSITION_HEADER = "header"
+    POSITION_FOOTER = "footer"
+
+    POSITION_CHOICES = [
+        (POSITION_HEADER, "Header (menu superior)"),
+        (POSITION_FOOTER, "Footer (menu institucional)"),
+    ]
+
+    title = models.CharField(
+        max_length=100,
+        verbose_name="Título",
+        help_text="Texto exibido no link de navegação."
+    )
+    position = models.CharField(
+        max_length=20,
+        choices=POSITION_CHOICES,
+        default=POSITION_HEADER,
+        verbose_name="Posição",
+        help_text="Onde este item deve aparecer: menu superior (header) ou rodapé (footer)."
+    )
+    page = models.ForeignKey(
+        Page,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+        verbose_name="Página",
+        help_text="Página interna do site. Se preenchida, tem prioridade sobre a URL externa."
+    )
+    link_url = models.CharField(
+        max_length=500,
+        blank=True,
+        verbose_name="URL externa",
+        help_text="URL externa ou caminho arbitrário. Usada apenas se 'Página' estiver vazia."
+    )
+    sort_order = models.PositiveIntegerField(
+        default=0,
+        verbose_name="Ordem",
+        help_text="Ordem de exibição (menor aparece primeiro)."
+    )
+
+    panels = [
+        FieldPanel("title"),
+        FieldPanel("position"),
+        FieldPanel("page"),
+        FieldPanel("link_url"),
+        FieldPanel("sort_order"),
+    ]
+
+    class Meta:
+        ordering = ["position", "sort_order", "title"]
+        verbose_name = "Item de Navegação"
+        verbose_name_plural = "Itens de Navegação"
+
+    def __str__(self) -> str:
+        return self.title
+
+    @property
+    def url(self) -> str:
+        """
+        Retorna a URL de destino do item.
+
+        Prioriza a página do Wagtail (`page.url`); caso contrário, usa
+        `link_url`. Nunca retorna string vazia se ambos estiverem preenchidos.
+        """
+        if self.page_id:
+            return self.page.url
+        return self.link_url
