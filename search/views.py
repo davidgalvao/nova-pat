@@ -16,7 +16,7 @@ from .filters import ConteudoSearchFilterSet, AplicativoSearchFilterSet
 from .services import resolver_tipo_busca, get_selected_filter_values
 from canais.models import CanalPage
 from conteudos.models import Tipo, CategoriaConteudo, Licenca, ConteudoPage
-from curriculo.models import CurricularComponent
+from curriculo.models import CurricularComponent, NivelEnsino
 from aplicativos.models import AplicativoCategory, AplicativoEducacionalPage
 
 
@@ -52,6 +52,14 @@ def search(request: HttpRequest) -> HttpResponse:
         'categorias_aplicativo': AplicativoCategory.objects.filter(is_active=True).order_by('name'),
         'licencas': Licenca.objects.filter(is_active=True).order_by('ordem', 'name'),
         'componentes': CurricularComponent.objects.filter(is_active=True).select_related('nivel', 'category').order_by('nivel__ordem', 'category__ordem', 'name'),
+        # Níveis de ensino com conteúdo publicado e aprovado vinculado (agregação via ORM,
+        # sem trazer datasets brutos para a memória). Relação: ConteudoPage.componentes_curriculares
+        # (M2M) -> CurricularComponent.nivel (FK) -> NivelEnsino.
+        'niveis_ensino': NivelEnsino.objects.filter(
+            is_active=True,
+            componentes__conteudopage__live=True,
+            componentes__conteudopage__is_approved=True,
+        ).distinct().order_by('ordem', 'name'),
     }
 
     # Adicionar filtros selecionados ao contexto

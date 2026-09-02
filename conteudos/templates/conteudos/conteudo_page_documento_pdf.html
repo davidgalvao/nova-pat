@@ -2,15 +2,15 @@
 {% load wagtailcore_tags conteudos_tags %}
 
 {% block conteudo_player %}
-<div class="conteudo-player apresentacao-player">
+<div class="conteudo-player documento-player">
     {% if page.arquivo %}
     <div class="rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden">
-        {# Visualizador embutido (PDF de apresentação) #}
+        {# Visualizador embutido de PDF #}
         <div class="bg-gray-100 p-2">
             <iframe
                 src="{{ page.arquivo.url }}"
                 type="application/pdf"
-                title="Visualizador da apresentação: {{ page.title }}"
+                title="Visualizador do documento: {{ page.title }}"
                 class="h-[70vh] w-full rounded-md border border-gray-300 bg-white"
                 referrerpolicy="no-referrer-when-downgrade"
                 loading="lazy"></iframe>
@@ -29,13 +29,13 @@
                 <svg class="h-5 w-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/>
                 </svg>
-                Baixar apresentação
+                Baixar documento
             </a>
         </div>
     </div>
     {% else %}
     <div class="flex items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-100 p-12 text-center">
-        <p class="text-gray-600">Apresentação não disponível no momento.</p>
+        <p class="text-gray-600">Documento não disponível no momento.</p>
     </div>
     {% endif %}
 </div>

@@ -4,19 +4,34 @@
 {% block conteudo_player %}
 <div class="conteudo-player audio-player">
     {% if page.arquivo %}
-    <audio controls preload="metadata" class="audio-js">
-        <source src="{{ page.arquivo.url }}" type="audio/mpeg">
-        Seu navegador não suporta o elemento de áudio.
-    </audio>
-    {% if page.capa %}
-    <div class="audio-capa">
-        {% image page.capa fill-300x300 as capa_img %}
-        <img src="{{ capa_img.url }}" alt="{{ page.title }}" />
+    <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-6">
+            {% if page.og_image %}
+            <div class="shrink-0">
+                {% image page.og_image fill-300x300 as capa_img %}
+                <img
+                    src="{{ capa_img.url }}"
+                    alt="Capa do áudio: {{ page.title }}"
+                    class="h-40 w-40 rounded-lg object-cover shadow" />
+            </div>
+            {% endif %}
+            <div class="flex-1">
+                <h2 class="text-lg font-semibold text-gray-900 mb-3">Ouça o áudio</h2>
+                <audio
+                    controls
+                    preload="metadata"
+                    class="w-full"
+                    aria-label="Áudio: {{ page.title }}">
+                    <source src="{{ page.arquivo.url }}" type="audio/mpeg">
+                    Seu navegador não suporta o elemento de áudio.
+                    <a href="{{ page.arquivo.url }}" class="text-brand-600 underline">Baixar o áudio</a>
+                </audio>
+            </div>
+        </div>
     </div>
-    {% endif %}
     {% else %}
-    <div class="player-placeholder">
-        <p>Áudio não disponível.</p>
+    <div class="flex items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-100 p-12 text-center">
+        <p class="text-gray-600">Áudio não disponível no momento.</p>
     </div>
     {% endif %}
 </div>

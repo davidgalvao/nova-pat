@@ -29,7 +29,7 @@
         </div>
 
         <!-- Filtros Ativos (Tags Removíveis) -->
-        {% if search_query or canal or tipo or categoria_conteudo or categoria_aplicativo or licenca or componente %}
+        {% if search_query or canal or tipo or categoria_conteudo or categoria_aplicativo or licenca or nivel_ensino or componente %}
         <div class="search-filters-summary">
             <strong>Filtros ativos:</strong>
             {% if search_query %}
@@ -61,6 +61,11 @@
             <span class="filter-tag">{{ licenca.name }} <a
                     href="{% url 'search' %}?{{ current_filters|cut:'licenca='|cut:'&licenca=' }}" class="filter-remove"
                     aria-label="Remover filtro de licença">×</a></span>
+            {% endif %}
+            {% if nivel_ensino %}
+            <span class="filter-tag">{{ nivel_ensino.name }} <a
+                    href="{% url 'search' %}?{{ current_filters|cut:'nivel_ensino='|cut:'&nivel_ensino=' }}"
+                    class="filter-remove" aria-label="Remover filtro de nível de ensino">×</a></span>
             {% endif %}
             {% if componente %}
             <span class="filter-tag">{{ componente.nivel.name }} › {{ componente.category.name }} › {{ componente.name
@@ -164,6 +169,23 @@
                     <label class="filter-option">
                         <input type="radio" name="licenca" value="{{ l.id }}" {% if licenca and licenca.id == l.id %}checked{% endif %}>
                         <span>{{ l.name }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </fieldset>
+
+            <!-- Filtro: Nível de Ensino (Fase 4 - filtro independente) -->
+            <fieldset class="filter-group">
+                <legend>Nível de Ensino</legend>
+                <div class="filter-options">
+                    <label class="filter-option">
+                        <input type="radio" name="nivel_ensino" value="" {% if not nivel_ensino %}checked{% endif %}>
+                        <span>Todos</span>
+                    </label>
+                    {% for nivel in niveis_ensino %}
+                    <label class="filter-option">
+                        <input type="radio" name="nivel_ensino" value="{{ nivel.id }}" {% if nivel_ensino and nivel_ensino.id == nivel.id %}checked{% endif %}>
+                        <span>{{ nivel.name }}</span>
                     </label>
                     {% endfor %}
                 </div>
@@ -344,6 +366,19 @@
         outline: none;
         border-color: var(--color-primary);
         box-shadow: 0 0 0 3px var(--color-primary-light);
+    }
+
+    /* Foco visível (WCAG 2.1 AA - 2.4.7) para todos os elementos interativos */
+    .search-submit:focus-visible,
+    .filter-remove:focus-visible,
+    .clear-all-filters:focus-visible,
+    .page-link:focus-visible,
+    .btn:focus-visible,
+    .search-filters-toggle:focus-visible,
+    .result-title a:focus-visible,
+    .result-link:focus-visible {
+        outline: 3px solid var(--color-primary);
+        outline-offset: 2px;
     }
 
     .search-submit {

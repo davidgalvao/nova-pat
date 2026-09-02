@@ -1,27 +1,139 @@
 {% extends "base.html" %}
-{% load wagtailcore_tags %}
+{% load wagtailcore_tags wagtailimages_tags %}
 
 {% block body_class %}template-conteudo{% endblock %}
 
 {% block content %}
-<main role="main">
-    <article>
-        <header>
-            {% if page.tipo %}
-            <span>{{ page.tipo.name }}</span>
-            {% endif %}
-            <h1>{{ page.title }}</h1>
+<main role="main" class="bg-gray-50 min-h-screen">
+    <article class="max-w-5xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+        {# ============================================================ #}
+        {# Cabeçalho editorial                                          #}
+        {# ============================================================ #}
+        <header class="mb-8">
+            <nav aria-label="Trilha de navegação" class="text-sm text-gray-500 mb-4">
+                <ol class="flex flex-wrap items-center gap-1 list-none p-0">
+                    {% if page.canal %}
+                    <li>
+                        <a href="{{ page.canal.url }}" class="text-brand-600 hover:text-brand-700 hover:underline focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 rounded">
+                            {{ page.canal.title }}
+                        </a>
+                    </li>
+                    <li aria-hidden="true" class="mx-1">/</li>
+                    {% endif %}
+                    {% if page.category %}
+                    <li class="text-gray-700">{{ page.category.name }}</li>
+                    {% endif %}
+                </ol>
+            </nav>
+
+            <div class="flex flex-wrap items-center gap-2 mb-3">
+                {% if page.tipo %}
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-brand-100 text-brand-700">
+                    {{ page.tipo.name }}
+                </span>
+                {% endif %}
+                {% if page.mecanismo_exibicao %}
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-200 text-gray-700">
+                    {{ page.get_mecanismo_exibicao_display }}
+                </span>
+                {% endif %}
+            </div>
+
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">{{ page.title }}</h1>
+
             {% if page.search_description %}
-            <p>{{ page.search_description }}</p>
+            <p class="text-lg text-gray-700 leading-relaxed mb-4">{{ page.search_description }}</p>
+            {% endif %}
+
+            {# Metadados editoriais #}
+            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm text-gray-600 mb-4">
+                {% if page.canal %}
+                <div class="flex items-start gap-2">
+                    <dt class="font-semibold text-gray-800">Canal:</dt>
+                    <dd>{{ page.canal.title }}</dd>
+                </div>
+                {% endif %}
+                {% if page.authors %}
+                <div class="flex items-start gap-2">
+                    <dt class="font-semibold text-gray-800">Autores:</dt>
+                    <dd>{{ page.authors }}</dd>
+                </div>
+                {% endif %}
+                {% if page.autor %}
+                <div class="flex items-start gap-2">
+                    <dt class="font-semibold text-gray-800">Publicado por:</dt>
+                    <dd>{{ page.autor.get_full_name|default:page.autor.username }}</dd>
+                </div>
+                {% endif %}
+                {% if page.first_published_at %}
+                <div class="flex items-start gap-2">
+                    <dt class="font-semibold text-gray-800">Publicado em:</dt>
+                    <dd>{{ page.first_published_at|date:"d/m/Y" }}</dd>
+                </div>
+                {% endif %}
+                {% if page.qt_access %}
+                <div class="flex items-start gap-2">
+                    <dt class="font-semibold text-gray-800">Acessos:</dt>
+                    <dd>{{ page.qt_access }}</dd>
+                </div>
+                {% endif %}
+                {% if page.qt_downloads %}
+                <div class="flex items-start gap-2">
+                    <dt class="font-semibold text-gray-800">Downloads:</dt>
+                    <dd>{{ page.qt_downloads }}</dd>
+                </div>
+                {% endif %}
+            </dl>
+
+            {% if page.componentes_curriculares.all %}
+            <div class="mb-4">
+                <h2 class="text-sm font-semibold text-gray-800 mb-2">Componentes curriculares</h2>
+                <ul class="flex flex-wrap gap-2 list-none p-0">
+                    {% for componente in page.componentes_curriculares.all %}
+                    <li class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-700">
+                        {{ componente.name }}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
             {% endif %}
         </header>
 
-        {% block conteudo_player %}
-        <p>Player para este conteúdo não implementado.</p>
-        {% endblock %}
+        {# ============================================================ #}
+        {# Player / visualizador específico do mecanismo                #}
+        {# ============================================================ #}
+        <section aria-label="Conteúdo" class="mb-8">
+            {% block conteudo_player %}
+            <p class="text-gray-600">Player para este conteúdo não implementado.</p>
+            {% endblock %}
+        </section>
 
-        {% if page.arquivo %}
-        <a href="{{ page.arquivo.url }}" download>Baixar</a>
+        {# ============================================================ #}
+        {# Licença Creative Commons                                     #}
+        {# ============================================================ #}
+        {% if page.license %}
+        <footer class="border-t border-gray-200 pt-6">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+                <span class="text-sm font-semibold text-gray-800">Licença:</span>
+                {% if page.license.url %}
+                <a href="{{ page.license.url }}"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="inline-flex items-center gap-2 text-brand-600 hover:text-brand-700 hover:underline focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 rounded">
+                    <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                    {{ page.license.name }}
+                    <span class="sr-only">(abre em nova aba)</span>
+                </a>
+                {% else %}
+                <span class="text-sm text-gray-700">{{ page.license.name }}</span>
+                {% endif %}
+            </div>
+            {% if page.license.description %}
+            <p class="mt-2 text-sm text-gray-600">{{ page.license.description }}</p>
+            {% endif %}
+        </footer>
         {% endif %}
     </article>
 </main>

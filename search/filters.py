@@ -18,7 +18,7 @@ from wagtail.models import Page
 from conteudos.models import ConteudoPage, Tipo, CategoriaConteudo, Licenca
 from aplicativos.models import AplicativoEducacionalPage, AplicativoCategory
 from canais.models import CanalPage
-from curriculo.models import CurricularComponent
+from curriculo.models import CurricularComponent, NivelEnsino
 
 
 class SafeModelChoiceFilter(django_filters.ModelChoiceFilter):
@@ -95,6 +95,14 @@ class ConteudoSearchFilterSet(BaseSearchFilterSet):
     tipo = SafeModelChoiceFilter(queryset=Tipo.objects.filter(is_active=True), field_name='tipo', label='Tipo de Mídia')
     categoria_conteudo = SafeModelChoiceFilter(queryset=CategoriaConteudo.objects.filter(is_active=True), field_name='category', label='Categoria')
     licenca = SafeModelChoiceFilter(queryset=Licenca.objects.filter(is_active=True), field_name='license', label='Licença')
+    # Nível de Ensino: filtro independente via M2M componentes_curriculares -> nivel.
+    # Usa PK (consistente com os demais filtros SafeModelChoiceFilter). A URL aceita
+    # `?nivel_ensino=<pk>`. Decisão documentada em search/services.py e no ADR da busca.
+    nivel_ensino = SafeModelChoiceFilter(
+        queryset=NivelEnsino.objects.filter(is_active=True),
+        field_name='componentes_curriculares__nivel',
+        label='Nível de Ensino',
+    )
     componente = SafeModelChoiceFilter(queryset=CurricularComponent.objects.filter(is_active=True), field_name='componentes_curriculares', label='Componente Curricular')
 
     class Meta(BaseSearchFilterSet.Meta):

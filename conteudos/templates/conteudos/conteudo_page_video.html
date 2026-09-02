@@ -4,14 +4,23 @@
 {% block conteudo_player %}
 <div class="conteudo-player video-player">
     {% if page.arquivo %}
-    <video controls preload="metadata" class="video-js vjs-fluid"
-        poster="{% if page.capa %}{% image page.capa fill-1280x720 %}{% endif %}">
-        <source src="{{ page.arquivo.url }}" type="video/mp4">
-        Seu navegador não suporta o elemento de vídeo.
-    </video>
+    <div class="relative w-full overflow-hidden rounded-lg bg-black shadow-lg" style="aspect-ratio: 16 / 9;">
+        <video
+            controls
+            preload="metadata"
+            class="absolute inset-0 h-full w-full"
+            {% if page.og_image %}
+            poster="{% image page.og_image fill-1280x720 %}"
+            {% endif %}
+            aria-label="Vídeo: {{ page.title }}">
+            <source src="{{ page.arquivo.url }}" type="video/mp4">
+            Seu navegador não suporta o elemento de vídeo.
+            <a href="{{ page.arquivo.url }}" class="text-white underline">Baixar o vídeo</a>
+        </video>
+    </div>
     {% else %}
-    <div class="player-placeholder">
-        <p>Vídeo não disponível.</p>
+    <div class="flex items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-100 p-12 text-center" style="aspect-ratio: 16 / 9;">
+        <p class="text-gray-600">Vídeo não disponível no momento.</p>
     </div>
     {% endif %}
 </div>

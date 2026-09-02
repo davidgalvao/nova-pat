@@ -2,40 +2,47 @@
 {% load wagtailcore_tags conteudos_tags %}
 
 {% block conteudo_player %}
-<div class="conteudo-player apresentacao-player">
+<div class="conteudo-player download-player">
     {% if page.arquivo %}
     <div class="rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden">
-        {# Visualizador embutido (PDF de apresentação) #}
-        <div class="bg-gray-100 p-2">
-            <iframe
-                src="{{ page.arquivo.url }}"
-                type="application/pdf"
-                title="Visualizador da apresentação: {{ page.title }}"
-                class="h-[70vh] w-full rounded-md border border-gray-300 bg-white"
-                referrerpolicy="no-referrer-when-downgrade"
-                loading="lazy"></iframe>
+        {# Aviso de segurança #}
+        <div class="flex items-start gap-3 border-b border-amber-200 bg-amber-50 p-4" role="note">
+            <svg class="h-6 w-6 shrink-0 text-amber-600" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+            </svg>
+            <div>
+                <p class="text-sm font-semibold text-amber-800">Aviso de segurança</p>
+                <p class="text-sm text-amber-700">
+                    Este arquivo é um pacote ou executável. Baixe apenas de fontes confiáveis e
+                    verifique o arquivo antes de executá-lo.
+                </p>
+            </div>
         </div>
 
-        {# Ações de download seguro #}
+        {# Informações do arquivo + download #}
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4">
             <div class="text-sm text-gray-600">
                 <span class="font-semibold text-gray-800">Arquivo:</span>
                 <span class="break-all">{{ page.arquivo.name|filename }}</span>
+                {% if page.arquivo.size %}
+                <span class="ml-2 text-gray-500">({{ page.arquivo.size|filesizeformat }})</span>
+                {% endif %}
             </div>
             <a
                 href="{{ page.arquivo.url }}"
                 download
+                rel="noopener noreferrer"
                 class="inline-flex items-center justify-center gap-2 rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2">
                 <svg class="h-5 w-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/>
                 </svg>
-                Baixar apresentação
+                Baixar arquivo
             </a>
         </div>
     </div>
     {% else %}
     <div class="flex items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-100 p-12 text-center">
-        <p class="text-gray-600">Apresentação não disponível no momento.</p>
+        <p class="text-gray-600">Arquivo não disponível no momento.</p>
     </div>
     {% endif %}
 </div>

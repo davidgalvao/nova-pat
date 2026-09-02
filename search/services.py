@@ -18,7 +18,7 @@ from typing import Literal
 from django.http import QueryDict
 
 from conteudos.models import Tipo, Licenca, CategoriaConteudo
-from curriculo.models import CurricularComponent
+from curriculo.models import CurricularComponent, NivelEnsino
 from aplicativos.models import AplicativoCategory
 from canais.models import CanalPage
 
@@ -31,8 +31,9 @@ def resolver_tipo_busca(get_params: QueryDict) -> TipoBusca:
     Determina qual tipo de conteúdo buscar baseado nos filtros preenchidos.
 
     Regras de inferência:
-    - Se o usuário preencher Tipo de Mídia, Licença ou Componente Curricular
-      → buscar apenas ConteudoPage (esses campos não existem em AplicativoEducacionalPage)
+    - Se o usuário preencher Tipo de Mídia, Licença, Componente Curricular ou
+      Nível de Ensino → buscar apenas ConteudoPage (esses campos não existem em
+      AplicativoEducacionalPage)
     - Se o usuário selecionar uma categoria de conteúdo (`categoria_conteudo`)
       → buscar apenas ConteudoPage
     - Se o usuário selecionar uma categoria de aplicativo (`categoria_aplicativo`)
@@ -66,8 +67,14 @@ def resolver_tipo_busca(get_params: QueryDict) -> TipoBusca:
     tipo_id = get_params.get('tipo')
     licenca_id = get_params.get('licenca')
     componente_id = get_params.get('componente')
+    nivel_ensino_id = get_params.get('nivel_ensino')
 
-    has_conteudo_exclusive_filter = is_valid_id(tipo_id) or is_valid_id(licenca_id) or is_valid_id(componente_id)
+    has_conteudo_exclusive_filter = (
+        is_valid_id(tipo_id)
+        or is_valid_id(licenca_id)
+        or is_valid_id(componente_id)
+        or is_valid_id(nivel_ensino_id)
+    )
     if has_conteudo_exclusive_filter:
         return 'conteudo'
 
@@ -175,5 +182,15 @@ def get_selected_filter_values(get_params: QueryDict) -> dict:
             selected['componente'] = None
     else:
         selected['componente'] = None
+
+    # Nível de Ensino (apenas ConteudoPage)
+    nivel_ensino_id = get_params.get('nivel_ensino')
+    if is_valid_id(nivel_ensino_id):
+        try:
+            selected['nivel_ensino'] = NivelEnsino.objects.filter(is_active=True).get(pk=nivel_ensino_id)
+        except NivelEnsino.DoesNotExist:
+            selected['nivel_ensino'] = None
+    else:
+        selected['nivel_ensino'] = None
 
     return selected

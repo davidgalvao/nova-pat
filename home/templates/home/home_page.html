@@ -1,79 +1,11 @@
 {% extends "base.html" %}
-{% load static %}
+{% load wagtailcore_tags %}
 
 {% block body_class %}template-homepage{% endblock %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/home_page.css' %}">
-{% endblock extra_css %}
-
 {% block content %}
-
-<section class="superbanner" role="banner" aria-label="Superbanner">
-    <div class="superbanner-inner">
-        <h1>Superbanner Fullwidth</h1>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero.</p>
-        <a class="cta" href="#">Saiba mais</a>
-    </div>
-    <!-- imagem mock usando picsum - cover via CSS -->
-</section>
-
-<section class="categories container" aria-label="Rotinas de Estudo">
-    <h2 class="section-title">Rotinas de Estudo</h2>
-    <div class="categories-row">
-        <a class="cat-btn red" href="#">
-            <span class="cat-label">ENSINO FUNDAMENTAL I</span>
-            <span class="cat-ico">✿</span>
-        </a>
-        <a class="cat-btn yellow" href="#">
-            <span class="cat-label">ENSINO FUNDAMENTAL II</span>
-            <span class="cat-ico">✿</span>
-        </a>
-        <a class="cat-btn blue" href="#">
-            <span class="cat-label">ENSINO MÉDIO</span>
-            <span class="cat-ico">✿</span>
-        </a>
-    </div>
-</section>
-
-<section class="features container" aria-label="Seção de destaques">
-    <h2 class="section-title">Destaques</h2>
-    <div class="grid">
-        <article class="card">
-            <img src="https://picsum.photos/seed/1/600/400" alt="Imagem 1" />
-            <h3>Item 1</h3>
-            <p class="muted">Lorem ipsum dolor sit amet.</p>
-        </article>
-        <article class="card">
-            <img src="https://picsum.photos/seed/2/600/400" alt="Imagem 2" />
-            <h3>Item 2</h3>
-            <p class="muted">Lorem ipsum dolor sit amet.</p>
-        </article>
-        <article class="card">
-            <img src="https://picsum.photos/seed/3/600/400" alt="Imagem 3" />
-            <h3>Item 3</h3>
-            <p class="muted">Lorem ipsum dolor sit amet.</p>
-        </article>
-        <article class="card">
-            <img src="https://picsum.photos/seed/4/600/400" alt="Imagem 4" />
-            <h3>Item 4</h3>
-            <p class="muted">Lorem ipsum dolor sit amet.</p>
-        </article>
-        <article class="card">
-            <img src="https://picsum.photos/seed/5/600/400" alt="Imagem 5" />
-            <h3>Item 5</h3>
-            <p class="muted">Lorem ipsum dolor sit amet.</p>
-        </article>
-        <article class="card">
-            <img src="https://picsum.photos/seed/6/600/400" alt="Imagem 6" />
-            <h3>Item 6</h3>
-            <p class="muted">Lorem ipsum dolor sit amet.</p>
-        </article>
-    </div>
-</section>
-
+    {# Conteúdo modular da Home via StreamField. Renderiza corretamente mesmo com body vazio. #}
+    {% for block in page.body %}
+        {% include_block block %}
+    {% endfor %}
 {% endblock content %}
-
-{% block extra_js %}
-<script src="{% static 'js/home_page.js' %}"></script>
-{% endblock extra_js %}

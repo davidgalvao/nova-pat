@@ -293,8 +293,8 @@ class ConteudosModelsTestCase(TestCase):
         self.assertEqual(conteudo.qt_downloads, 0)
         self.assertEqual(conteudo.qt_access, 0)
 
-    def test_conteudo_page_get_template_by_tipo(self):
-        """Testa seleção de template pelo tipo (decisão fechada)."""
+    def test_conteudo_page_get_template_by_mecanismo(self):
+        """Testa seleção de template pelo mecanismo de exibição (decisão fechada)."""
         conteudo = ConteudoPage(
             title="Teste template",
             tipo=self.tipo_video,
@@ -305,14 +305,41 @@ class ConteudosModelsTestCase(TestCase):
         self.canal.add_child(instance=conteudo)
         conteudo.save()
 
+        # Mecanismo video -> template dedicado
+        conteudo.mecanismo_exibicao = ConteudoPage.MECANISMO_VIDEO
+        conteudo.save()
         template = conteudo.get_template(None)
         self.assertEqual(template, "conteudos/conteudo_page_video.html")
 
-        # Testar com tipo documento
-        conteudo.tipo = self.tipo_documento
+        # Mecanismo audio -> template dedicado
+        conteudo.mecanismo_exibicao = ConteudoPage.MECANISMO_AUDIO
         conteudo.save()
         template = conteudo.get_template(None)
-        self.assertEqual(template, "conteudos/conteudo_page_documento.html")
+        self.assertEqual(template, "conteudos/conteudo_page_audio.html")
+
+        # Mecanismo documento_pdf -> template dedicado (criado na Fase 3)
+        conteudo.mecanismo_exibicao = ConteudoPage.MECANISMO_DOCUMENTO_PDF
+        conteudo.save()
+        template = conteudo.get_template(None)
+        self.assertEqual(template, "conteudos/conteudo_page_documento_pdf.html")
+
+        # Mecanismo download_binario -> template dedicado (criado na Fase 3)
+        conteudo.mecanismo_exibicao = ConteudoPage.MECANISMO_DOWNLOAD_BINARIO
+        conteudo.save()
+        template = conteudo.get_template(None)
+        self.assertEqual(template, "conteudos/conteudo_page_download_binario.html")
+
+        # Mecanismo link_externo -> template dedicado (criado na Fase 3)
+        conteudo.mecanismo_exibicao = ConteudoPage.MECANISMO_LINK_EXTERNO
+        conteudo.save()
+        template = conteudo.get_template(None)
+        self.assertEqual(template, "conteudos/conteudo_page_link_externo.html")
+
+        # Mecanismo animacao_externa -> template dedicado (criado na Fase 3)
+        conteudo.mecanismo_exibicao = ConteudoPage.MECANISMO_ANIMACAO_EXTERNA
+        conteudo.save()
+        template = conteudo.get_template(None)
+        self.assertEqual(template, "conteudos/conteudo_page_animacao_externa.html")
 
     def test_conteudo_page_parent_page_types(self):
         """Testa configuração de parent_page_types."""

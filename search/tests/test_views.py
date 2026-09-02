@@ -99,7 +99,7 @@ class SearchViewTestCase(TestCase):
             role=cls.role_editor,
         )
 
-        # Criar ConteudoPage
+        # Criar ConteudoPage (aprovado para aparecer em niveis_ensino do contexto)
         cls.conteudo = ConteudoPage(
             title="Conteúdo Teste Busca",
             tipo=cls.tipo,
@@ -108,6 +108,7 @@ class SearchViewTestCase(TestCase):
             arquivo="conteudos/teste.mp4",
             autor=cls.editor,
             canal=cls.canal,
+            is_approved=True,
         )
         cls.canal.add_child(instance=cls.conteudo)
         cls.conteudo.componentes_curriculares.add(cls.componente)
@@ -389,6 +390,77 @@ class SearchViewTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context["categoria_aplicativo"], self.categoria_app)
 
+    def test_search_result_card_displays_nivel_ensino(self):
+        """Testa que o card de resultado exibe o nível de ensino do conteúdo."""
+        response = self.client.get(reverse("search"), {"tipo": self.tipo.id})
+        self.assertEqual(response.status_code, 200)
+        # O card deve exibir o nome do nível de ensino vinculado ao componente
+        self.assertContains(response, self.nivel.name)
+        # E também o nome do componente curricular
+        self.assertContains(response, self.componente.name)
+
+    def test_search_view_filter_by_nivel_ensino_infers_conteudo(self):
+        """Testa que preencher 'nivel_ensino' infere busca apenas em ConteudoPage."""
+        response = self.client.get(reverse("search"), {"nivel_ensino": self.nivel.id})
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("filterset", response.context)
+        self.assertIsNotNone(response.context["filterset"])
+        from search.filters import ConteudoSearchFilterSet
+        self.assertIsInstance(response.context["filterset"], ConteudoSearchFilterSet)
+        self.assertContains(response, "Conteúdo Teste Busca")
+        self.assertNotContains(response, "App Teste Busca")
+
+    def test_search_view_filter_by_nivel_ensino_returns_only_that_level(self):
+        """Testa que o filtro 'nivel_ensino' retorna apenas conteúdos daquele nível."""
+        # Criar um segundo nível e um segundo conteúdo vinculado a ele
+        outro_nivel = NivelEnsino.objects.create(
+            name="Ensino Fundamental",
+            slug="ensino-fundamental-search",
+            ordem=2,
+            is_active=True,
+        )
+        outro_componente = CurricularComponent.objects.create(
+            name="Matemática",
+            slug="matematica-search",
+            nivel=outro_nivel,
+            category=self.comp_category,
+            ordem=2,
+            is_active=True,
+        )
+        outro_conteudo = ConteudoPage(
+            title="Conteúdo Outro Nível",
+            tipo=self.tipo,
+            category=self.categoria,
+            license=self.licenca,
+            arquivo="conteudos/outro.mp4",
+            autor=self.editor,
+            canal=self.canal,
+        )
+        self.canal.add_child(instance=outro_conteudo)
+        outro_conteudo.componentes_curriculares.add(outro_componente)
+        outro_conteudo.save_revision().publish()
+
+        # Filtrar pelo nível original (Ensino Médio) deve retornar apenas o conteúdo desse nível
+        response = self.client.get(reverse("search"), {"nivel_ensino": self.nivel.id})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Conteúdo Teste Busca")
+        self.assertNotContains(response, "Conteúdo Outro Nível")
+
+    def test_search_view_niveis_ensino_in_context(self):
+        """Testa que 'niveis_ensino' está no contexto e populado corretamente."""
+        response = self.client.get(reverse("search"))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("niveis_ensino", response.context)
+        niveis = list(response.context["niveis_ensino"])
+        # O nível vinculado a um conteúdo publicado e aprovado deve estar presente
+        self.assertIn(self.nivel, niveis)
+
+    def test_search_view_selected_nivel_ensino_in_context(self):
+        """Testa que o nível de ensino selecionado é passado para o template."""
+        response = self.client.get(reverse("search"), {"nivel_ensino": self.nivel.id})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["nivel_ensino"], self.nivel)
+
 
 class SearchTemplateTestCase(TestCase):
     """Testes para o template de busca."""
@@ -430,6 +502,7 @@ class SearchTemplateTestCase(TestCase):
         self.assertContains(response, "Tipo de Mídia")
         self.assertContains(response, "Categoria")
         self.assertContains(response, "Licença")
+        self.assertContains(response, "Nível de Ensino")
         self.assertContains(response, "Componente Curricular")
         # NÃO deve ter "Tipo de Conteúdo" (radio removido)
         self.assertNotContains(response, "Tipo de Conteúdo")
@@ -471,6 +544,7 @@ class SearchTemplateTestCase(TestCase):
         self.assertContains(response, 'name="categoria_conteudo"')
         self.assertContains(response, 'name="categoria_aplicativo"')
         self.assertContains(response, 'name="licenca"')
+        self.assertContains(response, 'name="nivel_ensino"')
         self.assertContains(response, 'name="componente"')
 
     def test_search_template_active_filters_tags(self):

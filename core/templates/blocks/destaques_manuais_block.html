@@ -1,0 +1,29 @@
+{% load wagtailimages_tags %}
+<section class="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8"
+         role="region" aria-label="{{ value.titulo_secao }}">
+    <h2 class="text-2xl font-bold text-gray-900 sm:text-3xl">
+        {{ value.titulo_secao }}
+    </h2>
+
+    <div class="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        {% for pagina in value.paginas %}
+            <a href="{{ pagina.url }}"
+               aria-label="{{ pagina.title }}"
+               class="group overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-gray-200 transition-shadow hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2">
+                <div class="aspect-video w-full overflow-hidden bg-gray-100">
+                    {% if pagina.og_image %}
+                        {% image pagina.og_image fill-400x225 as destaque_img %}
+                        <img src="{{ destaque_img.url }}" alt=""
+                             class="h-full w-full object-cover transition-transform group-hover:scale-105"
+                             aria-hidden="true" />
+                    {% endif %}
+                </div>
+                <div class="p-4">
+                    <h3 class="line-clamp-2 text-base font-semibold text-gray-900">
+                        {{ pagina.title }}
+                    </h3>
+                </div>
+            </a>
+        {% endfor %}
+    </div>
+</section>

@@ -1,0 +1,45 @@
+{% load wagtailimages_tags %}
+<section class="relative flex min-h-[70vh] w-full items-center overflow-hidden bg-brand-700"
+         role="banner" aria-label="{{ value.titulo }}">
+    {# Imagem de fundo com sobreposição de gradiente para legibilidade (WCAG 2.1 AA) #}
+    {% if value.imagem_fundo %}
+        {% image value.imagem_fundo fill-1920x1080 as hero_img %}
+        <img src="{{ hero_img.url }}" alt=""
+             class="absolute inset-0 h-full w-full object-cover"
+             aria-hidden="true" />
+    {% endif %}
+    <div class="absolute inset-0 bg-black/50" aria-hidden="true"></div>
+
+    <div class="relative z-10 mx-auto w-full max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+        <div class="max-w-3xl">
+            <h1 class="text-4xl font-extrabold leading-tight text-white sm:text-5xl lg:text-6xl">
+                {{ value.titulo }}
+            </h1>
+
+            {% if value.subtitulo %}
+                <p class="mt-6 text-lg leading-relaxed text-white/90 sm:text-xl">
+                    {{ value.subtitulo }}
+                </p>
+            {% endif %}
+
+            {% if value.cta_primario_texto or value.cta_secundario_texto %}
+                <div class="mt-10 flex flex-col gap-4 sm:flex-row">
+                    {% if value.cta_primario_texto %}
+                        <a href="{{ value.cta_primario_url|default:'#' }}"
+                           aria-label="{{ value.cta_primario_texto }}"
+                           class="inline-flex items-center justify-center rounded-md bg-brand-500 px-6 py-3 text-base font-semibold text-white shadow-sm transition-colors hover:bg-brand-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-700">
+                            {{ value.cta_primario_texto }}
+                        </a>
+                    {% endif %}
+                    {% if value.cta_secundario_texto %}
+                        <a href="{{ value.cta_secundario_url|default:'#' }}"
+                           aria-label="{{ value.cta_secundario_texto }}"
+                           class="inline-flex items-center justify-center rounded-md border border-white/60 bg-transparent px-6 py-3 text-base font-semibold text-white transition-colors hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-700">
+                            {{ value.cta_secundario_texto }}
+                        </a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>

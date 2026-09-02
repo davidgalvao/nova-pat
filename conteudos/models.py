@@ -160,12 +160,49 @@ class ConteudoPage(RecursoBasePage):
     Herda de RecursoBasePage (canal, autor, tags) e adiciona campos próprios.
     """
 
+    # ------------------------------------------------------------------
+    # Mecanismo de Exibição (Formato Técnico)
+    # ------------------------------------------------------------------
+    # Distinto da taxonomia pedagógica (`tipo`). Enquanto `tipo` é a
+    # categoria pedagógica usada em filtros de busca e currículo, o
+    # `mecanismo_exibicao` é o formato técnico que determina a view de
+    # renderização (player, visualizador, download, link externo, etc.).
+    # Decisão fechada em CONTEXT.MD seção 3.
+    MECANISMO_VIDEO = "video"
+    MECANISMO_AUDIO = "audio"
+    MECANISMO_DOCUMENTO_PDF = "documento_pdf"
+    MECANISMO_APRESENTACAO = "apresentacao"
+    MECANISMO_DOWNLOAD_BINARIO = "download_binario"
+    MECANISMO_LINK_EXTERNO = "link_externo"
+    MECANISMO_ANIMACAO_EXTERNA = "animacao_externa"
+
+    MECANISMO_CHOICES = [
+        (MECANISMO_VIDEO, _("Vídeo — Player responsivo 16:9.")),
+        (MECANISMO_AUDIO, _("Áudio — Player de áudio nativo estilizado.")),
+        (MECANISMO_DOCUMENTO_PDF, _("Documento PDF — Visualizador embutido ou download seguro de PDF.")),
+        (MECANISMO_APRESENTACAO, _("Apresentação — Visualizador/download de apresentação.")),
+        (MECANISMO_DOWNLOAD_BINARIO, _("Download binário — Download seguro de pacotes/executáveis (.zip, .rar, .exe).")),
+        (MECANISMO_LINK_EXTERNO, _("Link externo — Link externo seguro (noopener noreferrer).")),
+        (MECANISMO_ANIMACAO_EXTERNA, _("Animação externa — iframe protegido para animações/sites externos.")),
+    ]
+
     # Campos próprios (além de canal, autor, tags herdados de RecursoBasePage)
     tipo = models.ForeignKey(
         "conteudos.Tipo",
         on_delete=models.PROTECT,
         verbose_name="Tipo de mídia",
-        help_text="Define o player/template e valida extensões de upload.",
+        help_text="Categoria pedagógica do conteúdo (usada em filtros de busca e currículo).",
+    )
+
+    mecanismo_exibicao = models.CharField(
+        max_length=30,
+        choices=MECANISMO_CHOICES,
+        default=MECANISMO_LINK_EXTERNO,
+        verbose_name="Mecanismo de Exibição",
+        help_text=(
+            "Formato técnico de renderização (distinto da categoria pedagógica 'tipo'). "
+            "Determina o player/visualizador usado na exibição do conteúdo."
+        ),
     )
 
     category = models.ForeignKey(
@@ -295,6 +332,9 @@ class ConteudoPage(RecursoBasePage):
             FieldPanel("arquivo"),
         ], heading="Informações do Conteúdo"),
         MultiFieldPanel([
+            FieldPanel("mecanismo_exibicao"),
+        ], heading="Mecanismo de Exibição"),
+        MultiFieldPanel([
             FieldPanel("authors"),
             FieldPanel("source"),
             FieldPanel("options"),
@@ -320,6 +360,7 @@ class ConteudoPage(RecursoBasePage):
         index.FilterField("category_id"),
         index.FilterField("license_id"),
         index.FilterField("componentes_curriculares"),
+        index.FilterField("mecanismo_exibicao"),
         index.FilterField("is_approved"),
         index.FilterField("is_featured"),
         index.FilterField("is_site"),
@@ -363,17 +404,19 @@ class ConteudoPage(RecursoBasePage):
 
     def get_template(self, request, *args, **kwargs):
         """
-        Escolhe o template pelo slug do tipo (decisão fechada).
+        Escolhe o template pelo mecanismo de exibição (decisão fechada).
 
-        Um conteúdo tem um tipo só — StreamField descartado para este caso.
-        O template específico é ``conteudos/conteudo_page_<slug>.html``. Se o
-        arquivo não existir (tipo criado por curador sem template dedicado
-        ainda), cai num template genérico ``conteudos/conteudo_page.html`` para
-        nunca disparar ``TemplateDoesNotExist`` durante a renderização.
+        O mecanismo de exibição (formato técnico) é distinto da taxonomia
+        pedagógica (`tipo`). O template específico é
+        ``conteudos/conteudo_page_<mecanismo>.html``. Se o arquivo não existir
+        (mecanismo sem template dedicado ainda, ex: `documento_pdf` e
+        `download_binario` — criados na Fase 3), cai num template genérico
+        ``conteudos/conteudo_page.html`` para nunca disparar
+        ``TemplateDoesNotExist`` durante a renderização.
         """
         fallback = "conteudos/conteudo_page.html"
-        if self.tipo and self.tipo.slug:
-            especifico = f"conteudos/conteudo_page_{self.tipo.slug}.html"
+        if self.mecanismo_exibicao:
+            especifico = f"conteudos/conteudo_page_{self.mecanismo_exibicao}.html"
             return select_template([especifico, fallback]).template.name
         return fallback
 
