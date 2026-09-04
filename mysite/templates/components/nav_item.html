@@ -1,0 +1,56 @@
+{% comment %}
+Template parcial recursivo para itens de navegação com suporte a submenus
+multinível (hierarquia arbitrária via `NavigationItem.parent`).
+
+Uso:
+    {% include "components/nav_item.html" with item=item %}
+
+Acessibilidade (WCAG 2.1 AA):
+- O submenu abre por hover (`group-hover:block`) e por foco via teclado
+  (`group-focus-within:block`), mantendo o foco visível.
+- O item pai com submenu é um botão (não link) com `aria-haspopup="true"` e
+  `aria-expanded` controlado por foco/hover via `group-focus-within`.
+- O submenu é um `<ul>` com `role="menu"` e itens `role="menuitem"`.
+
+Ponte de hover (UX):
+- Um wrapper `<div>` posicionado com `absolute left-0 top-full pt-2` atua
+  estritamente como área de transição invisível (sem cor de fundo) entre o
+  botão pai e o menu — o cursor nunca sai da zona do `group` ao transicionar.
+- A lista `<ul>` interna carrega o fundo branco sólido e as classes visuais
+  (`bg-white shadow-lg rounded-md py-2 border border-gray-100`).
+{% endcomment %}
+{% load wagtailcore_tags %}
+
+<li class="relative group">
+    {% if item.get_children %}
+        {# Item pai com submenu — botão que abre o dropdown #}
+        <button type="button"
+            class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-brand-700 hover:bg-brand-50 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 inline-flex items-center gap-1"
+            aria-haspopup="true"
+            aria-expanded="false"
+            data-nav-toggle>
+            {{ item.title }}
+            <svg class="w-4 h-4" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+        </button>
+        {# Ponte invisível (pt-2, sem fundo) + submenu visível e opaco #}
+        <div class="absolute left-0 top-full pt-2 w-48 hidden group-hover:block group-focus-within:block z-50">
+            <ul role="menu" class="bg-white shadow-lg rounded-md py-2 border border-gray-100">
+                {% for child in item.get_children %}
+                    {% include "components/nav_item.html" with item=child %}
+                {% endfor %}
+            </ul>
+        </div>
+    {% else %}
+        {# Item folha — link simples #}
+        {% if item.url %}
+        <a href="{{ item.url }}"
+            class="block px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-brand-700 hover:bg-brand-50 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2{% if request.path == item.url %} text-brand-700 bg-brand-50{% endif %}"
+            role="menuitem"
+            {% if request.path == item.url %}aria-current="page"{% endif %}>
+            {{ item.title }}
+        </a>
+        {% endif %}
+    {% endif %}
+</li>

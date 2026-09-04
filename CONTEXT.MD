@@ -23,6 +23,7 @@ Para corrigir o descasamento herdado do portal legado, a arquitetura distingue r
 * **Modelo:** `NavigationItem` gerenciado via Snippets no painel do Wagtail.
 * **Interface:** Registrado por meio de `SnippetViewSet` com o rótulo "Menus" fixado na raiz da barra lateral esquerda do admin.
 * **Restrição de Visibilidade:** Acesso restrito exclusivamente a superusuários (`is_superuser`) ou a membros de grupos com privilégios administrativos.
+* **Submenus e Hierarquia Multinível:** `NavigationItem` possui campo auto-referencial `parent` (FK para `self`, `related_name='children'`), exposto no painel como "Item Pai (Submenu de)". O editor pode criar árvores de menu complexas. A renderização é feita pelo template parcial recursivo `mysite/templates/components/nav_item.html` (Tailwind CSS), com abertura por hover e por foco via teclado (`group-focus-within`) em conformidade com WCAG 2.1 AA.
 
 ## 5. Frentes de Front-End em Andamento
 1. **Home Estilo Streaming (`home_page.html`):** Desenvolvida do zero com Tailwind CSS, estruturada com carrosséis horizontais responsivos segmentados por canais, tipos de mídia e trilhas curriculares consultadas diretamente do banco.

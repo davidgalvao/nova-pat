@@ -199,10 +199,20 @@ class NavigationItem(models.Model):
         verbose_name="Ordem",
         help_text="Ordem de exibição (menor aparece primeiro)."
     )
+    parent = models.ForeignKey(
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="children",
+        verbose_name="Item Pai (Submenu de)",
+        help_text="Se preenchido, este item vira um submenu do item pai, permitindo hierarquia multinível."
+    )
 
     panels = [
         FieldPanel("title"),
         FieldPanel("position"),
+        FieldPanel("parent"),
         FieldPanel("page"),
         FieldPanel("link_url"),
         FieldPanel("sort_order"),
@@ -227,3 +237,15 @@ class NavigationItem(models.Model):
         if self.page_id:
             return self.page.url
         return self.link_url
+
+    @property
+    def get_children(self):
+        """
+        Retorna os subitens (filhos) deste item, ordenados.
+
+        Usa o reverse manager `children` (related_name da FK auto-referencial
+        `parent`). A hierarquia é derivada exclusivamente do campo explícito
+        `parent` (ver skill data-modeling-guardrails). Nome sem underscore
+        para ser acessível no template Django (que bloqueia atributos com `_`).
+        """
+        return self.children.all().order_by("sort_order", "title")

@@ -47,12 +47,18 @@ Snippet para itens de navegação editáveis no admin (header e footer).
 
 - `title` — texto exibido no link.
 - `position` — choices `header`/`footer` (discriminador explícito de onde o item aparece — nunca inferir de IDs).
+- `parent` — FK auto-referencial para `self` (`related_name='children'`). Se preenchido, o item vira um **submenu** do item pai, permitindo hierarquia multinível arbitrária. A hierarquia é derivada **exclusivamente** deste campo explícito — nunca de IDs ou heurísticas (ver skill data-modeling-guardrails).
 - `page` — FK para `Page` (página interna; se preenchida, tem prioridade sobre URL externa).
 - `link_url` — URL externa/caminho arbitrário (usada apenas se `page` vazia).
 - `sort_order` — ordenação (menor aparece primeiro).
 - Property `url` — prioriza `page.url`; caso contrário, `link_url`.
 
 Registrado via `SnippetViewSet` (`NavigationItemViewSet`) com o rótulo "Menus" na raiz da barra lateral do admin, com restrição de visibilidade a superusuários/grupos administrativos (ver `core/wagtail_hooks.py`).
+
+#### Renderização hierárquica (submenus multinível)
+- O templatetag `get_navigation_items`/`get_footer_items` (em `core/templatetags/navigation_tags.py`) monta a árvore via `_build_tree`, retornando apenas os itens raiz (sem `parent`). Os descendentes são obtidos no template via a property `get_children` do model (que consulta o reverse manager `children` ordenado por `sort_order`/`title`). O nome `get_children` (sem underscore) é usado porque o template engine do Django bloqueia atributos que começam com `_`.
+- O template parcial recursivo `mysite/templates/components/nav_item.html` renderiza profundidades arbitrárias de submenu usando Tailwind CSS (`relative group`, `absolute left-0 hidden group-hover:block group-focus-within:block`).
+- **Acessibilidade (WCAG 2.1 AA)**: o submenu abre por hover (`group-hover:block`) e por foco via teclado (`group-focus-within:block`), mantendo o foco visível. O item pai com submenu é um `<button>` com `aria-haspopup="true"` e `aria-expanded`; o submenu é um `<ul role="menu">` com itens `role="menuitem"`.
 
 ### Blocos StreamField (`core/blocks.py`)
 Repositório Central de Componentes — blocos `StructBlock` reutilizáveis, consumidos pela Home (e futuramente outras páginas) via `StreamField`. Cada bloco tem um template modular em `core/templates/blocks/<nome_bloco>.html`.
