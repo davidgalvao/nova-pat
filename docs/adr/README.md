@@ -1,6 +1,6 @@
 # Architecture Decision Records (ADR) — Nova PAT
 
-> Registro sequencial e rastreável das decisões de arquitetura do projeto. Cada ADR segue o formato **Contexto → Decisão → Consequências** e é a fonte de verdade para *por que* o código está como está. Se um `CLAUDE.md` de app e um ADR divergirem, o ADR é a fonte de verdade da decisão de arquitetura; o `CLAUDE.md` deve ser atualizado para refletir o ADR.
+> Registro sequencial e rastreável das decisões de arquitetura do projeto. Cada ADR segue o formato **Contexto → Decisão → Consequências** e é a fonte de verdade para *por que* o código está como está. Se um `ARCHITECTURE.md` de app e um ADR divergirem, o ADR é a fonte de verdade da decisão de arquitetura; o `ARCHITECTURE.md` deve ser atualizado para refletir o ADR.
 
 ## Como usar
 
@@ -20,8 +20,8 @@
 
 ## Decisões de negócio relacionadas (não são ADR, mas afetam arquitetura)
 
-Estas decisões foram fechadas junto com os ADRs e estão documentadas nos respectivos `CLAUDE.md`/`docs`:
+Estas decisões foram fechadas junto com os ADRs e estão documentadas nos respectivos `ARCHITECTURE.md`/`docs`:
 
-- **D1 — `user_canal`**: vínculo informativo (sem efeito de permissão) na fase atual; reavaliar com acesso a produção. Ver `usuarios/CLAUDE.md`.
-- **D2 — papel `editor`**: sem permissão implementada (igual a `convidado`); candidato futuro a "criar com aprovação pendente", vinculado ao ADR-004. Ver `usuarios/CLAUDE.md` e `docs/matriz-permissoes-rbac.md`.
-- **D5 — `FlexLayoutMixin`**: mantido com docstring de uso pretendido (landing pages), nunca em conteúdo. Ver `core/models.py` e `core/CLAUDE.md`.
+- **D1 — `user_canal`**: vínculo informativo (sem efeito de permissão) na fase atual; reavaliar com acesso a produção. Ver `usuarios/ARCHITECTURE.md`.
+- **D2 — papel `editor`**: sem permissão implementada (igual a `convidado`); candidato futuro a "criar com aprovação pendente", vinculado ao ADR-004. Ver `usuarios/ARCHITECTURE.md` e `docs/matriz-permissoes-rbac.md`.
+- **D5 — `FlexLayoutMixin`**: mantido com docstring de uso pretendido (landing pages), nunca em conteúdo. Ver `core/models.py` e `core/ARCHITECTURE.md`.

@@ -16,7 +16,7 @@ class FlexLayoutMixin(models.Model):
     É abstrato (não gera tabela) e documenta a intenção de arquitetura de
     suportar landing pages com layout flexível. **Não aplicar em conteúdo**
     (`ConteudoPage`/`AplicativoEducacionalPage`) — esconder header/footer não
-    faz sentido de negócio para recurso educacional. Ver `core/CLAUDE.md` e
+    faz sentido de negócio para recurso educacional. Ver `core/ARCHITECTURE.md` e
     `docs/adr/README.md` (seção D5). Se nenhuma landing page existir em ~6
     meses, reavaliar a remoção.
     """

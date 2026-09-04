@@ -1,4 +1,4 @@
-# curriculo/ — CLAUDE.md
+# curriculo/ — ARCHITECTURE.md
 
 ## Papel deste app
 `curriculo` modela a estrutura pedagógica que classifica o conteúdo: nível de ensino e componente curricular (disciplina). É consumido por `conteudos` via M2M (`ConteudoPage.componentes_curriculares`), mas a estrutura em si — níveis, categorias de componente, componentes — mora aqui.
@@ -25,21 +25,26 @@ CurricularComponent (nome, FK category, FK nivel) — cada componente pertence a
 ## Models
 
 ### `NivelEnsino` (Snippet)
-- `name`
+- `name` (único), `slug` (único), `ordem`, `is_active`.
+- `search_fields`: `name` (SearchField), `is_active`/`ordem` (FilterField).
 
 ### `CurricularComponentCategory` (Snippet)
-- `name` — agrupador (ex: "Ciências da Natureza", "Linguagens").
+- `name` (único) — agrupador (ex: "Ciências da Natureza", "Linguagens").
+- `slug` (único), `description`, `ordem`, `is_active`.
+- `parent` — FK para `self` (árvore hierárquica, `related_name="children"`).
+- `search_fields`: `name`/`description` (SearchField), `is_active`/`ordem` (FilterField).
 
 ### `CurricularComponent` (Snippet)
-- `name`
-- `category` — FK para `CurricularComponentCategory`.
-- `nivel` — FK para `NivelEnsino`.
+- `name`, `slug`, `description`, `ordem`, `is_active`.
+- `category` — FK para `CurricularComponentCategory` (obrigatória).
+- `nivel` — FK para `NivelEnsino` (obrigatória).
+- `search_fields`: `name` (SearchField), `category`/`nivel` (FilterField).
 
 ## Relação com `conteudos`
-`ConteudoPage.componentes_curriculares` é M2M direta para `CurricularComponent` (não para `NivelEnsino` — filtrar por nível de ensino na busca significa fazer join através de `CurricularComponent.nivel`, não via campo direto no conteúdo). Ver RN-L5 em `conteudos/CLAUDE.md`: mínimo 1 componente curricular por conteúdo é regra pedagógica obrigatória, não opcional.
+`ConteudoPage.componentes_curriculares` é M2M direta para `CurricularComponent` (não para `NivelEnsino` — filtrar por nível de ensino na busca significa fazer join através de `CurricularComponent.nivel`, não via campo direto no conteúdo). Ver RN-L5 em `conteudos/ARCHITECTURE.md`: mínimo 1 componente curricular por conteúdo é regra pedagógica obrigatória, não opcional.
 
 ## Relação com `canais` — filtro de categoria por canal
-Existe uma M2M entre `CanalPage` e `CurricularComponentCategory` (pivot `canal_cc_categories` no legado) — um canal pode restringir quais **categorias** de componente curricular são relevantes para ele (mesmo padrão de restrição de `tipo_conteudo` visto em `canais/CLAUDE.md`). Essa M2M já foi apontada em `canais/CLAUDE.md` como dependente deste app — implementar aqui como `CurricularComponentCategory.canais` (`ManyToManyField` para `canais.CanalPage`) ou o inverso, e confirmar a direção mais natural no Wagtail com quem for codar.
+**Resolvido**: a M2M entre `CanalPage` e `CurricularComponentCategory` (pivot `canal_cc_categories` no legado) foi implementada como `CanalPage.categorias_componente_permitidas` (M2M para `CurricularComponentCategory`, `related_name="canais_permitidos"` — ver `canais/ARCHITECTURE.md`). Um canal pode restringir quais **categorias** de componente curricular são relevantes para ele (mesmo padrão de restrição de `tipo_conteudo`). A direção da M2M vive em `canais.CanalPage`, não aqui.
 
 ## O que NÃO fazer neste app
 - Não tratar `CurricularComponent` como reaproveitável entre níveis — é FK fixa pra um nível só, replicar essa rigidez do legado, não "corrigir" pra M2M sem que isso seja pedido.

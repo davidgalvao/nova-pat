@@ -1,6 +1,6 @@
 # Matriz de Permissões (RBAC) — Nova PAT
 
-> Consolida em um único lugar as regras de autorização que hoje estão espalhadas em `usuarios/CLAUDE.md`, `conteudos/CLAUDE.md`, `aplicativos/CLAUDE.md` e `interacoes/CLAUDE.md`. Serve tanto de referência técnica quanto de material de treinamento para administradores/curadores (entregável exigido no ToR). Se um `CLAUDE.md` de app e esta matriz divergirem no futuro, o `CLAUDE.md` do app é a fonte de verdade viva — atualizar esta matriz junto.
+> Consolida em um único lugar as regras de autorização que hoje estão espalhadas em `usuarios/ARCHITECTURE.md`, `conteudos/ARCHITECTURE.md`, `aplicativos/ARCHITECTURE.md` e `interacoes/ARCHITECTURE.md`. Serve tanto de referência técnica quanto de material de treinamento para administradores/curadores (entregável exigido no ToR). Se um `ARCHITECTURE.md` de app e esta matriz divergirem no futuro, o `ARCHITECTURE.md` do app é a fonte de verdade viva — atualizar esta matriz junto.
 
 ## Papéis (5, confirmados no legado)
 
@@ -9,7 +9,7 @@
 | `super-admin` | Irrestrito, incluindo ações destrutivas permanentes. |
 | `admin` | Quase irrestrito, abaixo de super-admin em ações destrutivas (forceDelete, restore). |
 | `coordenador` | Curadoria de conteúdo/aplicativo — cria, edita, aprova. Não mexe em taxonomia estrutural. |
-| `editor` | Papel legado sem permissão ativa implementada (busca exaustiva no código não achou nenhuma Policy que o cite). Preservado por compatibilidade de dado (ver `usuarios/CLAUDE.md`) — não recriar propósito por padrão na NOVA PAT sem decisão de produto nova. |
+| `editor` | Papel legado sem permissão ativa implementada (busca exaustiva no código não achou nenhuma Policy que o cite). Preservado por compatibilidade de dado (ver `usuarios/ARCHITECTURE.md`) — não recriar propósito por padrão na NOVA PAT sem decisão de produto nova. |
 | `convidado` | Papel padrão de cadastro público. Usuário comum, sem privilégio de curadoria. |
 
 ## Matriz
@@ -39,9 +39,9 @@
 `*` = comportamento de `editor` nestas linhas é **igual a `convidado`** — decisão fechada (D2). Na fase de transposição, `editor` permanece sem permissão de curadoria, fiel ao legado (busca exaustiva confirmou que o papel não é checado em nenhuma Policy). Dar a `editor` a capacidade de "criar com aprovação pendente" seria mudança deliberada de regra de negócio, vinculada ao ADR-004 — ver `docs/adr/README.md` (seção D2).
 
 ## Regras que não são só "sim/não" — cuidado ao consultar esta tabela isoladamente
-- **Aprovação de conteúdo não é sobre poder editar, é sobre poder pular a fila.** `coordenador` pra cima publica direto; abaixo disso, no legado, nem chega a criar (RN-L1 em `conteudos/CLAUDE.md`).
+- **Aprovação de conteúdo não é sobre poder editar, é sobre poder pular a fila.** `coordenador` pra cima publica direto; abaixo disso, no legado, nem chega a criar (RN-L1 em `conteudos/ARCHITECTURE.md`).
 - **Playlist pessoal e Favorito/Avaliação/Like são construção nova** — não têm regra de autorização herdada do legado, a tabela reflete decisão já tomada (qualquer usuário logado), não comportamento confirmado em produção.
-- **`user_canal`** (vínculo de usuário a canal específico) pode restringir ainda mais o escopo de um `coordenador` (só canais vinculados) — **não está refletido nesta matriz** porque a semântica exata não foi confirmada (ver `usuarios/CLAUDE.md`). Se confirmado, esta matriz precisa de uma coluna extra de "escopo por canal".
+- **`user_canal`** (vínculo de usuário a canal específico) pode restringir ainda mais o escopo de um `coordenador` (só canais vinculados) — **não está refletido nesta matriz** porque a semântica exata não foi confirmada (ver `usuarios/ARCHITECTURE.md`). Se confirmado, esta matriz precisa de uma coluna extra de "escopo por canal".
 
 ## Quando atualizar este documento
 Toda vez que uma Policy nova for implementada (Wagtail permission ou lógica de role customizada), atualizar a linha correspondente aqui com o comportamento real implementado — não deixar esta matriz descrever intenção enquanto o código faz outra coisa.

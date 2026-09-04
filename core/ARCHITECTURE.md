@@ -1,4 +1,4 @@
-# core/ — CLAUDE.md
+# core/ — ARCHITECTURE.md
 
 ## Papel deste app
 `core` contém apenas abstrações e taxonomias **realmente compartilhadas** por mais de um app do domínio. Não é um "app de tudo genérico" — cada model aqui só existe se pelo menos dois outros apps dependem dele. Se uma taxonomia serve só a `conteudos`, ela mora em `conteudos`, não aqui.
@@ -23,7 +23,7 @@ Não adicione métodos vazios tipo `get_context()` só de placeholder — adicio
 Base para as duas entidades de recurso educacional que compartilham campos reais: `ConteudoPage` (app `conteudos`) e `AplicativoEducacionalPage` (app `aplicativos`).
 
 **Confirmado no schema legado** — o que é de fato compartilhado entre `conteudos` e `aplicativos`:
-- `canal` (FK para `CanalPage`, app `canais`) — os dois têm, **mas com comportamento diferente**: em `conteudos`, o canal é escolha real do autor/curador. Em `aplicativos`, o legado **fixa o canal por constante no código** (`Aplicativo::CANAL_ID = 9`, sempre o mesmo canal — provavelmente "Aplicativos Educacionais" na lista de 12 canais, ver `canais/CLAUDE.md`) — não é campo livre no formulário. Replicar essa fidelidade: `AplicativoEducacionalPage` não deveria oferecer campo de canal editável, deve fixar automaticamente na criação.
+- `canal` (FK para `CanalPage`, app `canais`) — os dois têm, **mas com comportamento diferente**: em `conteudos`, o canal é escolha real do autor/curador. Em `aplicativos`, o legado **fixa o canal por constante no código** (`Aplicativo::CANAL_ID = 9`, sempre o mesmo canal — provavelmente "Aplicativos Educacionais" na lista de 12 canais, ver `canais/ARCHITECTURE.md`) — não é campo livre no formulário. Replicar essa fidelidade: `AplicativoEducacionalPage` não deveria oferecer campo de canal editável, deve fixar automaticamente na criação.
 - `autor` (FK para usuário publicador, `user_id` no legado) — os dois têm.
 - **Tags** — **correção de suposição anterior**: tags **são** compartilhadas de fato. `Aplicativo.php` tem `belongsToMany(Tag::class, 'aplicativo_tag', ...)` — é a mesma classe `Tag`, só pivot diferente (`aplicativo_tag` vs `conteudo_tag`). Isso é trivial no Django com `django-taggit` (o model de tag já é global por natureza), mas vale registrar que a intenção do legado é reuso real da mesma taxonomia de tag entre os dois domínios.
 
@@ -34,6 +34,36 @@ Base para as duas entidades de recurso educacional que compartilham campos reais
 
 Se `AplicativoEducacionalPage` não usa `RecursoBasePage` (por ter pouquíssimo em comum — só canal e autor), fica a critério de quem implementar julgar se vale herança ou só repetir dois campos. Não é decisão fechada; se for repetir os dois campos, documentar aqui o porquê.
 
+> **Resolvido (ADR-001)**: `AplicativoEducacionalPage` **herda `RecursoBasePage`** — ver `docs/adr/0001-aplicativo-herda-recurso-base-page.md`.
+
+### `FlexLayoutMixin(models.Model)` — abstrata
+Mixin para páginas que precisam de controle sobre header, footer e classe CSS personalizada no body. Útil para landing pages e páginas avulsas que fogem do layout padrão.
+
+- Campos: `custom_body_class`, `hide_header`, `hide_footer`.
+- **Decisão (D5, fechada)**: mantido intencionalmente mesmo sem uso atual. É abstrato (não gera tabela) e documenta a intenção de arquitetura de suportar landing pages com layout flexível. **Não aplicar em conteúdo** (`ConteudoPage`/`AplicativoEducacionalPage`) — esconder header/footer não faz sentido de negócio para recurso educacional. Se nenhuma landing page existir em ~6 meses, reavaliar a remoção.
+
+### `NavigationItem(models.Model)` — Snippet
+Snippet para itens de navegação editáveis no admin (header e footer).
+
+- `title` — texto exibido no link.
+- `position` — choices `header`/`footer` (discriminador explícito de onde o item aparece — nunca inferir de IDs).
+- `page` — FK para `Page` (página interna; se preenchida, tem prioridade sobre URL externa).
+- `link_url` — URL externa/caminho arbitrário (usada apenas se `page` vazia).
+- `sort_order` — ordenação (menor aparece primeiro).
+- Property `url` — prioriza `page.url`; caso contrário, `link_url`.
+
+Registrado via `SnippetViewSet` (`NavigationItemViewSet`) com o rótulo "Menus" na raiz da barra lateral do admin, com restrição de visibilidade a superusuários/grupos administrativos (ver `core/wagtail_hooks.py`).
+
+### Blocos StreamField (`core/blocks.py`)
+Repositório Central de Componentes — blocos `StructBlock` reutilizáveis, consumidos pela Home (e futuramente outras páginas) via `StreamField`. Cada bloco tem um template modular em `core/templates/blocks/<nome_bloco>.html`.
+
+- `HeroBlock` — seção de destaque principal (título, subtítulo, imagem/vídeo de fundo, CTAs).
+- `FullBannerBlock` — banner de largura total com imagem de fundo e CTA.
+- `CarrosselCategoriaBlock` — carrossel horizontal de conteúdos por categoria (com `get_context`).
+- `DestaquesManuaisBlock` — grade de destaques selecionados manualmente (páginas).
+- `FeatureGridBlock` — grade de recursos/features (ícone, título, texto, link).
+- `HomeStreamBlock` — `StreamBlock` que agrega os blocos acima, usado no `body` da `HomePage`.
+
 ### Taxonomias compartilhadas (Snippets)
 Confirmar antes de criar: um Snippet só entra em `core` se for usado por mais de um app. Candidatos identificados no schema legado que **são exclusivos de `conteudos`** (não devem morar em `core`): `Tipo` (com `options.formatos`, validação de extensão por tipo), `Licenca` (árvore), `NivelEnsino`, `CurricularComponent`. Esses ficam no app `conteudos` ou `curriculo`, não em `core`.
 
@@ -41,3 +71,5 @@ Confirmar antes de criar: um Snippet só entra em `core` se for usado por mais d
 - Não crie um model "genérico" de categoria/taxonomia pensando em reuso futuro hipotético. O legado já mostrou que categoria de conteúdo e categoria de aplicativo são coisas diferentes — replicar essa separação é fidelidade ao sistema real, não falta de abstração.
 - Não adicione lógica de aprovação/moderação aqui — isso é regra de `conteudos`, não de `core`.
 - Pausar e perguntar antes de decidir se um campo novo é "compartilhado o suficiente" pra entrar em `core`. Regra prática: só entra se **dois ou mais apps já implementados** precisam dele, não por antecipação.
+- Não aplicar `FlexLayoutMixin` em conteúdo (`ConteudoPage`/`AplicativoEducacionalPage`) — decisão D5.
+- Não adicionar campos de layout em `BasePage` — eles vivem no `FlexLayoutMixin`.

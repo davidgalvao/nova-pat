@@ -101,12 +101,12 @@ Decisões que fecham o modelo:
 - Serie é independente de Canal (não herda nem é restrito a um canal específico).
 - Episódio **não é uma entidade nova** — é a própria `ConteudoPage` (mesmo model de vídeo que já existe), só posicionada na árvore como filha de uma `Temporada` em vez de um `CanalPage`. O indicador visual de "você está assistindo um episódio de uma série" (breadcrumb Serie › Temporada › Episódio, lista de outros episódios) é resolvido no template a partir da posição na árvore (`get_parent()`/`get_siblings()`), sem precisar de campo extra pra isso.
 - **Confirmado no schema legado**: `conteudos.canal_id` é FK direta (`nullable`, mas nunca múltipla) — não existe tabela pivô `conteudo_canal`. Um conteúdo pertence a no máximo um canal. Isso reforça manter `canal` como FK simples na `ConteudoPage` (não M2M), inclusive para episódios.
-- **Sobre o nome "Serie" (não "Programa")**: no legado, "Programa" já é o termo usado pela equipe pra uma peça de TV isolada (ex: um telejornal), sem relação com hierarquia de série/temporada. Pra não confundir curador nem dev, a entidade nova foi renomeada de `Programa` para `Serie`. Ver `canais/CLAUDE.md` para a nota completa sobre esse conflito de nomenclatura.
+- **Sobre o nome "Serie" (não "Programa")**: no legado, "Programa" já é o termo usado pela equipe pra uma peça de TV isolada (ex: um telejornal), sem relação com hierarquia de série/temporada. Pra não confundir curador nem dev, a entidade nova foi renomeada de `Programa` para `Serie`. Ver `canais/ARCHITECTURE.md` para a nota completa sobre esse conflito de nomenclatura.
 
 ---
 
 ## Varredura de fechamento — entidades do legado ainda sem app atribuído
-Antes de escrever `importador/CLAUDE.md`, foi feita uma varredura cruzando todos os `Policies`/`Models` do legado contra os 8 apps já documentados (`core`, `canais`, `conteudos`, `series`, `curriculo`, `interacoes`, `aplicativos`, `usuarios`). Achados:
+Antes de escrever `importador/ARCHITECTURE.md`, foi feita uma varredura cruzando todos os `Policies`/`Models` do legado contra os 8 apps já documentados (`core`, `canais`, `conteudos`, `series`, `curriculo`, `interacoes`, `aplicativos`, `usuarios`). Achados:
 
 ### `PlayList` — correção de status do RF002
 **RF002 estava marcado 🆕 ("sem equivalente no legado") — errado.** `PlayList` existe (`app/Models/PlayList.php`, extends `Document`). Mas o legado implementa só **metade** do que o RF002 pede: a `PlayListPolicy::create()` restringe criação a `super-admin`/`admin` — bate com a parte do RF002 de "administradores/curadores podem criar playlists temáticas", mas **não existe** a outra metade pedida ("usuários logados podem criar suas próprias playlists"). Ou seja: playlist curada por admin é transposição; playlist pessoal de usuário comum é construção nova.
@@ -132,10 +132,10 @@ Simples (`name`, `email`, `url`, `subject`, `message`, `action`). Criação aber
 Existe `ResumoPolicy.php`, mas **o model `Resumo` não existe** no repositório — foi apagado (ou nunca criado) e a Policy ficou órfã. Não há nada para migrar aqui; mencionar só para não gerar confusão caso alguém veja a Policy e presuma que existe uma feature "Resumo" ativa.
 
 ### Nomenclatura — nada de errado adicional encontrado
-Revisão cruzada de nomes de model/Policy contra os 8 `CLAUDE.md` já escritos não achou mais inconsistência de nome além das já corrigidas (`AplicativoPage` → `AplicativoEducacionalPage`, `Programa` → `Serie`, papéis reais `editor`/`convidado`).
+Revisão cruzada de nomes de model/Policy contra os 8 `ARCHITECTURE.md` já escritos não achou mais inconsistência de nome além das já corrigidas (`AplicativoPage` → `AplicativoEducacionalPage`, `Programa` → `Serie`, papéis reais `editor`/`convidado`).
 
 ---
 
-## Como isso deve ser usado nos `CLAUDE.md` por app
+## Como isso deve ser usado nos `ARCHITECTURE.md` por app
 
-Cada app (`conteudos/`, `curriculo/`, etc.) deve referenciar a seção correspondente deste documento e do `schema-legado.md` no seu próprio `CLAUDE.md`, indicando explicitamente se o app está em fase de **transposição** (RF marcado ✅) ou **construção nova** (RF marcado 🆕/⚠️) — isso evita que um agente de IA tente "adivinhar" uma regra de negócio que na verdade ainda não foi decidida.
+Cada app (`conteudos/`, `curriculo/`, etc.) deve referenciar a seção correspondente deste documento e do `schema-legado.md` no seu próprio `ARCHITECTURE.md`, indicando explicitamente se o app está em fase de **transposição** (RF marcado ✅) ou **construção nova** (RF marcado 🆕/⚠️) — isso evita que um agente de IA tente "adivinhar" uma regra de negócio que na verdade ainda não foi decidida.

@@ -31,5 +31,5 @@ A alternativa seria usar `union()` nativo do Django, mas os dois models têm cam
 - Potencial custo de query com acervo muito grande.
 
 **Mitigação:**
-- Documentar a limitação no `search/views.py` e no `search/CLAUDE.md`.
+- Documentar a limitação no `search/views.py` e no `search/ARCHITECTURE.md`.
 - Monitorar performance; reavaliar com `union()`/abas se necessário.

@@ -3,7 +3,7 @@ Repositório Central de Componentes (blocos StreamField reutilizáveis).
 
 Padrões consagrados de UI (Hero, Banners, Grids) implementados como
 `StructBlock` do Wagtail, consumidos pela Home (e futuramente por outras
-páginas) via `StreamField`. Segue `core/CLAUDE.md`: blocos reutilizáveis
+páginas) via `StreamField`. Segue `core/ARCHITECTURE.md`: blocos reutilizáveis
 moram aqui, não campos de layout genéricos em `BasePage`.
 
 Cada bloco tem um template modular correspondente em

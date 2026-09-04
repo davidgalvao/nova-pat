@@ -1,4 +1,4 @@
-# canais/ — CLAUDE.md
+# canais/ — ARCHITECTURE.md
 
 ## Papel deste app
 `canais` modela o agrupador de topo do site (TV Anísio Teixeira, Rádio Anísio Teixeira, EMITEC, Recursos Educacionais Abertos, Projetos Artísticos — nomes confirmados em produção). É `Page` hierárquica no Wagtail (`CanalPage`), pai de conteúdo/aplicativo.
@@ -43,20 +43,26 @@ Alguns dos 12 canais podem ser remanescentes da época da pandemia e não fazer 
 
 ## Model `CanalPage(BasePage)`
 
-Campos confirmados no legado (`Canal.php` + migration):
-- `name`, `description`, `slug` (único)
+Campos implementados (ver `canais/models.py`):
+- `name` (único), `description` (RichTextField), `slug` (único)
 - `is_active` (boolean)
 - `token` — texto, **oculto na API/serialização** no legado (`protected $hidden = ['token']`). É credencial de conexão com API externa (provável integração tipo YouTube/Spotify, coerente com a seção de "Integrações Mandatórias" do ToR). Nunca expor esse campo em endpoint público; se for reimplementado, usar campo criptografado, não texto plano.
-- `options` (jsonb) — carrega pelo menos:
-  - cor do canal (usada em UI, ex: badge colorido por canal)
-  - `tipo_conteudo`: lista de IDs de `Tipo` — **regra de negócio real**: um canal pode restringir quais tipos de conteúdo são relevantes/exibidos nele. Não é decoração, é filtro ativo (`getTiposAttribute` no legado consulta `tipos` por esses IDs). Precisa ser preservado — provavelmente como M2M `CanalPage.tipos_permitidos` em vez de jsonb solto, já que Wagtail/Django lidam melhor com relação estruturada do que array de ID dentro de jsonb.
+- `options` (JSONField) — carrega configurações flexíveis (ex: cor do canal usada em UI, badge colorido por canal). O antigo `tipo_conteudo` (array de IDs) foi **movido para a M2M `tipos_permitidos`** (ver abaixo).
+- `tipos_permitidos` — **M2M para `conteudos.Tipo`** (já implementada). **Regra de negócio real**: um canal pode restringir quais tipos de conteúdo são relevantes/exibidos nele. Não é decoração, é filtro ativo (`getTiposAttribute` no legado consulta `tipos` por esses IDs). Estruturado como M2M (não jsonb solto) porque Wagtail/Django lidam melhor com relação estruturada do que array de ID dentro de jsonb.
+- `categorias_componente_permitidas` — **M2M para `curriculo.CurricularComponentCategory`** (já implementada). Restringe quais categorias de componente curricular são relevantes para o canal (mesmo padrão de `tipos_permitidos`).
+
+Configuração de árvore de páginas:
+- `parent_page_types = ["wagtailcore.Page"]` — canais ficam no nível superior (filhos de root).
+- `subpage_types = ["conteudos.ConteudoPage", "aplicativos.AplicativoEducacionalPage"]`.
+
+`get_context()` adiciona ao contexto os `conteudos` e `aplicativos` deste canal (filhos diretos, `live()`, ordenados por `-first_published_at`).
 
 ## Relações confirmadas
 - `conteudos` — hasMany (via `canal_id` em `ConteudoPage`, FK simples, **não M2M** — ver `docs/requisitos-vs-legado.md`, seção RF008, achado confirmado em produção).
 - `aplicativos` — hasMany (via `canal_id` em `AplicativoEducacionalPage`).
-- `categories` — hasMany, escopada por canal (`categories.canal_id`), só ativas, só raiz (com subcategorias aninhadas). Esta é a árvore de categoria de **conteúdo**, exclusiva desse domínio (ver `core/CLAUDE.md` — não confundir com a categoria de aplicativo).
-- `appsCategories` — hasMany de `AplicativoCategory`, também escopada por canal. Árvore **separada** da anterior (confirma achado do `core/CLAUDE.md`: categoria de conteúdo ≠ categoria de aplicativo, mesmo dentro do mesmo canal).
-- `filterCategoryCC` — M2M com `CurricularComponentCategory` via pivot `canal_cc_categories`. Um canal pode restringir quais categorias de componente curricular são relevantes pra ele (mesmo padrão de restrição de `tipo_conteudo`). Depende do app `curriculo` — coordenar com quem implementar aquele app antes de fechar essa M2M.
+- `categories` — hasMany, escopada por canal (`categories.canal_id`), só ativas, só raiz (com subcategorias aninhadas). Esta é a árvore de categoria de **conteúdo**, exclusiva desse domínio (ver `core/ARCHITECTURE.md` — não confundir com a categoria de aplicativo).
+- `appsCategories` — hasMany de `AplicativoCategory`, também escopada por canal. Árvore **separada** da anterior (confirma achado do `core/ARCHITECTURE.md`: categoria de conteúdo ≠ categoria de aplicativo, mesmo dentro do mesmo canal).
+- `filterCategoryCC` — M2M com `CurricularComponentCategory` via pivot `canal_cc_categories` (**implementada como `categorias_componente_permitidas`**). Um canal pode restringir quais categorias de componente curricular são relevantes pra ele (mesmo padrão de restrição de `tipo_conteudo`). Depende do app `curriculo`.
 
 ## ✅ Resolvido — "Programas" (rótulo de categoria) ≠ `Serie` (entidade nova do RF008)
 Confirmado com o dono do produto: o rótulo hardcoded "Programas" no legado (`Canal::getCategoryNameAttribute()`) se refere ao jargão de TV — uma peça televisiva isolada (ex: um telejornal é "um programa"), **não** a uma hierarquia de série/temporada/episódio. É só o nome de exibição da árvore de `categories` daquele canal, sem relação com o RF008.
@@ -67,7 +73,7 @@ Para não colidir os dois conceitos, a entidade nova do RF008 foi **renomeada de
 Serie → Temporada → ConteudoPage (episódio)
 ```
 
-`canais/CLAUDE.md` não precisa de mudança de model por causa disso — é só um alerta de nomenclatura para quem for implementar o app `series/` (anteriormente cogitado como `programas/`). A categoria "Programas" de um canal continua sendo `categories` comum, sem relação com `Serie`.
+`canais/ARCHITECTURE.md` não precisa de mudança de model por causa disso — é só um alerta de nomenclatura para quem for implementar o app `series/` (anteriormente cogitado como `programas/`). A categoria "Programas" de um canal continua sendo `categories` comum, sem relação com `Serie`.
 
 ## O que NÃO fazer neste app
 - Não expor `token` em nenhum serializer/API pública.

@@ -1,9 +1,9 @@
-# importador/ — CLAUDE.md
+# importador/ — ARCHITECTURE.md
 
 ## Papel deste app
 `importador` migra dado do Postgres do sistema legado (Laravel) pro schema novo (Django/Wagtail). É **isolado e descartável** — depois que a migração de produção rodar com sucesso e for validada, este app pode sair do `INSTALLED_APPS` e do repositório. Nenhum outro app deve depender de nada daqui.
 
-Fonte da verdade: `docs/schema-legado.md`, `docs/requisitos-vs-legado.md`, e o `CLAUDE.md` de cada app de destino (`core`, `canais`, `conteudos`, `series`, `curriculo`, `interacoes`, `aplicativos`, `usuarios`, `analytics`).
+Fonte da verdade: `docs/schema-legado.md`, `docs/requisitos-vs-legado.md`, e o `ARCHITECTURE.md` de cada app de destino (`core`, `canais`, `conteudos`, `series`, `curriculo`, `interacoes`, `aplicativos`, `usuarios`, `analytics`).
 
 ## Pré-requisito antes de rodar isto de verdade
 Todos os 9 apps de destino precisam estar com os models finais migrados (`makemigrations`/`migrate` aplicados) antes de importar dado real — este app não é hora de descobrir schema, é hora de preencher schema já decidido.
@@ -20,8 +20,8 @@ A ordem abaixo respeita FK: nada pode ser criado antes do que ele referencia.
 4. **Taxonomias de `conteudos`**: `tipos`, `licenses`, `categories` (esta última depende de `canal` já migrado, é escopada por canal).
 5. **Taxonomia de `aplicativos`**: `aplicativo_categories` — **confirmar durante implementação** se também é escopada por canal como `categories`, isso não foi verificado com certeza no schema legado.
 6. **`conteudos`**: `conteudos` → `ConteudoPage`, filha do `CanalPage` correspondente. Nesta etapa também popular M2M: `conteudo_tag` → tags, `conteudo_curricular_component` → componentes curriculares.
-7. **`aplicativos`**: `aplicativos` → `AplicativoEducacionalPage`. Canal sempre o mesmo (fixo por constante no legado, `CANAL_ID=9` — **confirmar no admin de produção qual canal real é esse antes de rodar**, ver `canais/CLAUDE.md`). M2M `aplicativo_tag` → tags.
-8. **`interacoes`**: `comentarios` → `Comentario` (polimórfico conteúdo/aplicativo, ver decisão de login+aprovação em `interacoes/CLAUDE.md` — dado histórico migrado não precisa passar pela regra de aprovação nova, só marcar `is_approved=True` para tudo que já era público antes). `conteudos_likes` → `Like`, migrando **só como like simples** (decisão fechada): migrar apenas as linhas onde o registro representa "curtiu" de fato; se o campo `like` (boolean nullable) do legado tiver valor `false` ou `null`, **não criar linha** (existência da linha já significa curtida, não precisa do booleano).
+7. **`aplicativos`**: `aplicativos` → `AplicativoEducacionalPage`. Canal sempre o mesmo (fixo por constante no legado, `CANAL_ID=9` — **confirmar no admin de produção qual canal real é esse antes de rodar**, ver `canais/ARCHITECTURE.md`). M2M `aplicativo_tag` → tags.
+8. **`interacoes`**: `comentarios` → `Comentario` (polimórfico conteúdo/aplicativo, ver decisão de login+aprovação em `interacoes/ARCHITECTURE.md` — dado histórico migrado não precisa passar pela regra de aprovação nova, só marcar `is_approved=True` para tudo que já era público antes). `conteudos_likes` → `Like`, migrando **só como like simples** (decisão fechada): migrar apenas as linhas onde o registro representa "curtiu" de fato; se o campo `like` (boolean nullable) do legado tiver valor `false` ou `null`, **não criar linha** (existência da linha já significa curtida, não precisa do booleano).
 9. **Playlist**: extrair de `documents` as linhas que seguem o padrão de playlist (legado não tem coluna discriminadora — usar a convenção observada, ex: prefixo `pl-` no `name`, ver `docs/requisitos-vs-legado.md`). Reconstruir a lista de conteúdos do array jsonb `document.ids` como M2M real (through-model com campo de ordem, replicando a ordem original do array) — **não copiar o padrão jsonb do legado pro novo schema**.
 10. **`Document` genérico** (linhas de `documents` que não são playlist): confirmar com o cliente se ainda estão em uso antes de migrar — pode ser dado morto.
 11. **`Options`**: migrar para o padrão nativo do Wagtail (`BaseSiteSetting`), não como app próprio.

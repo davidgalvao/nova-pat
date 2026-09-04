@@ -3,7 +3,7 @@
 > Atende à exigência do ToR de conformidade total com a LGPD (Lei nº 13.709/2018). Este documento identifica **onde** dado pessoal existe no sistema, **por quê** é coletado, **quem** acessa, e **decisões pendentes** que precisam de definição formal antes do lançamento. Não substitui assessoria jurídica — é o levantamento técnico que uma análise jurídica formal (RIPD/DPIA, se exigido) usaria como insumo.
 
 ## Por que este documento existe agora, nesta fase
-A arquitetura de dados já está fechada nos `CLAUDE.md` de cada app. Este documento cruza essa arquitetura já decidida com a pergunta "isso é dado pessoal, e se for, está protegido do jeito certo?" — antes da implementação, não depois.
+A arquitetura de dados já está fechada nos `ARCHITECTURE.md` de cada app. Este documento cruza essa arquitetura já decidida com a pergunta "isso é dado pessoal, e se for, está protegido do jeito certo?" — antes da implementação, não depois.
 
 ## Inventário de dado pessoal por app
 
@@ -11,7 +11,7 @@ A arquitetura de dados já está fechada nos `CLAUDE.md` de cada app. Este docum
 | Dado | Sensibilidade | Base legal provável | Observação |
 |---|---|---|---|
 | `name`, `email` | Pessoal | Execução de contrato/cadastro | Coletado no cadastro público (self-registration). |
-| `password` | Pessoal (credencial) | Execução de contrato | Nunca armazenado em texto plano — hash (ver `importador/CLAUDE.md` para migração de hash bcrypt→Django). |
+| `password` | Pessoal (credencial) | Execução de contrato | Nunca armazenado em texto plano — hash (ver `importador/ARCHITECTURE.md` para migração de hash bcrypt→Django). |
 | `role` | Pessoal | Execução de contrato | Não sensível isoladamente, mas define nível de acesso — vazamento revela estrutura de privilégio. |
 | `verification_token` | Pessoal (credencial temporária) | Execução de contrato | Token de verificação de e-mail — deve expirar, não ficar retido indefinidamente. |
 
@@ -20,21 +20,21 @@ A arquitetura de dados já está fechada nos `CLAUDE.md` de cada app. Este docum
 ### `interacoes`
 | Dado | Sensibilidade | Observação |
 |---|---|---|
-| `Comentario.body` | Pessoal, pode conter dado sensível de terceiro | Usuário pode escrever qualquer coisa em texto livre — moderação (já prevista em `interacoes/CLAUDE.md`) também é controle de proteção de dado, não só qualidade de conteúdo. |
+| `Comentario.body` | Pessoal, pode conter dado sensível de terceiro | Usuário pode escrever qualquer coisa em texto livre — moderação (já prevista em `interacoes/ARCHITECTURE.md`) também é controle de proteção de dado, não só qualidade de conteúdo. |
 | `Like`, `FavoritoConteudo`, `AvaliacaoConteudo` | Pessoal (comportamental) | Revela preferência/comportamento de uso do usuário — combinado, forma perfil de uso individual. |
 
 ### `analytics`
 | Dado | Sensibilidade | Observação |
 |---|---|---|
 | `qt_access`, `qt_downloads` (agregados por conteúdo) | Nível de conteúdo, não de indivíduo | Números agregados, sem problema de exposição — são estatística de conteúdo, não de pessoa. |
-| Par usuário↔conteúdo (`Like.user_id`+`conteudo_id`, mesmo padrão em `FavoritoConteudo`/`AvaliacaoConteudo`) | Pessoal (comportamental), mas **necessário para a própria funcionalidade** | Esse cruzamento **precisa existir** no banco — é o que permite, por exemplo, saber se um usuário já curtiu um conteúdo (evitando curtida infinita/duplicada), já modelado via `unique_together` em `interacoes/CLAUDE.md`. Não é um problema de dado existir; é decisão de onde ele pode ser **exposto**. |
+| Par usuário↔conteúdo (`Like.user_id`+`conteudo_id`, mesmo padrão em `FavoritoConteudo`/`AvaliacaoConteudo`) | Pessoal (comportamental), mas **necessário para a própria funcionalidade** | Esse cruzamento **precisa existir** no banco — é o que permite, por exemplo, saber se um usuário já curtiu um conteúdo (evitando curtida infinita/duplicada), já modelado via `unique_together` em `interacoes/ARCHITECTURE.md`. Não é um problema de dado existir; é decisão de onde ele pode ser **exposto**. |
 
 **Decisão fechada — "caixa preta" no dashboard de `analytics`**: o par usuário↔conteúdo existe no banco por necessidade funcional, mas **nunca deve ser exposto, consultável ou cruzável no painel administrativo** (nem como filtro, nem como exportação, nem como drill-down a partir de um agregado). O app `analytics` só deve ler e exibir números já agregados por conteúdo ("este conteúdo tem X curtidas, Y favoritos, média Z de avaliação") — nunca uma consulta que responda "quais conteúdos o usuário W curtiu" ou "quais usuários curtiram o conteúdo X". Essa restrição vale mesmo para `super-admin` no painel de relatório — se um cruzamento individual for genuinamente necessário para alguma investigação pontual (ex: moderação de abuso), isso deve passar por acesso direto ao banco/admin de Django com log de acesso, não por uma feature do dashboard de analytics pensada para consulta recorrente.
 
-Atualizar `analytics/CLAUDE.md` com esta restrição explícita quando o dashboard for implementado — hoje o arquivo já diz "não usar como filtro/ordenação" para `media_avaliacao`, mas não formaliza a proibição de drill-down individual; vale reforçar lá também.
+Atualizar `analytics/ARCHITECTURE.md` com esta restrição explícita quando o dashboard for implementado — hoje o arquivo já diz "não usar como filtro/ordenação" para `media_avaliacao`, mas não formaliza a proibição de drill-down individual; vale reforçar lá também.
 
 ### `usuarios` (vínculo) + logs de acesso (não modelado ainda)
-Nenhum log de acesso/IP foi mapeado nos `CLAUDE.md` até agora — mas RNF de Segurança do ToR (OWASP, testes de penetração) e a própria noção de "relatório de uso" (RF006) provavelmente vão gerar log com IP/timestamp em algum nível de infraestrutura (servidor web, WAF, etc.), mesmo que não vire model Django. **Isso também é dado pessoal pela LGPD** (IP é considerado dado pessoal). Não documentado ainda — pendência a resolver quando a infraestrutura de deploy for definida.
+Nenhum log de acesso/IP foi mapeado nos `ARCHITECTURE.md` até agora — mas RNF de Segurança do ToR (OWASP, testes de penetração) e a própria noção de "relatório de uso" (RF006) provavelmente vão gerar log com IP/timestamp em algum nível de infraestrutura (servidor web, WAF, etc.), mesmo que não vire model Django. **Isso também é dado pessoal pela LGPD** (IP é considerado dado pessoal). Não documentado ainda — pendência a resolver quando a infraestrutura de deploy for definida.
 
 ## Regime específico — a Nova PAT é operada pelo Poder Público, não por empresa privada
 A LGPD tem um capítulo próprio para isso: **Capítulo IV (Art. 23 a 32), "Do Tratamento de Dados Pessoais pelo Poder Público"**. Como a Nova PAT é sistema da Secretaria da Educação do Estado da Bahia, esse capítulo se aplica além das regras gerais — não é o mesmo regime de uma empresa privada comum. Pontos que afetam decisão de arquitetura/produto:
@@ -48,11 +48,11 @@ A LGPD tem um capítulo próprio para isso: **Capítulo IV (Art. 23 a 32), "Do T
 **Recomendação prática**: como isso é regime jurídico específico de ente público, a leitura completa dos Art. 23-32 (não só o resumo acima) deveria ser feita por quem responde juridicamente pelo contrato — este documento é o levantamento técnico, não substitui essa leitura formal.
 
 ## Direitos do titular — o que falta implementar
-A LGPD garante ao titular direito de acesso, correção, exclusão e portabilidade dos próprios dados. Nenhum dos `CLAUDE.md` de app até agora prevê:
+A LGPD garante ao titular direito de acesso, correção, exclusão e portabilidade dos próprios dados. Nenhum dos `ARCHITECTURE.md` de app até agora prevê:
 - **Resolvido**: exportação de dado pessoal do próprio usuário — botão no perfil que gera o download dos dados do usuário (perfil, comentários, avaliações, favoritos). Formato exato (JSON, PDF legível) e escopo exato do que entra no export ficam para quando a implementação for desenhada, mas o mecanismo em si (self-service, não pedido manual por e-mail) está decidido.
 - **Parcialmente resolvido, com uma exceção a confirmar**: fluxo de exclusão de conta com efeito real nos dados relacionados. Para `Like`, `FavoritoConteudo`, `AvaliacaoConteudo`: mantém a decisão de **apagar** (não anonimizar) ao excluir a conta — são métricas de engajamento puras, sem valor de conteúdo próprio, e anonimizar manteria a linha existindo, abrindo brecha para exploit de conta descartável inflando engajamento sem risco de reversão real.
 
-  **`Comentario` é diferente — resolvido: anonimizar, não apagar.** Comentário carrega conteúdo substantivo (texto), não é só sinal de engajamento — apagar duro quebraria contexto de moderação (histórico do que foi publicado e por quem, útil se houver denúncia/investigação posterior) e, se no futuro houver resposta a comentário, apagar duro deixaria resposta órfã. Ao excluir a conta, `Comentario` mantém o texto e a trilha de moderação, mas remove/desvincula a identidade do autor. Atualizado em `interacoes/CLAUDE.md`.
+  **`Comentario` é diferente — resolvido: anonimizar, não apagar.** Comentário carrega conteúdo substantivo (texto), não é só sinal de engajamento — apagar duro quebraria contexto de moderação (histórico do que foi publicado e por quem, útil se houver denúncia/investigação posterior) e, se no futuro houver resposta a comentário, apagar duro deixaria resposta órfã. Ao excluir a conta, `Comentario` mantém o texto e a trilha de moderação, mas remove/desvincula a identidade do autor. Atualizado em `interacoes/ARCHITECTURE.md`.
 - Prazo de retenção — quanto tempo um dado de usuário inativo é mantido antes de expurgo. Não definido em nenhum documento até agora.
 
 ## Retenção e minimização — não existe TTL único fixado em lei

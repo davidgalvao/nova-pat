@@ -26,7 +26,7 @@ Tipo de mídia do conteúdo (vídeo, documento, podcast, etc.). Cada tipo carreg
 Árvore de licenças (modelo tipo Creative Commons — licença pode ter sublicenças).
 
 ### `niveis_ensino` + `curricular_components_categories` + `curricular_components`
-Estrutura curricular: nível de ensino → categoria de componente → componente curricular (disciplina). M2M com `conteudos`. **Correção**: a suposição anterior de que a plataforma cobre só "1º ao 3º ano do Ensino Médio" está errada — confirmado em produção que também há conteúdo de Ensino Fundamental (URLs `rotinas-de-estudo/ensino-fundamental-1` e `rotinas-de-estudo/ensino-medio`). Ver `curriculo/CLAUDE.md` para a nota completa; valores exatos de `niveis_ensino` precisam ser confirmados no admin de produção.
+Estrutura curricular: nível de ensino → categoria de componente → componente curricular (disciplina). M2M com `conteudos`. **Correção**: a suposição anterior de que a plataforma cobre só "1º ao 3º ano do Ensino Médio" está errada — confirmado em produção que também há conteúdo de Ensino Fundamental (URLs `rotinas-de-estudo/ensino-fundamental-1` e `rotinas-de-estudo/ensino-medio`). Ver `curriculo/ARCHITECTURE.md` para a nota completa; valores exatos de `niveis_ensino` precisam ser confirmados no admin de produção.
 
 ### `tags`
 M2M com conteúdo, com contador de uso em busca.

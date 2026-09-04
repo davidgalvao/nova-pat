@@ -274,7 +274,7 @@ class User(AbstractUser):
         True se o usuário tem o papel `editor`.
 
         Nota: o papel `editor` não tem permissão implementada no legado (igual a
-        `convidado`). Ver decisão D2 em `docs/adr/README.md` e `usuarios/CLAUDE.md`.
+        `convidado`). Ver decisão D2 em `docs/adr/README.md` e `usuarios/ARCHITECTURE.md`.
         """
         return self.role and self.role.slug == "editor"
 

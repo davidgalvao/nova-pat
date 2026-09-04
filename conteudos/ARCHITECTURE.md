@@ -1,7 +1,7 @@
-# conteudos/ — CLAUDE.md
+# conteudos/ — ARCHITECTURE.md
 
 ## Papel deste app
-`conteudos` é a entidade central do sistema — o recurso educacional em si (vídeo, documento, áudio, apresentação, etc.). Contém `ConteudoPage` e as taxonomias que são **exclusivas** desse domínio (não compartilhadas com `aplicativos` — ver `core/CLAUDE.md` para a lista do que não é compartilhado e por quê).
+`conteudos` é a entidade central do sistema — o recurso educacional em si (vídeo, documento, áudio, apresentação, etc.). Contém `ConteudoPage` e as taxonomias que são **exclusivas** desse domínio (não compartilhadas com `aplicativos` — ver `core/ARCHITECTURE.md` para a lista do que não é compartilhado e por quê).
 
 Fonte da verdade: `docs/schema-legado.md`, `docs/requisitos-vs-legado.md`. Este app tem o maior volume de regra de negócio herdada do legado — ler os dois documentos inteiros antes de alterar qualquer coisa aqui, não só a seção de conteúdo.
 
@@ -10,13 +10,14 @@ A maior parte deste app é replicar o legado fielmente. A exceção é o suporte
 
 ## Model `ConteudoPage(RecursoBasePage)`
 
-Campos próprios (além de `canal` e `autor`, herdados de `RecursoBasePage`):
-- `tipo` — FK para `Tipo` (snippet deste app, não do `core` — ver abaixo).
-- `category` — FK para `Categoria` (snippet deste app, árvore própria escopada por canal; **não é a mesma árvore** de `AplicativoCategoria` no app `aplicativos` — confirmado no schema legado, ver `core/CLAUDE.md`).
+Campos próprios (além de `canal`, `autor` e `tags`, herdados de `RecursoBasePage`):
+- `tipo` — FK para `Tipo` (snippet deste app, não do `core` — ver abaixo). É a **taxonomia pedagógica** (categoria usada em filtros de busca e currículo).
+- `mecanismo_exibicao` — `CharField` com choices (7 mecanismos: `video`, `audio`, `documento_pdf`, `apresentacao`, `download_binario`, `link_externo`, `animacao_externa`). É o **formato técnico** que determina a view de renderização (player, visualizador, download, link externo). **Distinto de `tipo`** — decisão fechada em `CONTEXT.MD` seção 3 (ver seção "Player por mecanismo de exibição" abaixo).
+- `category` — FK para `CategoriaConteudo` (snippet deste app, árvore própria escopada por canal; **não é a mesma árvore** de `AplicativoCategory` no app `aplicativos` — confirmado no schema legado, ver `core/ARCHITECTURE.md`).
 - `license` — FK para `Licenca` (snippet deste app, estrutura em árvore tipo Creative Commons). Licença é exclusiva de conteúdo — `aplicativos` não tem licença no legado, não adicionar lá.
-- `tags` — via `django-taggit`.
 - `componentes_curriculares` — `ParentalManyToManyField` para `CurricularComponent` (app `curriculo`, cross-app).
 - `arquivo`/upload — documento/mídia associado, validado por extensão conforme `tipo` (ver RN-L3 abaixo).
+- `authors`, `source`, `options` — metadados adicionais (autores do conteúdo, fonte original, JSON flexível).
 - `is_approved`, `is_featured`, `is_site` (booleans).
 - `qt_downloads`, `qt_access` (contadores).
 - `numero_episodio` (nullable) — só preenchido quando o conteúdo é filho de uma `Temporada` (app `series`, RF008). Vídeo avulso mantém `null`.
@@ -25,6 +26,7 @@ Campos próprios (além de `canal` e `autor`, herdados de `RecursoBasePage`):
 ### `parent_page_types`
 ```python
 parent_page_types = ['canais.CanalPage', 'series.Temporada']
+subpage_types = []  # Conteúdo não tem filhos
 ```
 
 ## Taxonomias deste app (Snippets)
@@ -35,8 +37,8 @@ Tipo de mídia (vídeo, documento, podcast, etc.). Campo `options` (jsonb no leg
 ### `Licenca`
 Árvore (licença pode ter sublicenças, tipo Creative Commons).
 
-### `Categoria`
-Árvore (`parent`), escopada por `canal`. Distinta da categoria de aplicativo — não fundir.
+### `CategoriaConteudo`
+Árvore (`parent`), escopada por `canal` (constraint `unique_categoriaconteudo_slug_per_canal`). Distinta da categoria de aplicativo (`AplicativoCategory`) — não fundir. **Nota**: o model foi renomeado de `Categoria` para `CategoriaConteudo` (migration 0002).
 
 ## Regras de negócio a preservar (extraídas do legado, não óbvias no schema)
 
@@ -68,25 +70,39 @@ Confirmado em `roles` (migration + `Users/*.php`, cada subtipo com `role_id` fix
 ### RN-L6 — Contadores sempre iniciam em zero
 `qt_downloads`/`qt_access` sempre `0` na criação, independente do que vier no request.
 
-## Player por tipo — decisão fechada
-`ConteudoPage.get_template()` escolhe o template pelo slug do `tipo`:
+## Player por mecanismo de exibição — decisão fechada
+**Correção importante**: o player **não** é escolhido pelo slug do `tipo` (taxonomia pedagógica). A arquitetura distingue rigidamente (decisão em `CONTEXT.MD` seção 3):
+- **Taxonomia pedagógica (`tipo`)** — categoria usada em filtros de busca e currículo (ex: Animação, Apresentação, Sequência Didática, Vídeo, Jogo).
+- **Formato técnico (`mecanismo_exibicao`)** — atributo em `ConteudoPage` que determina a view de renderização.
+
+`ConteudoPage.get_template()` escolhe o template pelo `mecanismo_exibicao`:
 ```python
 def get_template(self, request, *args, **kwargs):
     fallback = "conteudos/conteudo_page.html"
-    if self.tipo and self.tipo.slug:
-        especifico = f"conteudos/conteudo_page_{self.tipo.slug}.html"
+    if self.mecanismo_exibicao:
+        especifico = f"conteudos/conteudo_page_{self.mecanismo_exibicao}.html"
         return select_template([especifico, fallback]).template.name
     return fallback
 ```
-Um conteúdo tem **um tipo só** (fiel ao legado). StreamField foi descartado para este caso — não reabrir essa discussão sem motivo novo real (ver `docs/requisitos-vs-legado.md` para o raciocínio completo).
 
-O fallback `conteudo_page.html` garante que um `Tipo` criado por curador sem template dedicado ainda renderize (nunca dispara `TemplateDoesNotExist`). Os slugs com template próprio são: `video`, `audio`, `documento`, `apresentacao` (todos herdam de `conteudo_page_base.html`).
+Os 7 mecanismos e seus templates:
+- `video` → `conteudo_page_video.html` (player responsivo 16:9).
+- `audio` → `conteudo_page_audio.html` (player de áudio nativo estilizado).
+- `documento_pdf` → `conteudo_page_documento_pdf.html` (visualizador embutido ou download seguro de PDF).
+- `apresentacao` → `conteudo_page_apresentacao.html` (visualizador/download de apresentação).
+- `download_binario` → `conteudo_page_download_binario.html` (download seguro de pacotes/executáveis .zip/.rar/.exe).
+- `link_externo` → `conteudo_page_link_externo.html` (link externo seguro, `noopener noreferrer`).
+- `animacao_externa` → `conteudo_page_animacao_externa.html` (iframe protegido para animações/sites externos).
+
+Todos herdam de `conteudo_page_base.html`. O fallback `conteudo_page.html` garante que um mecanismo sem template dedicado ainda renderize (nunca dispara `TemplateDoesNotExist`).
+
+Um conteúdo tem **um tipo só** e **um mecanismo de exibição só** (fiel ao legado). StreamField foi descartado para este caso — não reabrir essa discussão sem motivo novo real (ver `docs/requisitos-vs-legado.md` para o raciocínio completo).
 
 ## Episódio de série (RF008) — o que muda aqui
 Quando `ConteudoPage.get_parent()` é uma `Temporada` (app `series`), o template deve exibir indicador de série (breadcrumb Serie › Temporada › Episódio, navegação para outros episódios via `get_siblings()`). Isso é resolvido no template a partir da posição na árvore — **não** criar campo extra tipo `is_episodio`, é derivável.
 
 ## Busca — lacuna confirmada em produção, corrigir na transposição
-A busca em produção hoje só retorna resultado dentro do canal "Recursos Educacionais" e não tem filtro por canal na busca avançada (achado registrado em `docs/requisitos-vs-legado.md`, RF001). Ao implementar a busca deste app: incluir `canal` como critério de filtro explícito, junto com `tipo`, `category`, `license`, `componentes_curriculares`. Não usar `media_avaliacao`/`total_avaliacoes` como filtro nem ordenação (decisão fechada, RF011).
+A busca em produção hoje só retorna resultado dentro do canal "Recursos Educacionais" e não tem filtro por canal na busca avançada (achado registrado em `docs/requisitos-vs-legado.md`, RF001). Ao implementar a busca deste app: incluir `canal` como critério de filtro explícito, junto com `tipo`, `category`, `license`, `componentes_curriculares` e `mecanismo_exibicao` (todos como `FilterField` no `search_fields`). Não usar `media_avaliacao`/`total_avaliacoes` como filtro nem ordenação (decisão fechada, RF011).
 
 ## Dependências entre apps — cuidado com direção
 - `Favorito`, `Like`, `Avaliacao` **não moram neste app** — vivem em `interacoes/`, cada um com FK para `ConteudoPage`. `interacoes` depende de `conteudos`, não o contrário. A atualização de `media_avaliacao`/`total_avaliacoes` acontece via signal **definido em `interacoes`**, escutando `Avaliacao.post_save`/`post_delete` — `conteudos` não deve importar nada de `interacoes`.
@@ -101,3 +117,5 @@ A busca em produção hoje só retorna resultado dentro do canal "Recursos Educa
 - Não usar `media_avaliacao` em filtro ou ordenação de busca — só exibição (decisão fechada).
 - Não colocar `Favorito`/`Like`/`Avaliacao` neste app — pertencem a `interacoes`.
 - Não reabrir a discussão de StreamField para o player sem um motivo de produto novo e real.
+- **Não escolher o template pelo slug do `tipo`** — o player é determinado pelo `mecanismo_exibicao` (formato técnico), não pela taxonomia pedagógica (`tipo`). Confundir os dois é o erro que a decisão de `CONTEXT.MD` seção 3 corrige.
+- Não usar `Categoria` como nome de model — foi renomeado para `CategoriaConteudo` (migration 0002).

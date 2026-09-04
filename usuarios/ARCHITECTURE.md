@@ -1,4 +1,4 @@
-# usuarios/ — CLAUDE.md
+# usuarios/ — ARCHITECTURE.md
 
 ## Papel deste app
 `usuarios` modela autenticação, papéis (roles) e vínculo de usuário com canal. É onde a conformidade LGPD (RN11 do ToR, ver `docs/requisitos-vs-legado.md`) mais concentra trabalho, por lidar com dado pessoal.
@@ -22,13 +22,26 @@ Confirmado em `roles` (migration) + `Users/*.php` (cada subtipo com `role_id` fi
 
 **Não existe papel chamado "professor"** — isso foi terminologia errada usada em versões anteriores desta análise (documentos já corrigidos). Usar sempre os 5 nomes reais acima.
 
-## Model `User` (ou model de usuário do Django/Wagtail estendido)
-Campos confirmados no legado:
-- `role` — FK para `Role`.
-- `name`, `email` (único), `password`.
-- `options` (jsonb) — metadados diversos, não detalhado ainda.
-- `verified` (boolean) + `verification_token` — fluxo de verificação de e-mail no cadastro.
-- Soft delete habilitado.
+## Model `User(AbstractUser)` (model de usuário customizado)
+`AUTH_USER_MODEL = "usuarios.User"` (definido em `mysite/settings/base.py`). Estende `AbstractUser` (username, email, password, first_name, last_name, etc.).
+
+Campos implementados (ver `usuarios/models.py`):
+- `role` — FK para `Role` (obrigatória, `on_delete=PROTECT`).
+- `email` (único), `username` (único, com `UnicodeUsernameValidator`).
+- `options` (JSONField) — metadados flexíveis (preferências de UI, configurações de notificação).
+- `verified` (boolean) + `verification_token` + `verification_token_created_at` — fluxo de verificação de e-mail no cadastro (o timestamp permite expiração do token).
+- **Soft delete**: `deleted_at` (DateTimeField) + `deleted_by` (FK para `self`, `SET_NULL`) — exclusão lógica com auditoria de quem excluiu. Métodos `soft_delete()` e `restore()`.
+- **Override de `groups`/`user_permissions`** — `related_name="usuarios_user_set"` para evitar clash com `AbstractUser`.
+- Properties de papel: `is_privileged`, `is_super_admin`, `is_admin`, `is_coordenador`, `is_editor`, `is_convidado`.
+- Métodos de autorização: `can_manage_roles()` (só super-admin), `can_manage_users()` (super-admin e admin).
+
+### `Role` (Snippet)
+- `slug` (único, com `SLUG_CHOICES` fixos: `super-admin`, `admin`, `coordenador`, `editor`, `convidado`), `name`, `description`, `ordem`, `is_active`.
+- `get_default_role()` — retorna/cria o papel `convidado` (padrão de novo cadastro).
+- `get_privileged_roles()` — retorna `super-admin`, `admin`, `coordenador` (papéis que podem criar/aprovar conteúdo).
+
+### `UserCanal` (Snippet)
+- Pivot `user_canal` (`user` FK + `canal` FK, `unique_together`), com `criado_em`.
 
 ## Cadastro (self-registration) — aberto ao público
 `RegisterAuthRequest`: qualquer pessoa pode se cadastrar sem estar logada (`authorize()` retorna `true` sempre). Validação: `name` obrigatório, `email` único e válido, `password` obrigatória, **mínimo 6 e máximo 15 caracteres**.
@@ -46,7 +59,7 @@ Todo cadastro novo entra como `convidado` (role padrão) — replicar isso.
 ## Vínculo usuário-canal (`user_canal`)
 Pivot simples (`user_id`, `canal_id`, chave composta) — liga um usuário a um ou mais canais específicos.
 
-**Decisão (D1, fechada)**: `user_canal` é mantido como **vínculo informativo, sem efeito de permissão** na fase atual. As Policies do legado checam apenas `role`, nunca `user_canal` (achado confirmado por busca exaustiva no código). Implementar escopo de curadoria por canal seria *inventar* comportamento que não existe no sistema real — o anti-padrão que os `CLAUDE.md` alertam para evitar.
+**Decisão (D1, fechada)**: `user_canal` é mantido como **vínculo informativo, sem efeito de permissão** na fase atual. As Policies do legado checam apenas `role`, nunca `user_canal` (achado confirmado por busca exaustiva no código). Implementar escopo de curadoria por canal seria *inventar* comportamento que não existe no sistema real — o anti-padrão que os `ARCHITECTURE.md` alertam para evitar.
 
 O model é preservado para manter o dado herdado e permitir, no futuro, ativar o escopo por canal (cenário: `coordenador` só gerencia conteúdo dos canais a que está vinculado) **sem migração destrutiva**, caso o comportamento real em produção confirme essa restrição. Essa reavaliação depende de acesso ao admin de produção — não é decisão que se toma só com leitura de código. Ver `docs/adr/README.md` (seção D1).
 

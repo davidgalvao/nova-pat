@@ -1,4 +1,4 @@
-# interacoes/ — CLAUDE.md
+# interacoes/ — ARCHITECTURE.md
 
 ## Papel deste app
 `interacoes` reúne toda a interação de usuário com recurso educacional: comentário, like, favorito e avaliação. Depende de `conteudos` (e, para comentário/like, também de `aplicativos`) — nunca o contrário. `conteudos`/`aplicativos` não devem importar nada daqui.

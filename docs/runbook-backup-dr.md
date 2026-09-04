@@ -3,7 +3,7 @@
 > Atende à exigência do ToR (RNF de Backup e Recuperação de Desastres: RTO/RPO definidos, testes periódicos, runbook documentado). Como o projeto é conduzido por um único profissional, este documento é também a rede de segurança operacional — precisa ser completo o suficiente para que qualquer pessoa (inclusive alguém sem contexto prévio do projeto) consiga restaurar o sistema seguindo só este documento.
 
 ## O que precisa ser decidido antes de este runbook estar completo
-Este documento hoje é um **esqueleto com lacunas explícitas** — a infraestrutura de produção (onde o Postgres roda, quem hospeda, se há storage de mídia separado) ainda não foi definida nos `CLAUDE.md` de app. Preencher os `[DEFINIR]` abaixo é pré-requisito para o runbook ser confiável de verdade.
+Este documento hoje é um **esqueleto com lacunas explícitas** — a infraestrutura de produção (onde o Postgres roda, quem hospeda, se há storage de mídia separado) ainda não foi definida nos `ARCHITECTURE.md` de app. Preencher os `[DEFINIR]` abaixo é pré-requisito para o runbook ser confiável de verdade.
 
 ## O que precisa ser salvo em backup
 
@@ -76,4 +76,4 @@ Duas categorias distintas de log, com regra de retenção diferente cada uma (ve
 - Não substitui teste de restauração real — só o teste real valida que o procedimento funciona de verdade.
 
 ## Status
-🔴 Esqueleto inicial. Múltiplos `[DEFINIR]` dependem da decisão de infraestrutura de produção, que ainda não foi tomada em nenhum `CLAUDE.md` existente — revisar este documento assim que essa decisão for fechada.
+🔴 Esqueleto inicial. Múltiplos `[DEFINIR]` dependem da decisão de infraestrutura de produção, que ainda não foi tomada em nenhum `ARCHITECTURE.md` existente — revisar este documento assim que essa decisão for fechada.

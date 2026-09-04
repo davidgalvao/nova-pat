@@ -6,7 +6,7 @@
 
 ## Contexto
 
-O `core/CLAUDE.md` deixou em aberto se `AplicativoEducacionalPage` deveria herdar `RecursoBasePage` (a base abstrata compartilhada com `ConteudoPage`) ou repetir os campos `canal`/`autor`/`tags` diretamente. O argumento para repetir era que "pouco é compartilhado de fato" (só canal e autor).
+O `core/ARCHITECTURE.md` deixou em aberto se `AplicativoEducacionalPage` deveria herdar `RecursoBasePage` (a base abstrata compartilhada com `ConteudoPage`) ou repetir os campos `canal`/`autor`/`tags` diretamente. O argumento para repetir era que "pouco é compartilhado de fato" (só canal e autor).
 
 O código atual **já herda** `RecursoBasePage` e sobrescreve o campo `canal` para `null=True` (já que aplicativo não pertence a um canal escolhido pelo usuário — ver ADR-002). A dúvida era se essa herança deveria ser mantida ou revertida.
 

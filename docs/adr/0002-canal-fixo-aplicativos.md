@@ -28,4 +28,4 @@ O valor `9` aparece como **número mágico inline** no `save()`, sem constante n
 
 **Mitigação:**
 - Confirmar o id real em produção antes de produção.
-- Documentar a constante e o fallback no `aplicativos/CLAUDE.md`.
+- Documentar a constante e o fallback no `aplicativos/ARCHITECTURE.md`.

@@ -122,7 +122,7 @@ Para manter a manutenibilidade e escalabilidade do projeto, seguimos estes padr�
 
 - **BasePage Enxuta**: A `core.BasePage` deve conter apenas metadados (SEO, Open Graph) e controles de layout globais. Não adicione StreamFields de conteúdo ou lógica de negócio pesada aqui.
 - **Header e Footer**: Gerenciados via `wagtail.contrib.settings` (Multisite) e Snippets, desacoplados dos modelos de página.
-- **Campos de Layout**: As flags `hide_header` e `hide_footer` vivem no `FlexLayoutMixin`, **não** na `BasePage`. O `FlexLayoutMixin` é um mixin abstrato (mantido sem uso atual — decisão D5) que documenta a intenção de suportar landing pages com layout flexível, e **não** deve ser aplicado em conteúdo (`ConteudoPage`/`AplicativoEducacionalPage`). Ver `core/models.py` e `core/CLAUDE.md`.
+- **Campos de Layout**: As flags `hide_header` e `hide_footer` vivem no `FlexLayoutMixin`, **não** na `BasePage`. O `FlexLayoutMixin` é um mixin abstrato (mantido sem uso atual — decisão D5) que documenta a intenção de suportar landing pages com layout flexível, e **não** deve ser aplicado em conteúdo (`ConteudoPage`/`AplicativoEducacionalPage`). Ver `core/models.py` e `core/ARCHITECTURE.md`.
 - **Localização**: O projeto está configurado para `pt-br` com fuso horário `America/Sao_Paulo`.
 
 ## 9) Variáveis de ambiente (exemplo)
