@@ -26,8 +26,8 @@ class Migration(migrations.Migration):
                 ('description', wagtail.fields.RichTextField(blank=True, help_text='Descrição rica do canal para exibição na página do canal.', verbose_name='Descrição')),
                 ('is_active', models.BooleanField(default=True, help_text='Canal ativo e visível na navegação. Desativar para tirar de circulação sem apagar conteúdo histórico.', verbose_name='Ativo')),
                 ('token', models.CharField(blank=True, help_text='Credencial de conexão com API externa (YouTube, Spotify, WordPress, Colaborativus, etc.). NUNCA expor em API pública. Usar campo criptografado em produção.', max_length=500, verbose_name='Token de API')),
-                ('options', models.JSONField(blank=True, default=dict, help_text="JSON para configurações flexíveis (ex: {'cor': '#FF5733'}). Campo 'tipo_conteudo' (array de IDs) foi movido para M2M 'tipos_permitidos'.", verbose_name='Opções extras')),
-                ('categorias_componente_permitidas', models.ManyToManyField(blank=True, help_text='Restringe quais categorias de componente curricular são relevantes para este canal (mesmo padrão de tipos_permitidos).', related_name='canais_permitidos', to='curriculo.curricularcomponentcategory', verbose_name='Categorias de componente curricular permitidas')),
+                ('options', models.JSONField(blank=True, default=dict, help_text="JSON para configurações flexíveis (ex: {'cor': '#FF5733'}).", verbose_name='Opções extras')),
+                ('categorias_componente_permitidas', models.ManyToManyField(blank=True, help_text='Restringe quais categorias de componente curricular são relevantes para este canal.', related_name='canais_permitidos', to='curriculo.curricularcomponentcategory', verbose_name='Categorias de componente curricular permitidas')),
                 ('og_image', models.ForeignKey(blank=True, help_text='Imagem que aparecerá no card de compartilhamento (Recomendado: 1200x630px).', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='wagtailimages.image', verbose_name='Imagem Redes Sociais')),
             ],
             options={

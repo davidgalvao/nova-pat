@@ -71,6 +71,12 @@
                     <dd>{{ page.first_published_at|date:"d/m/Y" }}</dd>
                 </div>
                 {% endif %}
+                {% if page.last_published_at %}
+                <div class="flex items-start gap-2">
+                    <dt class="font-semibold text-gray-800">Última atualização:</dt>
+                    <dd>{{ page.last_published_at|date:"d/m/Y" }}</dd>
+                </div>
+                {% endif %}
                 {% if page.qt_access %}
                 <div class="flex items-start gap-2">
                     <dt class="font-semibold text-gray-800">Acessos:</dt>

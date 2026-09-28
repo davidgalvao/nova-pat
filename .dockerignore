@@ -20,7 +20,7 @@ coverage
 .python-version
 postgres_data*
 .git
-
+.env
 
 # Distribution / packaging
 .Python

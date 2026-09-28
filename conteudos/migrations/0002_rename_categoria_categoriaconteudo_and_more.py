@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('canais', '0002_initial'),
+        ('canais', '0001_initial'),
         ('conteudos', '0001_initial'),
     ]
 

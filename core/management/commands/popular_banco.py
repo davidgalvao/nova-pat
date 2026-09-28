@@ -495,13 +495,8 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.WARNING(f"  ⚠ Canal {canal.name} sem categorias, pulando..."))
                 continue
 
-            # Filtra tipos permitidos pelo canal (se configurado)
-            tipos_permitidos = list(canal.tipos_permitidos.all()) if hasattr(canal, 'tipos_permitidos') else tipos
-            if not tipos_permitidos:
-                tipos_permitidos = tipos
-
             for i in range(qtd_por_canal):
-                tipo = self.fake.random_element(tipos_permitidos)
+                tipo = self.fake.random_element(tipos)
                 categoria = self.fake.random_element(categorias)
                 licenca = self.fake.random_element(licencas) if self.fake.random_int(1, 100) <= 80 else None
 

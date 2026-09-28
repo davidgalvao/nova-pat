@@ -7,7 +7,6 @@ from django.core.exceptions import ValidationError
 from wagtail.models import Site
 
 from canais.models import CanalPage
-from conteudos.models import Tipo
 from curriculo.models import CurricularComponentCategory
 from usuarios.models import User, Role
 
@@ -28,22 +27,6 @@ class CanaisModelsTestCase(TestCase):
         )
 
         cls.root_page = Site.objects.get(is_default_site=True).root_page
-
-        # Criar tipos para M2M
-        cls.tipo_video = Tipo.objects.create(
-            name="Vídeo",
-            slug="video-canais",
-            options={"formatos": [".mp4"]},
-            is_active=True,
-            ordem=1,
-        )
-        cls.tipo_audio = Tipo.objects.create(
-            name="Áudio",
-            slug="audio-canais",
-            options={"formatos": [".mp3"]},
-            is_active=True,
-            ordem=2,
-        )
 
         # Criar categorias de componente para M2M
         cls.cat_componente = CurricularComponentCategory.objects.create(
@@ -76,25 +59,6 @@ class CanaisModelsTestCase(TestCase):
         self.assertEqual(CanalPage.parent_page_types, ["wagtailcore.Page"])
         self.assertIn("conteudos.ConteudoPage", CanalPage.subpage_types)
         self.assertIn("aplicativos.AplicativoEducacionalPage", CanalPage.subpage_types)
-
-    def test_canal_page_tipos_permitidos_m2m(self):
-        """Testa M2M tipos_permitidos."""
-        canal = CanalPage(
-            title="Canal com Tipos",
-            name="Canal com Tipos",
-            slug="canal-com-tipos",
-            is_active=True,
-        )
-        self.root_page.add_child(instance=canal)
-        canal.save_revision().publish()
-
-        canal.tipos_permitidos.add(self.tipo_video, self.tipo_audio)
-        self.assertEqual(canal.tipos_permitidos.count(), 2)
-        self.assertIn(self.tipo_video, canal.tipos_permitidos.all())
-        self.assertIn(self.tipo_audio, canal.tipos_permitidos.all())
-
-        # Testar related_name
-        self.assertIn(canal, self.tipo_video.canais_permitidos.all())
 
     def test_canal_page_categorias_componente_permitidas_m2m(self):
         """Testa M2M categorias_componente_permitidas."""

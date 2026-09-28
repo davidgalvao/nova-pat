@@ -15,6 +15,24 @@ from wagtail.search import index
 from core.models import RecursoBasePage
 
 
+# Extensões de arquivo consideradas seguras para upload, independentemente do
+# `tipo` (RN-L3). Reforça a validação por `tipo.options.formatos` com uma lista
+# fechada de formatos aceitos para mídia/documento/pacote/executável.
+EXTENSOES_SEGURAS = {
+    # Documentos
+    ".pdf", ".doc", ".docx", ".odt", ".rtf", ".txt", ".csv", ".xls", ".xlsx",
+    ".ppt", ".pptx", ".odp", ".key",
+    # Pacotes / executáveis
+    ".zip", ".rar", ".7z", ".tar", ".gz", ".exe", ".msi", ".dmg", ".apk",
+    # Áudio
+    ".mp3", ".wav", ".ogg", ".m4a", ".aac", ".flac",
+    # Vídeo
+    ".mp4", ".webm", ".mov", ".avi", ".mkv", ".m4v",
+    # Imagens (capa/ilustração)
+    ".jpg", ".jpeg", ".png", ".gif", ".svg", ".webp",
+}
+
+
 class Tipo(models.Model):
     """
     Tipo de mídia do conteúdo (vídeo, documento, podcast, etc.).
@@ -427,9 +445,22 @@ class ConteudoPage(RecursoBasePage):
         # RN-L3: Validar extensão do arquivo contra o tipo
         if self.arquivo and self.tipo:
             import os
-            extensao = os.path.splitext(self.arquivo.name)[1]
+            from django.core.exceptions import ValidationError
+
+            extensao = os.path.splitext(self.arquivo.name)[1].lower()
+
+            # 1) Extensão deve estar na lista fechada de formatos seguros.
+            if extensao not in EXTENSOES_SEGURAS:
+                raise ValidationError({
+                    "arquivo": _(
+                        f"Extensão '{extensao}' não é um tipo de arquivo permitido. "
+                        "Tipos aceitos: PDF, documentos, planilhas, apresentações, "
+                        "pacotes (.zip/.rar/.7z), executáveis (.exe/.msi), áudio e vídeo."
+                    )
+                })
+
+            # 2) Extensão deve ser permitida para o tipo pedagógico associado.
             if not self.tipo.validar_extensao(extensao):
-                from django.core.exceptions import ValidationError
                 formatos = self.tipo.get_formatos_permitidos()
                 raise ValidationError({
                     "arquivo": _(

@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('canais', '0002_initial'),
+        ('canais', '0001_initial'),
         ('taggit', '0006_rename_taggeditem_content_type_object_id_taggit_tagg_content_8fc721_idx'),
         ('wagtailcore', '0097_baselogentry_uuid_action_timestamp_indexes'),
         ('wagtailimages', '0027_image_description'),

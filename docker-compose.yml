@@ -27,3 +27,41 @@ services:
       # - COLLECTSTATIC=1            # Habilite manualmente se quiser coletar estáticos na inicialização
     depends_on:
       - db
+
+  playwright-mcp:
+    image: mcr.microsoft.com/playwright/mcp
+    container_name: nova-pat-playwright-mcp
+    entrypoint: node
+    command:
+      - /app/cli.js
+      - --headless
+      - --browser
+      - chromium
+      - --no-sandbox
+      - --port
+      - "8931"
+      - --host
+      - "0.0.0.0"
+    ports:
+      - "8931:8931"
+    init: true
+    restart: unless-stopped
+
+  django-boost:
+    image: nova-pat-web:latest
+    container_name: nova-pat-django-boost
+    command: >
+      django-ai-boost
+        --settings mysite.settings.dev
+        --transport sse
+        --host 0.0.0.0
+        --port 8001
+    volumes:
+      - .:/code
+    ports:
+      - "8001:8001"
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/postgres
+    depends_on:
+      - db
+    restart: unless-stopped

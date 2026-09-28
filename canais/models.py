@@ -3,11 +3,12 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from wagtail.models import Page
 from wagtail.admin.panels import FieldPanel, MultiFieldPanel
-from wagtail.fields import RichTextField
+from wagtail.fields import RichTextField, StreamField
 from wagtail.images import get_image_model_string
 
 # Import do core para herdar de BasePage
 from core.models import BasePage
+from core.blocks import HomeStreamBlock
 
 
 class CanalPage(BasePage):
@@ -47,22 +48,12 @@ class CanalPage(BasePage):
     )
 
     # Opções flexíveis (JSON) — substitui o jsonb 'options' do legado
-    # Carrega: cor do canal, tipos de conteúdo permitidos (agora M2M estruturado abaixo)
+    # Carrega: cor do canal
     options = models.JSONField(
         default=dict,
         blank=True,
         verbose_name="Opções extras",
-        help_text="JSON para configurações flexíveis (ex: {'cor': '#FF5733'}). Campo 'tipo_conteudo' (array de IDs) foi movido para M2M 'tipos_permitidos'.",
-    )
-
-    # M2M estruturado para tipos de conteúdo permitidos neste canal
-    # Substitui o array de IDs 'tipo_conteudo' dentro de options (jsonb) do legado
-    tipos_permitidos = models.ManyToManyField(
-        "conteudos.Tipo",
-        blank=True,
-        verbose_name="Tipos de conteúdo permitidos",
-        help_text="Restringe quais tipos de mídia são relevantes/exibidos neste canal. Regra de negócio ativa (filtro), não só decoração.",
-        related_name="canais_permitidos",
+        help_text="JSON para configurações flexíveis (ex: {'cor': '#FF5733'}).",
     )
 
     # M2M com CurricularComponentCategory (app curriculo) — filtro de categorias de componente por canal
@@ -71,8 +62,16 @@ class CanalPage(BasePage):
         "curriculo.CurricularComponentCategory",
         blank=True,
         verbose_name="Categorias de componente curricular permitidas",
-        help_text="Restringe quais categorias de componente curricular são relevantes para este canal (mesmo padrão de tipos_permitidos).",
+        help_text="Restringe quais categorias de componente curricular são relevantes para este canal.",
         related_name="canais_permitidos",
+    )
+
+    # Composição editorial via StreamField (reutiliza blocos da HomePage)
+    body = StreamField(
+        HomeStreamBlock(),
+        blank=True,
+        verbose_name="Composição editorial",
+        help_text="Blocos que compõem a página do canal. O gestor escolhe os blocos e a ordem. Reutiliza os blocos da HomePage.",
     )
 
     # Configuração de árvore de páginas Wagtail
@@ -90,13 +89,13 @@ class CanalPage(BasePage):
             FieldPanel("description"),
             FieldPanel("is_active"),
         ], heading="Informações Básicas"),
+        FieldPanel("body"),
         MultiFieldPanel([
             FieldPanel("token"),
             FieldPanel("options"),
         ], heading="Integração Externa", classname="collapsible collapsed",
            help_text="⚠️ Token NUNCA deve ser exposto em API pública. Em produção, usar campo criptografado."),
         MultiFieldPanel([
-            FieldPanel("tipos_permitidos", widget=forms.CheckboxSelectMultiple),
             FieldPanel("categorias_componente_permitidas", widget=forms.CheckboxSelectMultiple),
         ], heading="Restrições de Conteúdo por Canal"),
     ]

@@ -5,6 +5,11 @@
 
 {% block content %}
 <main role="main">
+    {# Composição editorial via StreamField (blocos reutilizáveis da HomePage) #}
+    {% for block in page.body %}
+        {% include_block block %}
+    {% endfor %}
+
     <h1>{{ page.title }}</h1>
 
     {% if page.description %}
