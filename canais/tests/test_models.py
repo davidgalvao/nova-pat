@@ -1,13 +1,13 @@
 """
 Testes para models do app canais.
 """
+
 from django.test import TestCase
 from django.core.exceptions import ValidationError
 
 from wagtail.models import Site
 
 from canais.models import CanalPage
-from curriculo.models import CurricularComponentCategory
 from usuarios.models import User, Role
 
 
@@ -27,14 +27,6 @@ class CanaisModelsTestCase(TestCase):
         )
 
         cls.root_page = Site.objects.get(is_default_site=True).root_page
-
-        # Criar categorias de componente para M2M
-        cls.cat_componente = CurricularComponentCategory.objects.create(
-            name="Ciências",
-            slug="ciencias-canais",
-            ordem=1,
-            is_active=True,
-        )
 
     def test_canal_page_creation(self):
         """Testa criação de CanalPage."""
@@ -60,24 +52,6 @@ class CanaisModelsTestCase(TestCase):
         self.assertIn("conteudos.ConteudoPage", CanalPage.subpage_types)
         self.assertIn("aplicativos.AplicativoEducacionalPage", CanalPage.subpage_types)
 
-    def test_canal_page_categorias_componente_permitidas_m2m(self):
-        """Testa M2M categorias_componente_permitidas."""
-        canal = CanalPage(
-            title="Canal com Componentes",
-            name="Canal com Componentes",
-            slug="canal-com-componentes",
-            is_active=True,
-        )
-        self.root_page.add_child(instance=canal)
-        canal.save_revision().publish()
-
-        canal.categorias_componente_permitidas.add(self.cat_componente)
-        self.assertEqual(canal.categorias_componente_permitidas.count(), 1)
-        self.assertIn(self.cat_componente, canal.categorias_componente_permitidas.all())
-
-        # Testar related_name
-        self.assertIn(canal, self.cat_componente.canais_permitidos.all())
-
     def test_canal_page_get_context(self):
         """Testa get_context adiciona conteudos e aplicativos."""
         canal = CanalPage(
@@ -91,6 +65,7 @@ class CanaisModelsTestCase(TestCase):
 
         # Simular request
         from django.test import RequestFactory
+
         factory = RequestFactory()
         request = factory.get("/")
 
@@ -151,7 +126,7 @@ class CanaisModelsTestCase(TestCase):
         """Testa ordenação por name no Meta."""
         # Limpar canais existentes criados por outros testes
         CanalPage.objects.all().delete()
-        
+
         canal_z = CanalPage(
             title="Canal Z",
             name="Canal Z",
@@ -195,5 +170,5 @@ class CanalPageSearchTestCase(TestCase):
         """Testa que CanalPage tem search_fields configurados."""
         # CanalPage herda de BasePage que herda de Page
         # Verificar se tem search_fields
-        self.assertTrue(hasattr(CanalPage, 'search_fields'))
+        self.assertTrue(hasattr(CanalPage, "search_fields"))
         self.assertGreater(len(CanalPage.search_fields), 0)

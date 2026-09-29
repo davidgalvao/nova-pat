@@ -1,4 +1,3 @@
-from django import forms
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from wagtail.models import Page
@@ -56,16 +55,6 @@ class CanalPage(BasePage):
         help_text="JSON para configurações flexíveis (ex: {'cor': '#FF5733'}).",
     )
 
-    # M2M com CurricularComponentCategory (app curriculo) — filtro de categorias de componente por canal
-    # Legado: pivot 'canal_cc_categories'
-    categorias_componente_permitidas = models.ManyToManyField(
-        "curriculo.CurricularComponentCategory",
-        blank=True,
-        verbose_name="Categorias de componente curricular permitidas",
-        help_text="Restringe quais categorias de componente curricular são relevantes para este canal.",
-        related_name="canais_permitidos",
-    )
-
     # Composição editorial via StreamField (reutiliza blocos da HomePage)
     body = StreamField(
         HomeStreamBlock(),
@@ -75,7 +64,9 @@ class CanalPage(BasePage):
     )
 
     # Configuração de árvore de páginas Wagtail
-    parent_page_types = ["wagtailcore.Page"]  # Canais ficam no nível superior (filhos de root)
+    parent_page_types = [
+        "wagtailcore.Page"
+    ]  # Canais ficam no nível superior (filhos de root)
     subpage_types = [
         "conteudos.ConteudoPage",
         "aplicativos.AplicativoEducacionalPage",
@@ -83,21 +74,25 @@ class CanalPage(BasePage):
 
     # Painéis de conteúdo
     content_panels = BasePage.content_panels + [
-        MultiFieldPanel([
-            FieldPanel("name"),
-            FieldPanel("slug"),
-            FieldPanel("description"),
-            FieldPanel("is_active"),
-        ], heading="Informações Básicas"),
+        MultiFieldPanel(
+            [
+                FieldPanel("name"),
+                FieldPanel("slug"),
+                FieldPanel("description"),
+                FieldPanel("is_active"),
+            ],
+            heading="Informações Básicas",
+        ),
         FieldPanel("body"),
-        MultiFieldPanel([
-            FieldPanel("token"),
-            FieldPanel("options"),
-        ], heading="Integração Externa", classname="collapsible collapsed",
-           help_text="⚠️ Token NUNCA deve ser exposto em API pública. Em produção, usar campo criptografado."),
-        MultiFieldPanel([
-            FieldPanel("categorias_componente_permitidas", widget=forms.CheckboxSelectMultiple),
-        ], heading="Restrições de Conteúdo por Canal"),
+        MultiFieldPanel(
+            [
+                FieldPanel("token"),
+                FieldPanel("options"),
+            ],
+            heading="Integração Externa",
+            classname="collapsible collapsed",
+            help_text="⚠️ Token NUNCA deve ser exposto em API pública. Em produção, usar campo criptografado.",
+        ),
     ]
 
     # Painéis de promoção (herda de BasePage: Open Graph)
@@ -120,17 +115,21 @@ class CanalPage(BasePage):
 
         # Conteúdos deste canal (filhos diretos do tipo ConteudoPage)
         from conteudos.models import ConteudoPage
-        context["conteudos"] = ConteudoPage.objects.live().child_of(self).order_by("-first_published_at")
+
+        context["conteudos"] = (
+            ConteudoPage.objects.live().child_of(self).order_by("-first_published_at")
+        )
 
         # Aplicativos deste canal
         try:
             from aplicativos.models import AplicativoEducacionalPage
-            context["aplicativos"] = AplicativoEducacionalPage.objects.live().child_of(self).order_by("-first_published_at")
+
+            context["aplicativos"] = (
+                AplicativoEducacionalPage.objects.live()
+                .child_of(self)
+                .order_by("-first_published_at")
+            )
         except ImportError:
             context["aplicativos"] = []
 
         return context
-
-
-# Import forms no final para evitar import circular
-from django import forms
