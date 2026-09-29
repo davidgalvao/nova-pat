@@ -41,15 +41,17 @@ Não assumir causa sem investigar o código de exibição desses dois canais esp
 ## Canais candidatos a desativação (decisão de negócio pendente, não bloqueia a fase atual)
 Alguns dos 12 canais podem ser remanescentes da época da pandemia e não fazer mais sentido manter ativos na NOVA PAT. O legado já tem `is_active` (boolean) no model `Canal`, o que cobre bem esse caso — desativar não precisa apagar conteúdo histórico, só tirar de circulação/navegação. Essa decisão (quais canais desativar) é de negócio, não técnica, e **não bloqueia a modelagem atual** — o campo `is_active` já dá suporte a isso sem mudança de schema. Revisitar quando o levantamento de quais canais seguem ativos estiver fechado.
 
+## Glossário — o que "ativo" significa neste app
+"Ativo" no contexto de `canais` é **apenas o booleano `is_active`** do `CanalPage`. Não existe entidade "CanalPage pai" nem "canal default" — canais são filhos diretos de `root` (`parent_page_types = ["wagtailcore.Page"]`). Páginas internas com checkbox "ativo" marcado **não** são canais — são páginas comuns do Wagtail. Não inferir relação de hierarquia de canal a partir de `is_active` de outras páginas.
+
 ## Model `CanalPage(BasePage)`
 
 Campos implementados (ver `canais/models.py`):
 - `name` (único), `description` (RichTextField), `slug` (único)
 - `is_active` (boolean)
 - `token` — texto, **oculto na API/serialização** no legado (`protected $hidden = ['token']`). É credencial de conexão com API externa (provável integração tipo YouTube/Spotify, coerente com a seção de "Integrações Mandatórias" do ToR). Nunca expor esse campo em endpoint público; se for reimplementado, usar campo criptografado, não texto plano.
-- `options` (JSONField) — carrega configurações flexíveis (ex: cor do canal usada em UI, badge colorido por canal). O antigo `tipo_conteudo` (array de IDs) foi **movido para a M2M `tipos_permitidos`** (ver abaixo).
-- `tipos_permitidos` — **M2M para `conteudos.Tipo`** (já implementada). **Regra de negócio real**: um canal pode restringir quais tipos de conteúdo são relevantes/exibidos nele. Não é decoração, é filtro ativo (`getTiposAttribute` no legado consulta `tipos` por esses IDs). Estruturado como M2M (não jsonb solto) porque Wagtail/Django lidam melhor com relação estruturada do que array de ID dentro de jsonb.
-- `categorias_componente_permitidas` — **M2M para `curriculo.CurricularComponentCategory`** (já implementada). Restringe quais categorias de componente curricular são relevantes para o canal (mesmo padrão de `tipos_permitidos`).
+- `options` (JSONField) — carrega configurações flexíveis (ex: cor do canal usada em UI, badge colorido por canal).
+- `body` (StreamField) — **composição editorial do canal** (ver seção abaixo).
 
 Configuração de árvore de páginas:
 - `parent_page_types = ["wagtailcore.Page"]` — canais ficam no nível superior (filhos de root).
@@ -57,12 +59,19 @@ Configuração de árvore de páginas:
 
 `get_context()` adiciona ao contexto os `conteudos` e `aplicativos` deste canal (filhos diretos, `live()`, ordenados por `-first_published_at`).
 
+## Composição editorial do canal (StreamField `body`)
+
+**Decisão D1**: o `CanalPage` tem poder de composição editorial igual ao da `HomePage`. O gestor escolhe quais blocos aparecem na página do canal e em que ordem, via StreamField, sem depender de template hardcoded.
+
+- **Reutiliza os mesmos blocos da HomePage** (`HeroBlock`, `FullBannerBlock`, `CarrosselCategoriaBlock`, `DestaquesManuaisBlock`, `FeatureGridBlock` — via `core.blocks.HomeStreamBlock`). Não duplicar definição de blocos: se um bloco muda, muda para Home e Canal simultaneamente.
+- **Coexistência com filhos**: os filhos (`ConteudoPage`, `AplicativoEducacionalPage`) continuam existindo como páginas reais (URL própria, SEO, sitemap). O `body` é o **layout de entrada** do canal, onde o gestor pode destacar conteúdo, incluir blocos de listagem dinâmica (que consultam `self.conteudos` / `self.get_children()`), compor chamadas para outras seções.
+- **`get_context()` continua entregando** `conteudos` e `aplicativos`, e o template do canal renderiza `body` como estrutura principal. Blocos de listagem consomem esses dados do contexto quando precisam.
+
 ## Relações confirmadas
 - `conteudos` — hasMany (via `canal_id` em `ConteudoPage`, FK simples, **não M2M** — ver `docs/requisitos-vs-legado.md`, seção RF008, achado confirmado em produção).
 - `aplicativos` — hasMany (via `canal_id` em `AplicativoEducacionalPage`).
 - `categories` — hasMany, escopada por canal (`categories.canal_id`), só ativas, só raiz (com subcategorias aninhadas). Esta é a árvore de categoria de **conteúdo**, exclusiva desse domínio (ver `core/ARCHITECTURE.md` — não confundir com a categoria de aplicativo).
 - `appsCategories` — hasMany de `AplicativoCategory`, também escopada por canal. Árvore **separada** da anterior (confirma achado do `core/ARCHITECTURE.md`: categoria de conteúdo ≠ categoria de aplicativo, mesmo dentro do mesmo canal).
-- `filterCategoryCC` — M2M com `CurricularComponentCategory` via pivot `canal_cc_categories` (**implementada como `categorias_componente_permitidas`**). Um canal pode restringir quais categorias de componente curricular são relevantes pra ele (mesmo padrão de restrição de `tipo_conteudo`). Depende do app `curriculo`.
 
 ## ✅ Resolvido — "Programas" (rótulo de categoria) ≠ `Serie` (entidade nova do RF008)
 Confirmado com o dono do produto: o rótulo hardcoded "Programas" no legado (`Canal::getCategoryNameAttribute()`) se refere ao jargão de TV — uma peça televisiva isolada (ex: um telejornal é "um programa"), **não** a uma hierarquia de série/temporada/episódio. É só o nome de exibição da árvore de `categories` daquele canal, sem relação com o RF008.
@@ -75,6 +84,27 @@ Serie → Temporada → ConteudoPage (episódio)
 
 `canais/ARCHITECTURE.md` não precisa de mudança de model por causa disso — é só um alerta de nomenclatura para quem for implementar o app `series/` (anteriormente cogitado como `programas/`). A categoria "Programas" de um canal continua sendo `categories` comum, sem relação com `Serie`.
 
+## ❌ Descontinuado — restrições por canal (removidas)
+
+Duas decisões de arquitetura fecharam a remoção de M2Ms que restringiam conteúdo por canal. O princípio comum: **regras editoriais ficam no nível do conteúdo, não do canal**. Canal é agrupador — não filtro do que pode existir nele.
+
+- **`tipos_permitidos`** (era M2M para `conteudos.Tipo`) — **removida (D2)**. Sem motivo de negócio para um canal limitar quais tipos de mídia (vídeo, áudio, PDF...) podem existir nele. O gestor decide caso a caso.
+- **`categorias_componente_permitidas`** (era M2M para `curriculo.CurricularComponentCategory`) — **removida (D4)**. Mesma lógica: dado morto no legado, sem uso real na filtragem. Categorias de componente curricular são escolhidas por conteúdo, não restringidas por canal.
+
+Migrações: `0002_canalpage_body.py` e `0003_remove_canalpage_categorias_componente_permitidas.py`. A `tipos_permitidos` foi removida junto com a deleção da migração que a criava (`0002_initial.py`), sem deixar churn.
+
+## Invariante — `canal` obrigatório em todo recurso
+
+Todo `ConteudoPage` e `AplicativoEducacionalPage` DEVE ter um `CanalPage` vinculado. O campo `canal` é `ForeignKey(..., on_delete=PROTECT)`, sem `null=True`, sem `blank=True`. O gestor escolhe o canal em uma lista no momento do cadastro.
+
+Consequências:
+- Não criar conteúdo "órfão" de canal.
+- Não tornar o campo opcional "para facilitar" — se a UI precisa permitir rascunho, isso é outro problema (resolver via fluxo de publicação do Wagtail), não justifica tornar o FK nulo.
+- `PROTECT` impede deletar canal com conteúdo vinculado — preservar.
+
 ## O que NÃO fazer neste app
 - Não expor `token` em nenhum serializer/API pública.
-- Não modelar `tipo_conteudo` (filtro de tipo permitido por canal) como jsonb solto se puder ser M2M estruturada — jsonb aqui é característica de limitação do Eloquent/Laravel antigo, não uma escolha de design a preservar.
+- Não restringir tipos de mídia por canal (removido em D2 — regra editorial é do conteúdo, não do canal).
+- Não restringir categorias de componente curricular por canal (removido em D4 — mesma lógica).
+- Não usar `null=True` / `blank=True` no FK `canal` de recursos (ver invariante acima).
+- Não duplicar definição de blocos StreamField — `body` reutiliza `core.blocks.HomeStreamBlock`.
