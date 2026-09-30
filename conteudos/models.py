@@ -268,8 +268,13 @@ class ConteudoPage(RecursoBasePage):
 
     source = models.URLField(
         blank=True,
-        verbose_name="Fonte original",
-        help_text="URL da fonte original do conteúdo, se aplicável.",
+        verbose_name="URL de mídia externa",
+        help_text=(
+            "URL externa (MODO B) usada pelos mecanismos link_externo e animacao_externa. "
+            "Aceita a URL do navegador (ex: youtube.com/watch?v=ID, youtu.be/ID, vimeo.com/ID): "
+            "a resolução via oEmbed é feita no template com {% embed %} / get_embed() — "
+            "nunca passar a URL direto para <iframe src>."
+        ),
     )
 
     options = models.JSONField(
