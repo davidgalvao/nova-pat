@@ -17,7 +17,7 @@ from django.core.management.base import BaseCommand
 from django.utils.text import slugify
 
 from wagtail.images import get_image_model
-from wagtail.models import Page
+from wagtail.models import Site
 
 from canais.models import CanalPage
 from conteudos.models import CategoriaConteudo, ConteudoPage, Licenca, Tipo
@@ -273,9 +273,15 @@ class Command(BaseCommand):
             "EMITEC",
             "Recursos Educacionais",
         ]
-        parent = Page.get_first_root_node()
+        # Parent deve ser o site root (HomePage): canals sob o Wagtail root
+        # não são roteáveis (url = None). Reparenta órfãos de execuções antigas.
+        parent = Site.objects.get(is_default_site=True).root_page
         for name in canal_names:
-            if CanalPage.objects.filter(name=name).exists():
+            canal = CanalPage.objects.filter(name=name).first()
+            if canal is not None:
+                if canal.get_site() is None:
+                    canal.move(parent, pos="last-child")
+                    self.stdout.write(f"Reparented canal: {canal.name}")
                 continue
             canal = CanalPage(
                 title=name,

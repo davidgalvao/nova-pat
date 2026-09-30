@@ -40,6 +40,28 @@ class SeedConteudosFakeTestCase(TestCase):
         self.assertTrue(video.arquivo)
         self.assertIsNotNone(video.og_image_id)
 
+    def test_canais_orfaos_sao_reparentados_ao_site_root(self):
+        """Canal esperado pendurado no Wagtail root (url=None) é movido."""
+        from wagtail.models import Page, Site
+
+        root = Page.get_first_root_node()
+        orfao = CanalPage(
+            title="Recursos Educacionais",
+            name="Recursos Educacionais",
+            slug="recursos-educacionais",
+            is_active=True,
+        )
+        root.add_child(instance=orfao)
+        orfao.save_revision().publish()
+        self.assertIsNone(orfao.get_site())
+
+        self._run_seed()
+        orfao.refresh_from_db()
+        self.assertEqual(
+            orfao.get_parent().pk,
+            Site.objects.get(is_default_site=True).root_page.pk,
+        )
+
     def test_idempotente_segunda_execucao_nao_duplica(self):
         self._run_seed()
         total = ConteudoPage.objects.count()
