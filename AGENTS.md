@@ -59,3 +59,29 @@ Para documentação humana, veja `README.md` e `docs/`.
   com/sem parent_context.
 - Testes para toda lógica nova (models, blocos, view).
 - Não inventar CSS: reutilizar classes dos blocos existentes.
+
+## Docker — comandos permitidos
+
+Você agora TEM Docker CLI + socket. Use com responsabilidade.
+
+### Permitido sem aprovação
+- `docker compose -f /home/dgalvao/nova-pat/docker-compose.yml exec -T web pytest -x -q`
+- `docker compose ... exec -T web python manage.py <comando>`
+- `docker compose ... logs -T web --tail 30`
+- `docker compose ... restart web`
+- `docker compose ... ps`
+
+Sempre use `-T` (sem TTY) — você não tem terminal interativo.
+
+Sempre use `-f /home/dgalvao/nova-pat/docker-compose.yml` — o diretório 
+de trabalho pode não ser o esperado.
+
+### Exige minha aprovação explícita
+- `docker compose down` ou `stop`
+- `docker system prune`, `docker volume rm`, `docker rmi`
+- Qualquer coisa que toque em `db` ou `postgres_data`
+- `docker rm` ou `docker kill`
+
+### Nunca
+- `docker compose exec` SEM `-T`
+- Comandos destrutivos em lote (`rm -rf`, `prune -a`)
