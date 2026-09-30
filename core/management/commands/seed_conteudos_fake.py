@@ -2,13 +2,15 @@
 Semeia conteúdo fake nos canais para permitir teste visual dos blocos
 de fallback (hero player + carrossel) da página de canal.
 
-Uso: ``python manage.py seed_conteudos_fake``. Idempotente: a checagem
-por (canal, título) pula conteúdos já criados em execuções anteriores.
-Downloads externos podem falhar offline; nesse caso o conteúdo é criado
-só com metadados e source (o fallback visual continua exercitável).
+Uso: ``python manage.py seed_conteudos_fake [--force]``. Idempotente:
+a checagem por (canal, título) pula conteúdos já criados; ``--force``
+mantém o conteúdo mas regenera ``arquivo``/``og_image`` ausentes.
+
+Mídia gerada localmente (offline-determinístico): PNG de capa via
+Pillow, PDF mínimo embutido e stubs MP4/MP3 (renderizam os players,
+não tocam). Sem dependência de rede externa.
 """
 
-import requests
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand
@@ -73,17 +75,32 @@ startxref
 %%EOF
 """
 
-# Placeholders de vídeo/áudio NÃO usados no seed comprometem o player se a
-# URL não existir; downloads com falha são ignorados com warning.
-SAMPLE_VIDEO_URL = "https://videos.pexels.com/videos/3264594/video-preview.mp4"
-SAMPLE_AUDIO_URL = "https://videos.pexels.com/videos/2103023/audio-preview.mp3"
+# Stubs mínimos: fazem os elementos <video>/<audio> renderizarem os controles
+# (suficiente para teste visual do hero), sem depender de rede.
+MINIMAL_MP4 = (
+    b"\x00\x00\x00\x18ftypisom\x00\x00\x02\x00isomiso2mp41"
+    b"\x00\x00\x00\x08free"
+    b"\x00\x00\x00\x08mdat"
+)
+MINIMAL_MP3 = b"ID3\x04\x00\x00\x00\x00\x00\x00"
+
+SAMPLE_VIDEO_URL = "https://www.pexels.com/video/3264594/"
+SAMPLE_AUDIO_URL = "https://www.pexels.com/audio/2103023/"
 
 
 class Command(BaseCommand):
     help = "Populate the database with realistic fake content for testing"
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--force",
+            action="store_true",
+            help="Regenera arquivo/og_image de conteúdos já semeados.",
+        )
+
     def handle(self, *args, **options):
         self.stdout.write("Seeding fake content...")
+        force = options["force"]
 
         tipo, _ = Tipo.objects.get_or_create(
             name="Tipo Genérico para Testes",
@@ -145,11 +162,23 @@ class Command(BaseCommand):
                 title = f"{canal.name} - Conteúdo Educacional {i + 1} - {mechanism}"
 
                 # Idempotência: child_of é método de queryset, não argumento de filter
-                if ConteudoPage.objects.child_of(canal).filter(
-                    title=title
-                ).exists():
+                existing = (
+                    ConteudoPage.objects.child_of(canal)
+                    .filter(title=title)
+                    .first()
+                )
+                if existing is not None:
+                    if not force:
+                        self.stdout.write(
+                            f"  Content '{title}' already exists under {canal.name}. Skipping."
+                        )
+                        continue
+                    # --force: regenera mídia ausente sem duplicar a página
+                    self._set_mecanismo_payload(existing, mechanism)
+                    self._set_og_image(existing, title)
+                    existing.save_revision().publish()
                     self.stdout.write(
-                        f"  Content '{title}' already exists under {canal.name}. Skipping."
+                        f'  Refreshed media on existing content: "{title}"'
                     )
                     continue
 
@@ -264,61 +293,72 @@ class Command(BaseCommand):
         mecanismo = content.mecanismo_exibicao
         if mecanismo == ConteudoPage.MECANISMO_VIDEO:
             content.source = SAMPLE_VIDEO_URL
-            self._attach_remote_file(
-                content, SAMPLE_VIDEO_URL, f"video_{content.slug}.mp4", kind="video"
-            )
+            if not content.arquivo:
+                content.arquivo.save(
+                    f"video_{content.slug}.mp4",
+                    ContentFile(MINIMAL_MP4),
+                    save=False,
+                )
         elif mecanismo == ConteudoPage.MECANISMO_AUDIO:
             content.source = SAMPLE_AUDIO_URL
-            self._attach_remote_file(
-                content, SAMPLE_AUDIO_URL, f"audio_{content.slug}.mp3", kind="audio"
-            )
+            if not content.arquivo:
+                content.arquivo.save(
+                    f"audio_{content.slug}.mp3",
+                    ContentFile(MINIMAL_MP3),
+                    save=False,
+                )
         elif mecanismo == ConteudoPage.MECANISMO_DOCUMENTO_PDF:
             content.source = "https://www.example.com/sample.pdf"
-            content.arquivo.save(
-                f"documento_{content.slug}.pdf",
-                ContentFile(MINIMAL_PDF),
-                save=False,
-            )
+            if not content.arquivo:
+                content.arquivo.save(
+                    f"documento_{content.slug}.pdf",
+                    ContentFile(MINIMAL_PDF),
+                    save=False,
+                )
         elif mecanismo == ConteudoPage.MECANISMO_LINK_EXTERNO:
             content.source = "https://example.com"
             # link_externo não carrega arquivo
-
-    def _attach_remote_file(self, content, url, filename, kind):
-        try:
-            response = requests.get(url, timeout=10)
-            response.raise_for_status()
-        except Exception as exc:
-            self.stdout.write(
-                self.style.WARNING(f"  Download de {kind} falhou ({url}): {exc}")
-            )
-            return
-        content.arquivo.save(filename, ContentFile(response.content), save=False)
 
     def _set_og_image(self, content, title):
         """
         og_image é FK para o model de imagem do Wagtail (BasePage), não um
         ImageField — exige criar/recuperar um objeto Image e atribuir a FK.
+        Capa gerada localmente via Pillow (offline): cor da marca + título.
         """
+        if content.og_image_id:
+            return
         Image = get_image_model()
         image_title = f"og {title}"[:100]
         existing = Image.objects.filter(title=image_title).first()
         if existing is not None:
             content.og_image = existing
             return
-        og_image_url = f"https://via.placeholder.com/1200x630.png?text={content.slug}"
+
+        from io import BytesIO
+
+        from django.core.files.images import ImageFile
+        from PIL import Image as PILImage
+        from PIL import ImageDraw
+
+        img = PILImage.new("RGB", (1200, 630), color=(30, 58, 138))  # brand-700
+        draw = ImageDraw.Draw(img)
+        # Faixa central em brand-500 com o slug como texto simples
+        draw.rectangle([(0, 480), (1200, 630)], fill=(29, 78, 216))
+        draw.text((40, 540), content.slug[:80], fill=(255, 255, 255))
+        buffer = BytesIO()
+        img.save(buffer, format="PNG")
+
+        # ImageFile não commitado: o save() do Wagtail/Django calcula
+        # width/height (campos NOT NULL) a partir do arquivo.
+        image = Image(title=image_title)
+        image.file = ImageFile(
+            BytesIO(buffer.getvalue()), name=f"og_image_{content.slug}.png"
+        )
         try:
-            response = requests.get(og_image_url, timeout=10)
-            response.raise_for_status()
+            image.save()
         except Exception as exc:
             self.stdout.write(
-                self.style.WARNING(f"  Download de og_image falhou: {exc}")
+                self.style.WARNING(f"  Falha ao salvar og_image: {exc}")
             )
             return
-        image = Image(title=image_title)
-        image.file.save(
-            f"og_image_{content.slug}.png",
-            ContentFile(response.content),
-            save=False,
-        )
-        image.save()
         content.og_image = image
