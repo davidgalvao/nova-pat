@@ -17,7 +17,9 @@ Campos próprios (além de `canal`, `autor` e `tags`, herdados de `RecursoBasePa
 - `license` — FK para `Licenca` (snippet deste app, estrutura em árvore tipo Creative Commons). Licença é exclusiva de conteúdo — `aplicativos` não tem licença no legado, não adicionar lá.
 - `componentes_curriculares` — `ParentalManyToManyField` para `CurricularComponent` (app `curriculo`, cross-app).
 - `arquivo`/upload — documento/mídia associado, validado por extensão conforme `tipo` (ver RN-L3 abaixo).
-- `authors`, `source`, `options` — metadados adicionais (autores do conteúdo, fonte original, JSON flexível).
+- `authors`, `source`, `options` — `authors`: autores do conteúdo; `source`: **URL de mídia
+  externa** (MODO B — usada por `link_externo` e `animacao_externa`; ver "Resolução de embed"
+  abaixo); `options`: JSON flexível.
 - `is_approved`, `is_featured`, `is_site` (booleans).
 - `qt_downloads`, `qt_access` (contadores).
 - `numero_episodio` (nullable) — só preenchido quando o conteúdo é filho de uma `Temporada` (app `series`, RF008). Vídeo avulso mantém `null`.
@@ -94,6 +96,25 @@ Os 7 mecanismos e seus templates:
 - `link_externo` → `conteudo_page_link_externo.html` (link externo seguro, `noopener noreferrer`).
 - `animacao_externa` → `conteudo_page_animacao_externa.html` (iframe protegido para animações/sites externos).
 
+### Resolução de embed (URL colada pelo gestor)
+O gestor cola a URL do **navegador**, não a de embed: `youtube.com/watch?v=ID`, `youtu.be/ID`,
+`youtube.com/shorts/ID`, `vimeo.com/ID`, `open.spotify.com/...`. Essas URLs **não** funcionam em
+`<iframe src>` (X-Frame-Options bloqueia `/watch`, `/shorts` etc.), então a URL colada **nunca**
+deve ir direto para o `src` de um iframe. Usar `{% embed url %}` ou `get_embed(url)` de
+`wagtail.embeds`, que resolve a URL via oEmbed e devolve o HTML de incorporação correto.
+
+Providers cobertos **nativamente** (verificados com URLs reais no Wagtail 8 deste projeto):
+**YouTube** (`/watch`, `youtu.be`, `/shorts`), **Vimeo**, **Spotify**, **SoundCloud**
+(80 providers oEmbed nativos no total).
+**Não coberto:** Google Slides (`docs.google.com/presentation/...`) — requer provider custom em
+`WAGTAILEMBEDS_FINDERS`; até lá, cai no fallback de link seguro (ver "Dívida técnica" ao fim
+deste documento).
+
+Comportamento verificado da tag: `{% embed url max_width=N %}` aceita **somente** `max_width`;
+se a URL não for embeddável, captura `EmbedException` e devolve string vazia, sem quebrar a
+página. Por isso o template usa `{% embed url as embed_html %}` + `{% if embed_html %}`, caindo
+em link externo seguro (`target="_blank"` + `rel="noopener noreferrer"`) quando vazio.
+
 Todos herdam de `conteudo_page_base.html`. O fallback `conteudo_page.html` garante que um mecanismo sem template dedicado ainda renderize (nunca dispara `TemplateDoesNotExist`).
 
 Um conteúdo tem **um tipo só** e **um mecanismo de exibição só** (fiel ao legado). StreamField foi descartado para este caso — não reabrir essa discussão sem motivo novo real (ver `docs/requisitos-vs-legado.md` para o raciocínio completo).
@@ -119,3 +140,13 @@ A busca em produção hoje só retorna resultado dentro do canal "Recursos Educa
 - Não reabrir a discussão de StreamField para o player sem um motivo de produto novo e real.
 - **Não escolher o template pelo slug do `tipo`** — o player é determinado pelo `mecanismo_exibicao` (formato técnico), não pela taxonomia pedagógica (`tipo`). Confundir os dois é o erro que a decisão de `CONTEXT.MD` seção 3 corrige.
 - Não usar `Categoria` como nome de model — foi renomeado para `CategoriaConteudo` (migration 0002).
+- Não passar URL colada pelo gestor direto em `<iframe src>` — resolver com `{% embed %}` /
+  `get_embed()` de `wagtail.embeds` (ver "Resolução de embed" na seção "Player por mecanismo de exibição").
+
+## Dívida técnica
+
+### Embed de Google Slides não suportado nativamente
+- **Situação:** `docs.google.com/presentation/...` **não** está entre os 80 providers oEmbed nativos do Wagtail 8 deste projeto. Verificado com URL real: `get_embed()` levanta `EmbedUnsupportedProviderException` e `{% embed %}` devolve string vazia.
+- **Comportamento atual (fallback):** cai no link externo seguro (`target="_blank"` + `rel="noopener noreferrer"`) — a página não quebra, mas a apresentação não é incorporada.
+- **Para implementar:** registrar um provider custom em `WAGTAILEMBEDS_FINDERS`, mapeando `docs.google.com/presentation/d/<id>` para `https://docs.google.com/presentation/d/<id>/embed`.
+- **Escopo:** **fora do escopo atual**. Só implementar com um caso de uso real e uma URL pública de apresentação para testar (o `AGENTS.md` exige testar 2–3 casos reais antes de propor código).
