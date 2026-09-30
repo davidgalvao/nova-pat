@@ -1,41 +1,40 @@
 {% load wagtailimages_tags %}
-{% comment %}Hero com o último conteúdo do canal em player (vídeo/áudio) ou capa com link.{% endcomment %}
+{% comment %}
+Hero do último conteúdo do canal: player (vídeo/áudio) é o protagonista —
+em telas lg+, grade assimétrica com texto à esquerda e player à direita;
+sem mídia, o bloco degrada para hero editorial sobre a capa.
+{% endcomment %}
 {% if conteudo %}
-<section class="relative flex min-h-[70vh] w-full items-center overflow-hidden bg-brand-700"
+<section class="relative w-full overflow-hidden bg-brand-700"
          role="banner" aria-label="{{ conteudo.title }}">
-    {% comment %}Imagem de fundo com sobreposição de gradiente para legibilidade (mesmo padrão do hero_block).{% endcomment %}
+    {% comment %}Capa de fundo com gradiente direcional para legibilidade (mesmo padrão do hero_block).{% endcomment %}
     {% if conteudo.og_image %}
         {% image conteudo.og_image fill-1920x1080 as hero_img %}
         <img src="{{ hero_img.url }}" alt=""
              class="absolute inset-0 h-full w-full object-cover"
              aria-hidden="true" />
     {% endif %}
-    <div class="absolute inset-0 bg-black/50" aria-hidden="true"></div>
+    <div class="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/40"
+         aria-hidden="true"></div>
 
-    <div class="relative z-10 mx-auto w-full max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-        <div class="max-w-3xl">
-            <h2 class="text-4xl font-extrabold leading-tight text-white sm:text-5xl">
+    <div class="relative z-10 mx-auto grid w-full max-w-7xl gap-10 px-4 py-16 sm:px-6 lg:grid-cols-5 lg:items-center lg:px-8 lg:py-20">
+        <div class="lg:col-span-2">
+            {% if conteudo.tipo %}
+                <p class="text-sm font-semibold uppercase tracking-wide text-brand-100">
+                    {{ conteudo.tipo.name }}
+                </p>
+            {% endif %}
+            <h2 class="mt-2 text-3xl font-extrabold leading-tight text-white sm:text-4xl lg:text-5xl">
                 {{ conteudo.title }}
             </h2>
-
-            {% if conteudo.mecanismo_exibicao == "video" and conteudo.arquivo %}
-                <video controls preload="metadata"
-                       class="mt-6 aspect-video w-full max-w-3xl rounded-lg bg-black shadow-sm ring-1 ring-white/20"
-                       aria-label="{{ conteudo.title }}">
-                    <source src="{{ conteudo.arquivo.url }}" />
-                    Seu navegador não suporta o elemento de vídeo.
-                </video>
-            {% elif conteudo.mecanismo_exibicao == "audio" and conteudo.arquivo %}
-                <audio controls preload="metadata"
-                       class="mt-6 w-full max-w-3xl"
-                       aria-label="{{ conteudo.title }}">
-                    <source src="{{ conteudo.arquivo.url }}" />
-                    Seu navegador não suporta o elemento de áudio.
-                </audio>
+            {% if conteudo.first_published_at %}
+                <p class="mt-4 text-sm text-white/70">
+                    Publicado em {{ conteudo.first_published_at|date:"d/m/Y" }}
+                </p>
             {% endif %}
 
-            {# CTA sempre disponível: abrir a página do conteúdo #}
-            <div class="mt-10 flex flex-col gap-4 sm:flex-row">
+            {% comment %}CTA sempre disponível: abrir a página do conteúdo{% endcomment %}
+            <div class="mt-8 flex flex-col gap-4 sm:flex-row">
                 <a href="{{ conteudo.url }}"
                    aria-label="Assistir {{ conteudo.title }}"
                    class="inline-flex items-center justify-center rounded-md bg-brand-500 px-6 py-3 text-base font-semibold text-white shadow-sm transition-colors hover:bg-brand-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-700">
@@ -43,6 +42,28 @@
                 </a>
             </div>
         </div>
+
+        {% if conteudo.mecanismo_exibicao == "video" and conteudo.arquivo %}
+            {% image conteudo.og_image fill-800x450 as poster_img %}
+            <div class="lg:col-span-3">
+                <video controls preload="metadata"
+                       {% if conteudo.og_image %}poster="{{ poster_img.url }}"{% endif %}
+                       class="aspect-video w-full rounded-lg bg-black shadow-lg ring-1 ring-white/20"
+                       aria-label="{{ conteudo.title }}">
+                    <source src="{{ conteudo.arquivo.url }}" />
+                    Seu navegador não suporta o elemento de vídeo.
+                </video>
+            </div>
+        {% elif conteudo.mecanismo_exibicao == "audio" and conteudo.arquivo %}
+            <div class="lg:col-span-3">
+                <audio controls preload="metadata"
+                       class="w-full"
+                       aria-label="{{ conteudo.title }}">
+                    <source src="{{ conteudo.arquivo.url }}" />
+                    Seu navegador não suporta o elemento de áudio.
+                </audio>
+            </div>
+        {% endif %}
     </div>
 </section>
 {% endif %}
