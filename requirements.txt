@@ -9,3 +9,4 @@ pytest
 pytest-django
 faker
 django-ai-boost>=0.9.0
+faker-file>=0.18.0
