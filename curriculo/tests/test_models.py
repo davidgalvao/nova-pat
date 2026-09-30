@@ -1,3 +1,4 @@
+
 """
 Testes para models do app curriculo.
 """
@@ -5,26 +6,10 @@ from django.test import TestCase
 from django.db import IntegrityError
 
 from curriculo.models import NivelEnsino, CurricularComponentCategory, CurricularComponent
-from canais.models import CanalPage
-from wagtail.models import Site
 
 
 class CurriculoModelsTestCase(TestCase):
     """Testes para os models do app curriculo."""
-
-    @classmethod
-    def setUpTestData(cls):
-        """Configuração inicial para todos os testes."""
-        cls.root_page = Site.objects.get(is_default_site=True).root_page
-
-        cls.canal = CanalPage(
-            title="Canal Currículo",
-            name="Canal Currículo",
-            slug="canal-curriculo",
-            is_active=True,
-        )
-        cls.root_page.add_child(instance=cls.canal)
-        cls.canal.save_revision().publish()
 
     def test_nivel_ensino_creation(self):
         """Testa criação de NivelEnsino."""
@@ -84,22 +69,6 @@ class CurriculoModelsTestCase(TestCase):
 
         self.assertEqual(filho.parent, pai)
         self.assertIn(filho, pai.children.all())
-
-    def test_curricular_component_category_canais_permitidos_m2m(self):
-        """Testa M2M canais_permitidos."""
-        cat = CurricularComponentCategory.objects.create(
-            name="Matemática",
-            slug="matematica",
-            ordem=1,
-            is_active=True,
-        )
-
-        cat.canais_permitidos.add(self.canal)
-        self.assertEqual(cat.canais_permitidos.count(), 1)
-        self.assertIn(self.canal, cat.canais_permitidos.all())
-
-        # Testar related_name reverso
-        self.assertIn(cat, self.canal.categorias_componente_permitidas.all())
 
     def test_curricular_component_creation(self):
         """Testa criação de CurricularComponent."""

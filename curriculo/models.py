@@ -62,8 +62,7 @@ class CurricularComponentCategory(models.Model):
     """
     Categoria de componente curricular — agrupador de disciplinas
     (ex: "Ciências da Natureza", "Linguagens", "Matemática").
-    Snippet consumido por CurricularComponent (FK obrigatória) e
-    por CanalPage via M2M (categorias_componente_permitidas).
+    Snippet consumido por CurricularComponent (FK obrigatória).
     """
 
     name = models.CharField(
@@ -107,8 +106,6 @@ class CurricularComponentCategory(models.Model):
 
     # M2M com CanalPage — filtro de categorias de componente por canal
     # Legado: pivot 'canal_cc_categories'
-    # Direção inversa definida em canais.CanalPage.categorias_componente_permitidas
-    # related_name="canais_permitidos" já definido lá
 
     panels = [
         FieldPanel("name"),
