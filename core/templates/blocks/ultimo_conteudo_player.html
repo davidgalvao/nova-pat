@@ -1,9 +1,9 @@
 {% load wagtailimages_tags %}
-{# Hero com o último conteúdo do canal em player (vídeo/áudio) ou capa com link. #}
+{% comment %}Hero com o último conteúdo do canal em player (vídeo/áudio) ou capa com link.{% endcomment %}
 {% if conteudo %}
-<section class="relative flex min-h-[60vh] w-full items-center overflow-hidden bg-brand-700"
+<section class="relative flex min-h-[70vh] w-full items-center overflow-hidden bg-brand-700"
          role="banner" aria-label="{{ conteudo.title }}">
-    {# Imagem de fundo com sobreposição de gradiente para legibilidade (mesmo padrão do hero_block) #}
+    {% comment %}Imagem de fundo com sobreposição de gradiente para legibilidade (mesmo padrão do hero_block).{% endcomment %}
     {% if conteudo.og_image %}
         {% image conteudo.og_image fill-1920x1080 as hero_img %}
         <img src="{{ hero_img.url }}" alt=""

@@ -1,7 +1,9 @@
 {% load wagtailimages_tags %}
-{# Carrossel dos últimos conteúdos do canal: 9 itens, 3 por página,
-   passadores prev/next via CSS scroll-snap puro (sem JS — R3).
-   Classes reaproveitadas de carrossel_categoria_block.html (R2). #}
+{% comment %}
+Carrossel dos últimos conteúdos do canal: 9 itens, 3 por página,
+passadores prev/next via CSS scroll-snap puro (sem JS — R3).
+Classes reaproveitadas de carrossel_categoria_block.html (R2).
+{% endcomment %}
 {% if paginas %}
 <section class="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8"
          role="region" aria-label="Últimos conteúdos">
@@ -42,8 +44,10 @@
         {% endfor %}
     </div>
 
-    {# Passadores: UM único nav, fora do scroll container.
-       Âncoras #pagina-N rolam o container via scroll-snap (sem JS — R3). #}
+    {% comment %}
+    Passadores: UM único nav, fora do scroll container.
+    Âncoras #pagina-N rolam o container via scroll-snap (sem JS — R3).
+    {% endcomment %}
     {% if paginas|length > 1 %}
         <nav class="mt-4 flex gap-4" aria-label="Paginação do carrossel">
             {% for pagina in paginas %}

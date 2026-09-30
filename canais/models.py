@@ -127,11 +127,11 @@ class CanalPage(BasePage):
         return StreamValue(
             stream_block,
             [
-                ("ultimo_conteudo_player", UltimoConteudoPlayerBlock().get_default()),
-                ("ultimos_conteudos_carrossel", UltimosConteudosCarrosselBlock().get_default()),
+                {"type": "ultimo_conteudo_player", "value": {}},
+                {"type": "ultimos_conteudos_carrossel", "value": {}},
             ],
             is_lazy=True,
-        )
+    )
 
     def get_context(self, request, *args, **kwargs):
         """

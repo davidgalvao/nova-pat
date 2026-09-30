@@ -11,8 +11,10 @@
     <div>{{ page.description|richtext }}</div>
     {% endif %}
 
-    {# Composição editorial efetiva: blocos do gestor (body) ou
-       fallback sintético (hero player + carrossel) — zero hardcode. #}
+    {% comment %}
+    Composição editorial efetiva: blocos do gestor (body) ou
+    fallback sintético (hero player + carrossel) — zero hardcode.
+    {% endcomment %}
     {% for block in page.get_effective_body %}
         {% include_block block %}
     {% endfor %}
