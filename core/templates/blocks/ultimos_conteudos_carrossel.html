@@ -1,0 +1,59 @@
+{% load wagtailimages_tags %}
+{# Carrossel dos últimos conteúdos do canal: 9 itens, 3 por página,
+   passadores prev/next via CSS scroll-snap puro (sem JS — R3).
+   Classes reaproveitadas de carrossel_categoria_block.html (R2). #}
+{% if paginas %}
+<section class="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8"
+         role="region" aria-label="Últimos conteúdos">
+    <h2 class="text-2xl font-bold text-gray-900 sm:text-3xl">
+        Últimos conteúdos
+    </h2>
+
+    <div class="mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4"
+         aria-label="Carrossel de últimos conteúdos">
+        {% for pagina in paginas %}
+            <div id="pagina-{{ forloop.counter }}"
+                 class="grid w-full shrink-0 snap-start grid-cols-1 gap-6 sm:grid-cols-3">
+                {% for conteudo in pagina %}
+                    <a href="{{ conteudo.url }}"
+                       aria-label="{{ conteudo.title }}"
+                       class="group overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-gray-200 transition-shadow hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2">
+                        <div class="aspect-video w-full overflow-hidden bg-gray-100">
+                            {% if conteudo.og_image %}
+                                {% image conteudo.og_image fill-400x225 as card_img %}
+                                <img src="{{ card_img.url }}" alt=""
+                                     class="h-full w-full object-cover transition-transform group-hover:scale-105"
+                                     aria-hidden="true" />
+                            {% endif %}
+                        </div>
+                        <div class="p-4">
+                            <h3 class="line-clamp-2 text-base font-semibold text-gray-900">
+                                {{ conteudo.title }}
+                            </h3>
+                            {% if conteudo.tipo %}
+                                <p class="mt-2 text-sm text-gray-600">
+                                    {{ conteudo.tipo.name }}
+                                </p>
+                            {% endif %}
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        {% endfor %}
+    </div>
+
+    {# Passadores: UM único nav, fora do scroll container.
+       Âncoras #pagina-N rolam o container via scroll-snap (sem JS — R3). #}
+    {% if paginas|length > 1 %}
+        <nav class="mt-4 flex gap-4" aria-label="Paginação do carrossel">
+            {% for pagina in paginas %}
+                <a href="#pagina-{{ forloop.counter }}"
+                   aria-label="Ir para a página {{ forloop.counter }}"
+                   class="inline-flex items-center justify-center rounded-md bg-brand-500 px-6 py-3 text-base font-semibold text-white shadow-sm transition-colors hover:bg-brand-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2">
+                    {{ forloop.counter }}
+                </a>
+            {% endfor %}
+        </nav>
+    {% endif %}
+</section>
+{% endif %}

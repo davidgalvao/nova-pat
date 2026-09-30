@@ -1,0 +1,48 @@
+{% load wagtailimages_tags %}
+{# Hero com o último conteúdo do canal em player (vídeo/áudio) ou capa com link. #}
+{% if conteudo %}
+<section class="relative flex min-h-[60vh] w-full items-center overflow-hidden bg-brand-700"
+         role="banner" aria-label="{{ conteudo.title }}">
+    {# Imagem de fundo com sobreposição de gradiente para legibilidade (mesmo padrão do hero_block) #}
+    {% if conteudo.og_image %}
+        {% image conteudo.og_image fill-1920x1080 as hero_img %}
+        <img src="{{ hero_img.url }}" alt=""
+             class="absolute inset-0 h-full w-full object-cover"
+             aria-hidden="true" />
+    {% endif %}
+    <div class="absolute inset-0 bg-black/50" aria-hidden="true"></div>
+
+    <div class="relative z-10 mx-auto w-full max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+        <div class="max-w-3xl">
+            <h2 class="text-4xl font-extrabold leading-tight text-white sm:text-5xl">
+                {{ conteudo.title }}
+            </h2>
+
+            {% if conteudo.mecanismo_exibicao == "video" and conteudo.arquivo %}
+                <video controls preload="metadata"
+                       class="mt-6 aspect-video w-full max-w-3xl rounded-lg bg-black shadow-sm ring-1 ring-white/20"
+                       aria-label="{{ conteudo.title }}">
+                    <source src="{{ conteudo.arquivo.url }}" />
+                    Seu navegador não suporta o elemento de vídeo.
+                </video>
+            {% elif conteudo.mecanismo_exibicao == "audio" and conteudo.arquivo %}
+                <audio controls preload="metadata"
+                       class="mt-6 w-full max-w-3xl"
+                       aria-label="{{ conteudo.title }}">
+                    <source src="{{ conteudo.arquivo.url }}" />
+                    Seu navegador não suporta o elemento de áudio.
+                </audio>
+            {% endif %}
+
+            {# CTA sempre disponível: abrir a página do conteúdo #}
+            <div class="mt-10 flex flex-col gap-4 sm:flex-row">
+                <a href="{{ conteudo.url }}"
+                   aria-label="Assistir {{ conteudo.title }}"
+                   class="inline-flex items-center justify-center rounded-md bg-brand-500 px-6 py-3 text-base font-semibold text-white shadow-sm transition-colors hover:bg-brand-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-700">
+                    Ver conteúdo
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}

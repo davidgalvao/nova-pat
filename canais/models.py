@@ -2,12 +2,16 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from wagtail.models import Page
 from wagtail.admin.panels import FieldPanel, MultiFieldPanel
-from wagtail.fields import RichTextField, StreamField
+from wagtail.fields import RichTextField, StreamField, StreamValue
 from wagtail.images import get_image_model_string
 
 # Import do core para herdar de BasePage
 from core.models import BasePage
-from core.blocks import HomeStreamBlock
+from core.blocks import (
+    HomeStreamBlock,
+    UltimoConteudoPlayerBlock,
+    UltimosConteudosCarrosselBlock,
+)
 
 
 class CanalPage(BasePage):
@@ -105,6 +109,29 @@ class CanalPage(BasePage):
 
     def __str__(self):
         return self.name
+
+    def get_effective_body(self):
+        """
+        Composição editorial efetiva da página do canal.
+
+        - Se `body` tiver conteúdo (escolha do gestor), retorna `self.body`.
+        - Senão, retorna um `StreamValue` sintético (não persistido) com os
+          2 blocos de fallback padrão: `UltimoConteudoPlayerBlock` +
+          `UltimosConteudosCarrosselBlock`. `is_lazy=True` é obrigatório,
+          pois os blocos são contextuais (sem valores armazenados).
+        """
+        if self.body:
+            return self.body
+
+        stream_block = self.body.stream_block
+        return StreamValue(
+            stream_block,
+            [
+                ("ultimo_conteudo_player", UltimoConteudoPlayerBlock().get_default()),
+                ("ultimos_conteudos_carrossel", UltimosConteudosCarrosselBlock().get_default()),
+            ],
+            is_lazy=True,
+        )
 
     def get_context(self, request, *args, **kwargs):
         """

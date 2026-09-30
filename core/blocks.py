@@ -235,6 +235,88 @@ class FeatureGridBlock(blocks.StructBlock):
         template = "blocks/feature_grid_block.html"
 
 
+class UltimoConteudoPlayerBlock(blocks.StructBlock):
+    """
+    Hero com o último conteúdo publicado do canal em player de vídeo/áudio
+    (ou capa com link, para demais mecanismos de exibição).
+
+    **Decisão de modelagem**: bloco contextual — não tem campos editáveis.
+    O canal é resolvido em `get_context()` a partir de `parent_context["page"]`
+    (padrão Wagtail), e a consulta segue o padrão de `CarrosselCategoriaBlock`:
+    apenas `live()` e `is_approved=True`, ordenado por `-first_published_at`.
+    Fora de uma `CanalPage`, o bloco não renderiza nada.
+    """
+
+    def get_context(self, value, parent_context=None):
+        """Busca o conteúdo mais recente do canal que serve a página."""
+        context = super().get_context(value, parent_context=parent_context)
+
+        from conteudos.models import ConteudoPage
+
+        page = (parent_context or {}).get("page")
+        conteudo = None
+        if page is not None:
+            conteudo = (
+                ConteudoPage.objects.live()
+                .child_of(page)
+                .filter(is_approved=True)
+                .order_by("-first_published_at")
+                .first()
+            )
+
+        context["conteudo"] = conteudo
+        return context
+
+    class Meta:
+        icon = "media"
+        label = "Último Conteúdo (Player)"
+        template = "blocks/ultimo_conteudo_player.html"
+
+
+class UltimosConteudosCarrosselBlock(blocks.StructBlock):
+    """
+    Carrossel estilo streaming com os últimos conteúdos do canal
+    (até 9 itens, 3 por página, passadores prev/next via CSS scroll-snap).
+
+    **Decisão de modelagem**: bloco contextual — mesma lógica de resolução
+    de canal de `UltimoConteudoPlayerBlock`. Limite fixo de 9 itens
+    (decisão do plano), sem campo editável.
+    """
+
+    LIMITE = 9
+
+    def get_context(self, value, parent_context=None):
+        """
+        Busca os últimos conteúdos do canal que serve a página e os
+        agrupa em páginas de 3 (`paginas = [[c1,c2,c3], [c4,c5,c6], ...]`),
+        para o template iterar páginas sem lógica de paginação nele.
+        """
+        context = super().get_context(value, parent_context=parent_context)
+
+        from conteudos.models import ConteudoPage
+
+        page = (parent_context or {}).get("page")
+        conteudos = ConteudoPage.objects.none()
+        if page is not None:
+            conteudos = (
+                ConteudoPage.objects.live()
+                .child_of(page)
+                .filter(is_approved=True)
+                .order_by("-first_published_at")[: self.LIMITE]
+            )
+
+        conteudos = list(conteudos)
+        context["paginas"] = [
+            conteudos[i : i + 3] for i in range(0, len(conteudos), 3)
+        ]
+        return context
+
+    class Meta:
+        icon = "list-ul"
+        label = "Últimos Conteúdos (Carrossel)"
+        template = "blocks/ultimos_conteudos_carrossel.html"
+
+
 class HomeStreamBlock(blocks.StreamBlock):
     """
     Agrega todos os blocos da Home em um `StreamBlock` reutilizável.
@@ -248,6 +330,8 @@ class HomeStreamBlock(blocks.StreamBlock):
     carrossel_categoria = CarrosselCategoriaBlock()
     destaques_manuais = DestaquesManuaisBlock()
     feature_grid = FeatureGridBlock()
+    ultimo_conteudo_player = UltimoConteudoPlayerBlock()
+    ultimos_conteudos_carrossel = UltimosConteudosCarrosselBlock()
 
     class Meta:
         required = False

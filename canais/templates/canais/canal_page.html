@@ -5,37 +5,16 @@
 
 {% block content %}
 <main role="main">
-    {# Composição editorial via StreamField (blocos reutilizáveis da HomePage) #}
-    {% for block in page.body %}
-        {% include_block block %}
-    {% endfor %}
-
     <h1>{{ page.title }}</h1>
 
     {% if page.description %}
     <div>{{ page.description|richtext }}</div>
     {% endif %}
 
-    <h2>Conteúdos</h2>
-    <ul>
-        {% for conteudo in conteudos %}
-        <li>
-            <a href="{{ conteudo.url }}">{{ conteudo.title }}</a>
-        </li>
-        {% empty %}
-        <li>Nenhum conteúdo encontrado.</li>
-        {% endfor %}
-    </ul>
-
-    <h2>Aplicativos</h2>
-    <ul>
-        {% for app in aplicativos %}
-        <li>
-            <a href="{{ app.url }}">{{ app.title }}</a>
-        </li>
-        {% empty %}
-        <li>Nenhum aplicativo encontrado.</li>
-        {% endfor %}
-    </ul>
+    {# Composição editorial efetiva: blocos do gestor (body) ou
+       fallback sintético (hero player + carrossel) — zero hardcode. #}
+    {% for block in page.get_effective_body %}
+        {% include_block block %}
+    {% endfor %}
 </main>
 {% endblock %}

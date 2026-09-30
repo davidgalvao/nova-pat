@@ -1,0 +1,9 @@
+{
+  "readOnly": false,
+  "allowExec": false,
+  "containerAllowlist": ["web"],
+  "plugins": {
+    "enabled": ["containers", "logs", "compose", "lifecycle"],
+    "disabled": []
+  }
+}
