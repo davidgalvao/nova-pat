@@ -83,3 +83,52 @@ class SeedConteudosFakeTestCase(TestCase):
         conteudo.refresh_from_db()
         self.assertTrue(conteudo.arquivo)
         self.assertIsNotNone(conteudo.og_image_id)
+
+    def test_cobre_os_sete_mecanismos(self):
+        """Cada canal deve cobrir os 7 mecanismos de exibição."""
+        self._run_seed()
+        esperados = {escolha[0] for escolha in ConteudoPage.MECANISMO_CHOICES}
+        encontrados = set(
+            ConteudoPage.objects.values_list("mecanismo_exibicao", flat=True)
+        )
+        self.assertEqual(encontrados, esperados)
+
+    def test_modos_de_midia_sao_exclusivos(self):
+        """MODO A usa só `arquivo`; MODO B usa só `source` (ver ARCHITECTURE.md)."""
+        self._run_seed()
+        modo_upload = {
+            ConteudoPage.MECANISMO_VIDEO,
+            ConteudoPage.MECANISMO_AUDIO,
+            ConteudoPage.MECANISMO_DOCUMENTO_PDF,
+            ConteudoPage.MECANISMO_APRESENTACAO,
+            ConteudoPage.MECANISMO_DOWNLOAD_BINARIO,
+        }
+        for conteudo in ConteudoPage.objects.all():
+            if conteudo.mecanismo_exibicao in modo_upload:
+                self.assertTrue(conteudo.arquivo, conteudo.mecanismo_exibicao)
+                self.assertEqual(conteudo.source, "", conteudo.mecanismo_exibicao)
+            else:
+                self.assertFalse(conteudo.arquivo, conteudo.mecanismo_exibicao)
+                self.assertTrue(conteudo.source, conteudo.mecanismo_exibicao)
+
+    def test_midia_gerada_e_real_nao_um_stub(self):
+        """CASO C: a mídia do seed precisa ser tocável, não um stub de 10 bytes."""
+        self._run_seed()
+        for mecanismo, minimo, assinatura in (
+            (ConteudoPage.MECANISMO_VIDEO, 1024, b"ftyp"),
+            (ConteudoPage.MECANISMO_AUDIO, 1024, b"ID3"),
+        ):
+            conteudo = ConteudoPage.objects.filter(
+                mecanismo_exibicao=mecanismo
+            ).first()
+            self.assertIsNotNone(conteudo.arquivo, mecanismo)
+            self.assertGreater(conteudo.arquivo.size, minimo, mecanismo)
+            with conteudo.arquivo.open("rb") as arquivo:
+                cabecalho = arquivo.read(12)
+            if assinatura == b"ID3":
+                self.assertTrue(
+                    cabecalho.startswith(b"ID3") or cabecalho[0] == 0xFF,
+                    f"{mecanismo}: cabeçalho inesperado {cabecalho!r}",
+                )
+            else:
+                self.assertIn(assinatura, cabecalho, mecanismo)

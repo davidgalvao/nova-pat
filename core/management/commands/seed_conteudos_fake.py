@@ -3,13 +3,26 @@ Semeia conteúdo fake nos canais para permitir teste visual dos blocos
 de fallback (hero player + carrossel) da página de canal.
 
 Uso: ``python manage.py seed_conteudos_fake [--force]``. Idempotente:
-a checagem por (canal, título) pula conteúdos já criados; ``--force``
-mantém o conteúdo mas regenera ``arquivo``/``og_image`` ausentes.
+a checagem por (canal, ``options.indice``) pula conteúdos já criados;
+``--force`` mantém a página e regenera mecanismo/título/mídia/capa.
 
-Mídia gerada localmente (offline-determinístico): PNG de capa via
-Pillow, PDF mínimo embutido e stubs MP4/MP3 (renderizam os players,
-não tocam). Sem dependência de rede externa.
+Cobre os 7 mecanismos de exibição, nos dois modos de mídia:
+- MODO A (upload em ``arquivo``): video, audio, documento_pdf,
+  apresentacao, download_binario.
+- MODO B (URL externa em ``source``): link_externo e animacao_externa,
+  com URLs reais de plataforma (YouTube/Vimeo/Spotify) — resolvidas por
+  ``{% embed %}`` no template — e uma URL não-embeddável para exercitar
+  o fallback de link seguro.
+
+Mídia real e offline-determinística: MP3/MP4 versionados em
+``core/fixtures/seed_media/`` (gerados uma vez com ffmpeg; o seed não
+depende de ffmpeg, rede ou faker-file), PDF mínimo e ZIP gerados em
+memória, e capas PNG desenhadas com Pillow.
 """
+
+import zipfile
+from io import BytesIO
+from pathlib import Path
 
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
@@ -75,17 +88,87 @@ startxref
 %%EOF
 """
 
-# Stubs mínimos: fazem os elementos <video>/<audio> renderizarem os controles
-# (suficiente para teste visual do hero), sem depender de rede.
-MINIMAL_MP4 = (
-    b"\x00\x00\x00\x18ftypisom\x00\x00\x02\x00isomiso2mp41"
-    b"\x00\x00\x00\x08free"
-    b"\x00\x00\x00\x08mdat"
-)
-MINIMAL_MP3 = b"ID3\x04\x00\x00\x00\x00\x00\x00"
+# Mídia de exemplo REAL, versionada no repositório (core/fixtures/seed_media/).
+# Geradas uma única vez com ffmpeg e commitadas: o seed não depende de ffmpeg
+# em tempo de execução, nem de rede, nem de faker-file (cujos providers de
+# mídia exigem geradores opcionais — imgkit/pdfkit/gtts — ausentes na imagem).
+FIXTURES_DIR = Path(__file__).resolve().parents[2] / "fixtures" / "seed_media"
+SAMPLE_AUDIO_PATH = FIXTURES_DIR / "sample_audio.mp3"
+SAMPLE_VIDEO_PATH = FIXTURES_DIR / "sample_video.mp4"
 
-SAMPLE_VIDEO_URL = "https://www.pexels.com/video/3264594/"
-SAMPLE_AUDIO_URL = "https://www.pexels.com/audio/2103023/"
+# MODO A: upload em `arquivo`. MODO B: URL externa em `source`.
+# Nenhum mecanismo usa os dois campos ao mesmo tempo (ver ARCHITECTURE.md).
+MECANISMOS_UPLOAD = (
+    ConteudoPage.MECANISMO_VIDEO,
+    ConteudoPage.MECANISMO_AUDIO,
+    ConteudoPage.MECANISMO_DOCUMENTO_PDF,
+    ConteudoPage.MECANISMO_APRESENTACAO,
+    ConteudoPage.MECANISMO_DOWNLOAD_BINARIO,
+)
+MECANISMOS_URL = (
+    ConteudoPage.MECANISMO_LINK_EXTERNO,
+    ConteudoPage.MECANISMO_ANIMACAO_EXTERNA,
+)
+
+# Ordem do ciclo de mecanismos por canal. O deslocamento por canal (ver handle)
+# faz o conteúdo mais recente — o que o hero exibe — variar entre os canais:
+# player de vídeo, player de áudio, embed (MODO B) e visualizador de PDF.
+MECANISMOS_CICLO = (
+    ConteudoPage.MECANISMO_DOWNLOAD_BINARIO,
+    ConteudoPage.MECANISMO_APRESENTACAO,
+    ConteudoPage.MECANISMO_VIDEO,
+    ConteudoPage.MECANISMO_AUDIO,
+    ConteudoPage.MECANISMO_LINK_EXTERNO,
+    ConteudoPage.MECANISMO_ANIMACAO_EXTERNA,
+    ConteudoPage.MECANISMO_DOCUMENTO_PDF,
+)
+
+# URLs de plataforma, resolvidas por {% embed %} (oEmbed) no template.
+# Ordem importa: o hero usa o índice final do ciclo, então as plataformas com
+# embed 16:9 (YouTube/Vimeo) ficam nas posições que o hero alcança.
+SAMPLE_EMBED_URLS = (
+    "https://open.spotify.com/track/4cOdK2wGLETKBW3PvgPWqT",
+    "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    "https://youtu.be/dQw4w9WgXcQ",
+    "https://www.youtube.com/shorts/dQw4w9WgXcQ",
+    "https://vimeo.com/1084537",
+)
+# URL válida porém NÃO-embeddável: exercita o fallback de link seguro.
+SAMPLE_FALLBACK_URL = "https://example.com/material-externo"
+
+# Cores da paleta brand (mesmos valores do tailwind.config do base.html).
+BRAND_700 = (30, 58, 138)
+BRAND_600 = (30, 64, 175)
+BRAND_500 = (29, 78, 216)
+BRAND_100 = (217, 230, 255)
+
+# Glifos FontAwesome por mecanismo (a fonte vem do static do DRF já instalado).
+GLIFOS_POR_MECANISMO = {
+    ConteudoPage.MECANISMO_VIDEO: "\uf008",             # film
+    ConteudoPage.MECANISMO_AUDIO: "\uf001",             # music
+    ConteudoPage.MECANISMO_DOCUMENTO_PDF: "\uf15c",     # file-text
+    ConteudoPage.MECANISMO_APRESENTACAO: "\uf108",      # desktop
+    ConteudoPage.MECANISMO_DOWNLOAD_BINARIO: "\uf019",  # download
+    ConteudoPage.MECANISMO_LINK_EXTERNO: "\uf0c1",      # link
+    ConteudoPage.MECANISMO_ANIMACAO_EXTERNA: "\uf04b",  # play
+}
+
+
+def _fonte_icones_path():
+    """Caminho da fonte FontAwesome (static do DRF); None se indisponível."""
+    try:
+        import rest_framework
+
+        caminho = (
+            Path(rest_framework.__file__).parent
+            / "static"
+            / "rest_framework"
+            / "fonts"
+            / "fontawesome-webfont.ttf"
+        )
+        return caminho if caminho.exists() else None
+    except Exception:
+        return None
 
 
 class Command(BaseCommand):
@@ -137,14 +220,13 @@ class Command(BaseCommand):
 
         canals = self._ensure_canals()
 
-        mechanisms = [
-            ConteudoPage.MECANISMO_VIDEO,
-            ConteudoPage.MECANISMO_AUDIO,
-            ConteudoPage.MECANISMO_DOCUMENTO_PDF,
-            ConteudoPage.MECANISMO_LINK_EXTERNO,
-        ]
+        # Ciclo com os 7 mecanismos (10 itens por canal: todos aparecem e os 3
+        # primeiros repetem, dando volume ao carrossel). O deslocamento por
+        # canal varia qual mecanismo é o mais recente — ou seja, o que o hero
+        # exibe — cobrindo player de vídeo, de áudio, embed (MODO B) e PDF.
+        mechanisms = MECANISMOS_CICLO
 
-        for canal in canals:
+        for canal_index, canal in enumerate(canals):
             self.stdout.write(f"Creating fake content for canal: {canal.name}")
             # category é FK PROTECT obrigatória e escopada por canal (D2/D4)
             categoria, _ = CategoriaConteudo.objects.get_or_create(
@@ -158,27 +240,39 @@ class Command(BaseCommand):
             )
 
             for i in range(10):
-                mechanism = mechanisms[i % len(mechanisms)]
+                mechanism = mechanisms[(i + canal_index) % len(mechanisms)]
                 title = f"{canal.name} - Conteúdo Educacional {i + 1} - {mechanism}"
 
-                # Idempotência: child_of é método de queryset, não argumento de filter
+                # Idempotência por (canal, indice): estável mesmo quando o ciclo
+                # de mecanismos muda. Fallback por título para registros antigos
+                # que ainda não tenham `options.indice`.
                 existing = (
                     ConteudoPage.objects.child_of(canal)
-                    .filter(title=title)
+                    .filter(options__indice=i)
                     .first()
                 )
+                if existing is None:
+                    existing = (
+                        ConteudoPage.objects.child_of(canal)
+                        .filter(title=title)
+                        .first()
+                    )
                 if existing is not None:
                     if not force:
                         self.stdout.write(
                             f"  Content '{title}' already exists under {canal.name}. Skipping."
                         )
                         continue
-                    # --force: regenera mídia ausente sem duplicar a página
-                    self._set_mecanismo_payload(existing, mechanism)
-                    self._set_og_image(existing, title)
+                    # --force: atualiza mecanismo/título/mídia/capa no lugar,
+                    # sem criar página duplicada.
+                    existing.mecanismo_exibicao = mechanism
+                    existing.title = title
+                    existing.options = {**(existing.options or {}), "indice": i}
+                    self._set_mecanismo_payload(existing, mechanism, force=True)
+                    self._set_og_image(existing, title, force=True)
                     existing.save_revision().publish()
                     self.stdout.write(
-                        f'  Refreshed media on existing content: "{title}"'
+                        self.style.SUCCESS(f'  Refreshed content: "{title}"')
                     )
                     continue
 
@@ -295,70 +389,105 @@ class Command(BaseCommand):
             self.stdout.write(f"Created canal: {canal.name}")
         return CanalPage.objects.live().filter(is_active=True).specific()
 
-    def _set_mecanismo_payload(self, content, mechanism):
-        mecanismo = content.mecanismo_exibicao
-        if mecanismo == ConteudoPage.MECANISMO_VIDEO:
-            content.source = SAMPLE_VIDEO_URL
-            if not content.arquivo:
-                content.arquivo.save(
-                    f"video_{content.slug}.mp4",
-                    ContentFile(MINIMAL_MP4),
-                    save=False,
-                )
-        elif mecanismo == ConteudoPage.MECANISMO_AUDIO:
-            content.source = SAMPLE_AUDIO_URL
-            if not content.arquivo:
-                content.arquivo.save(
-                    f"audio_{content.slug}.mp3",
-                    ContentFile(MINIMAL_MP3),
-                    save=False,
-                )
-        elif mecanismo == ConteudoPage.MECANISMO_DOCUMENTO_PDF:
-            content.source = "https://www.example.com/sample.pdf"
-            if not content.arquivo:
-                content.arquivo.save(
-                    f"documento_{content.slug}.pdf",
-                    ContentFile(MINIMAL_PDF),
-                    save=False,
-                )
-        elif mecanismo == ConteudoPage.MECANISMO_LINK_EXTERNO:
-            content.source = "https://example.com"
-            # link_externo não carrega arquivo
+    def _set_mecanismo_payload(self, content, mechanism, force=False):
+        """
+        Preenche o campo de mídia conforme o MODO do mecanismo.
 
-    def _set_og_image(self, content, title):
+        MODO A (upload): grava ``arquivo`` a partir das fixtures reais do repo
+        e limpa ``source``. MODO B (URL externa): grava ``source`` e não usa
+        ``arquivo``. Nenhum mecanismo usa os dois (regra em ARCHITECTURE.md).
+        ``force=True`` sobrescreve mídia existente (corrige stubs antigos).
+        """
+        mecanismo = content.mecanismo_exibicao
+        if mecanismo in MECANISMOS_UPLOAD:
+            content.source = ""
+            if mecanismo == ConteudoPage.MECANISMO_VIDEO:
+                self._attach_arquivo(content, SAMPLE_VIDEO_PATH, "mp4", force)
+            elif mecanismo == ConteudoPage.MECANISMO_AUDIO:
+                self._attach_arquivo(content, SAMPLE_AUDIO_PATH, "mp3", force)
+            elif mecanismo in (
+                ConteudoPage.MECANISMO_DOCUMENTO_PDF,
+                ConteudoPage.MECANISMO_APRESENTACAO,
+            ):
+                self._attach_bytes(content, MINIMAL_PDF, "pdf", force)
+            else:  # download_binario
+                self._attach_bytes(content, self._make_zip_bytes(), "zip", force)
+            return
+
+        # MODO B — URL externa: sem arquivo, só source.
+        content.arquivo = None
+        content.source = self._embed_url_for(content)
+
+    def _embed_url_for(self, content):
+        """Alterna URLs embedáveis e uma não-embeddável (fallback do template)."""
+        indice = (content.options or {}).get("indice", 0)
+        # Um em cada cinco conteúdos usa URL não-embeddável, para exercitar o
+        # fallback de link seguro sem esvaziar o hero dos canais de MODO B.
+        if indice % 5 == 3:
+            return SAMPLE_FALLBACK_URL
+        return SAMPLE_EMBED_URLS[indice % len(SAMPLE_EMBED_URLS)]
+
+    @staticmethod
+    def _make_zip_bytes():
+        """Pacote .zip real e determinístico (timestamp fixo) para download."""
+        buffer = BytesIO()
+        with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as zf:
+            info = zipfile.ZipInfo("leia-me.txt", date_time=(2026, 1, 1, 0, 0, 0))
+            zf.writestr(info, "Pacote de teste da Nova PAT.\n")
+        return buffer.getvalue()
+
+    def _attach_arquivo(self, content, path, ext, force):
+        """Copia uma fixture de mídia do repo para o campo ``arquivo``."""
+        if content.arquivo and not force:
+            return
+        caminho = Path(path)
+        if not caminho.exists():
+            self.stdout.write(self.style.WARNING(f"  Fixture ausente: {caminho}"))
+            return
+        self._attach_bytes(content, caminho.read_bytes(), ext, force)
+
+    def _attach_bytes(self, content, data, ext, force):
+        """Grava bytes no campo ``arquivo`` (sobrescreve quando ``force``)."""
+        if content.arquivo and not force:
+            return
+        if content.arquivo:
+            content.arquivo.delete(save=False)
+        content.arquivo.save(
+            f"{content.mecanismo_exibicao}_{content.slug}.{ext}",
+            ContentFile(data),
+            save=False,
+        )
+
+    def _set_og_image(self, content, title, force=False):
         """
         og_image é FK para o model de imagem do Wagtail (BasePage), não um
         ImageField — exige criar/recuperar um objeto Image e atribuir a FK.
-        Capa gerada localmente via Pillow (offline): cor da marca + título.
+        Capa desenhada offline com Pillow: gradiente da marca, glifo do
+        mecanismo (fonte de ícones do static do DRF) e título com a fonte
+        escalável embutida do Pillow. ``force=True`` redesenha a capa.
         """
-        if content.og_image_id:
-            return
         Image = get_image_model()
-        image_title = f"og {title}"[:100]
-        existing = Image.objects.filter(title=image_title).first()
-        if existing is not None:
-            content.og_image = existing
+        image = content.og_image if content.og_image_id else None
+        if image is not None and not force:
             return
+        image_title = f"og {title}"[:100]
+        if image is None:
+            image = Image.objects.filter(title=image_title).first()
+            if image is None:
+                image = Image(title=image_title)
+            elif not force:
+                content.og_image = image
+                return
 
-        from io import BytesIO
+        png_bytes = self._render_cover(content)
+        if png_bytes is None:
+            return
 
         from django.core.files.images import ImageFile
-        from PIL import Image as PILImage
-        from PIL import ImageDraw
 
-        img = PILImage.new("RGB", (1200, 630), color=(30, 58, 138))  # brand-700
-        draw = ImageDraw.Draw(img)
-        # Faixa central em brand-500 com o slug como texto simples
-        draw.rectangle([(0, 480), (1200, 630)], fill=(29, 78, 216))
-        draw.text((40, 540), content.slug[:80], fill=(255, 255, 255))
-        buffer = BytesIO()
-        img.save(buffer, format="PNG")
-
-        # ImageFile não commitado: o save() do Wagtail/Django calcula
-        # width/height (campos NOT NULL) a partir do arquivo.
-        image = Image(title=image_title)
+        # ImageFile não commitado: o save() calcula width/height (NOT NULL).
         image.file = ImageFile(
-            BytesIO(buffer.getvalue()), name=f"og_image_{content.slug}.png"
+            BytesIO(png_bytes), name=f"og_image_{content.slug}.png"
         )
         try:
             image.save()
@@ -368,3 +497,105 @@ class Command(BaseCommand):
             )
             return
         content.og_image = image
+
+    def _render_cover(self, content):
+        """Desenha a capa 1200x630 e devolve os bytes PNG (None se falhar)."""
+        from PIL import Image as PILImage
+        from PIL import ImageDraw
+
+        largura, altura = 1200, 630
+        img = PILImage.new("RGB", (largura, altura), color=BRAND_700)
+        draw = ImageDraw.Draw(img)
+
+        # Gradiente vertical brand-700 -> brand-500
+        for y in range(altura):
+            t = y / (altura - 1)
+            draw.line(
+                [(0, y), (largura, y)],
+                fill=tuple(
+                    int(BRAND_700[i] + (BRAND_500[i] - BRAND_700[i]) * t)
+                    for i in range(3)
+                ),
+            )
+        # Faixa diagonal em brand-600, para dar movimento à composição
+        draw.polygon(
+            [(-80, 470), (largura, 300), (largura, 420), (-80, 590)],
+            fill=BRAND_600,
+        )
+
+        # Glifo do mecanismo
+        fonte_icone = self._load_icon_font(140)
+        glifo = GLIFOS_POR_MECANISMO.get(content.mecanismo_exibicao, "")
+        if fonte_icone is not None and glifo:
+            draw.text((largura - 220, 80), glifo, font=fonte_icone, fill=BRAND_100)
+
+        # Título em até 2 linhas
+        fonte_titulo = self._load_text_font(54)
+        linhas = self._wrap_text(
+            draw, content.title, fonte_titulo, largura - 120, max_linhas=2
+        )
+        y = 160
+        for linha in linhas:
+            draw.text((60, y), linha, font=fonte_titulo, fill=(255, 255, 255))
+            y += 68
+
+        # Rodapé: canal + mecanismo
+        fonte_rodape = self._load_text_font(26)
+        canal = content.canal.name if content.canal else ""
+        rodape = f"{canal} · {content.mecanismo_exibicao}"[:80]
+        draw.text((60, altura - 64), rodape, font=fonte_rodape, fill=BRAND_100)
+
+        buffer = BytesIO()
+        try:
+            img.save(buffer, format="PNG", optimize=True)
+        except Exception as exc:
+            self.stdout.write(self.style.WARNING(f"  Falha ao desenhar capa: {exc}"))
+            return None
+        return buffer.getvalue()
+
+    @staticmethod
+    def _load_text_font(size):
+        """Fonte de texto escalável embutida no Pillow (10.1+)."""
+        from PIL import ImageFont
+
+        try:
+            return ImageFont.load_default(size=size)
+        except Exception:
+            return ImageFont.load_default()
+
+    @staticmethod
+    def _load_icon_font(size):
+        """Fonte de ícones do static do DRF; None se indisponível."""
+        from PIL import ImageFont
+
+        caminho = _fonte_icones_path()
+        if caminho is None:
+            return None
+        try:
+            return ImageFont.truetype(str(caminho), size)
+        except Exception:
+            return None
+
+    @staticmethod
+    def _wrap_text(draw, texto, fonte, largura_max, max_linhas=2):
+        """Quebra o texto em no máximo ``max_linhas``; corta com reticências."""
+        palavras = texto.split()
+        linhas, atual = [], ""
+        for palavra in palavras:
+            tentativa = f"{atual} {palavra}".strip()
+            if not atual or draw.textlength(tentativa, font=fonte) <= largura_max:
+                atual = tentativa
+                continue
+            linhas.append(atual)
+            atual = palavra
+            if len(linhas) == max_linhas:
+                break
+        if atual and len(linhas) < max_linhas:
+            linhas.append(atual)
+        if len(linhas) == max_linhas and len(" ".join(linhas).split()) < len(palavras):
+            while linhas[-1] and draw.textlength(
+                linhas[-1] + "…", font=fonte
+            ) > largura_max:
+                linhas[-1] = linhas[-1][:-1].rstrip()
+            linhas[-1] = f"{linhas[-1]}…"
+        return linhas
