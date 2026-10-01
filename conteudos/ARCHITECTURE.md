@@ -96,6 +96,22 @@ Os 7 mecanismos e seus templates:
 - `link_externo` → `conteudo_page_link_externo.html` (link externo seguro, `noopener noreferrer`).
 - `animacao_externa` → `conteudo_page_animacao_externa.html` (iframe protegido para animações/sites externos).
 
+### Modos de mídia (upload vs URL externa)
+`ConteudoPage` tem **dois modos de mídia**, e cada mecanismo usa **exatamente um** deles:
+
+| Modo | Campo | Mecanismos |
+| --- | --- | --- |
+| A — upload em disco | `arquivo` (`FileField`) | `video`, `audio`, `documento_pdf`, `apresentacao`, `download_binario` |
+| B — URL externa | `source` (`URLField`) | `link_externo`, `animacao_externa` |
+
+Nenhum mecanismo usa os dois campos ao mesmo tempo. A decisão é sempre pelo `mecanismo_exibicao`
+(nunca por `tipo`, ver abaixo): o MODO A renderiza `<video>`, `<audio>`, `<iframe>` (visualizador de
+PDF/apresentação) ou download a partir de `arquivo.url`; o MODO B renderiza link ou embed a partir de
+`source`. Conteúdo sem o campo do seu modo (ex.: `video` sem `arquivo`) cai no estado "não
+disponível" do template — nunca quebra a página. Os blocos de fallback do canal
+(`core/templates/blocks/ultimo_conteudo_player.html` e `ultimos_conteudos_carrossel.html`) seguem
+a mesma regra.
+
 ### Resolução de embed (URL colada pelo gestor)
 O gestor cola a URL do **navegador**, não a de embed: `youtube.com/watch?v=ID`, `youtu.be/ID`,
 `youtube.com/shorts/ID`, `vimeo.com/ID`, `open.spotify.com/...`. Essas URLs **não** funcionam em
