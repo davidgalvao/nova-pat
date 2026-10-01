@@ -26,6 +26,24 @@ Classes reaproveitadas de carrossel_categoria_block.html (R2).
                                 <img src="{{ card_img.url }}" alt=""
                                      class="h-full w-full object-cover transition-transform group-hover:scale-105"
                                      aria-hidden="true" />
+                            {% else %}
+                                {% comment %}Sem capa: placeholder com o ícone do mecanismo.{% endcomment %}
+                                <div class="flex h-full w-full items-center justify-center bg-gradient-to-br from-brand-700 to-brand-500"
+                                     aria-hidden="true">
+                                    <svg class="h-10 w-10 text-white/90" fill="currentColor" viewBox="0 0 24 24">
+                                        {% if conteudo.mecanismo_exibicao == "audio" %}
+                                            <path d="M12 3v10.55A4 4 0 1014 17V7h4V3h-6z" />
+                                        {% elif conteudo.mecanismo_exibicao == "video" or conteudo.mecanismo_exibicao == "animacao_externa" %}
+                                            <path d="M8 5v14l11-7z" />
+                                        {% elif conteudo.mecanismo_exibicao == "download_binario" %}
+                                            <path d="M12 3v10.586l3.293-3.293 1.414 1.414L12 16.414 7.293 11.707l1.414-1.414L12 13.586V3zM5 19h14v2H5z" />
+                                        {% elif conteudo.mecanismo_exibicao == "link_externo" %}
+                                            <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7a5 5 0 000 10h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4a5 5 0 000-10z" />
+                                        {% else %}
+                                            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z" />
+                                        {% endif %}
+                                    </svg>
+                                </div>
                             {% endif %}
                         </div>
                         <div class="p-4">

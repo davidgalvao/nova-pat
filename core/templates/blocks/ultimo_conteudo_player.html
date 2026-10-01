@@ -1,8 +1,9 @@
-{% load wagtailimages_tags %}
+{% load wagtailimages_tags wagtailembeds_tags %}
 {% comment %}
-Hero do último conteúdo do canal: player (vídeo/áudio) é o protagonista —
-em telas lg+, grade assimétrica com texto à esquerda e player à direita;
-sem mídia, o bloco degrada para hero editorial sobre a capa.
+Hero do último conteúdo do canal: o player/visualizador é o protagonista —
+vídeo, áudio, visualizador de PDF/apresentação (MODO A) ou embed externo
+resolvido por oEmbed (MODO B). Em telas lg+, grade assimétrica com texto à
+esquerda e mídia à direita; sem mídia, degrada para hero editorial sobre a capa.
 {% endcomment %}
 {% if conteudo %}
 <section class="relative w-full overflow-hidden bg-brand-700"
@@ -63,6 +64,37 @@ sem mídia, o bloco degrada para hero editorial sobre a capa.
                     Seu navegador não suporta o elemento de áudio.
                 </audio>
             </div>
+        {% elif conteudo.mecanismo_exibicao == "documento_pdf" or conteudo.mecanismo_exibicao == "apresentacao" %}
+            {% comment %}
+            MODO A com visualizador: PDF/apresentação em iframe same-origin (o arquivo é
+            servido do próprio MEDIA_ROOT, então não há X-Frame-Options envolvido).
+            {% endcomment %}
+            {% if conteudo.arquivo %}
+                <div class="lg:col-span-3">
+                    <div class="relative w-full overflow-hidden rounded-lg bg-white shadow-lg ring-1 ring-white/20" style="aspect-ratio: 16 / 9;">
+                        <iframe src="{{ conteudo.arquivo.url }}"
+                                title="{{ conteudo.title }}"
+                                class="absolute inset-0 h-full w-full border-0"
+                                loading="lazy"></iframe>
+                    </div>
+                </div>
+            {% endif %}
+        {% elif conteudo.mecanismo_exibicao == "link_externo" or conteudo.mecanismo_exibicao == "animacao_externa" %}
+            {% comment %}
+            MODO B: URL externa. Resolver via oEmbed — a tag captura EmbedException e devolve
+            vazio para URL não suportada. Tamanho forçado por CSS, porque a tag entrega o padrão
+            do provider (ex.: 200x113). Sem embed, o hero segue com texto + CTA.
+            {% endcomment %}
+            {% embed conteudo.source as embed_html %}
+            {% if embed_html %}
+                <div class="lg:col-span-3">
+                    <div class="relative w-full overflow-hidden rounded-lg bg-black shadow-lg ring-1 ring-white/20" style="aspect-ratio: 16 / 9;">
+                        <div class="absolute inset-0 [&>iframe]:h-full [&>iframe]:w-full [&>iframe]:border-0">
+                            {{ embed_html }}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
         {% endif %}
     </div>
 </section>

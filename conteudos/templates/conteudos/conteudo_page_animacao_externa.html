@@ -1,25 +1,34 @@
 {% extends "conteudos/conteudo_page_base.html" %}
-{% load wagtailcore_tags %}
+{% load wagtailcore_tags wagtailembeds_tags %}
 
 {% block conteudo_player %}
 <div class="conteudo-player animacao-externa-player">
     {% if page.source %}
     <div class="rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden">
-        {# iframe protegido para animação/site externo #}
-        <div class="bg-gray-100 p-2">
-            <iframe
-                src="{{ page.source }}"
-                title="Animação externa: {{ page.title }}"
-                class="h-[70vh] w-full rounded-md border border-gray-300 bg-white"
-                sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-                referrerpolicy="no-referrer-when-downgrade"
-                loading="lazy"></iframe>
+        {% comment %}
+        URL colada pelo gestor (ex.: youtube.com/watch?v=ID, youtu.be/ID, /shorts, vimeo.com/ID)
+        não funciona direto em <iframe src> (X-Frame-Options). Resolver via oEmbed: a tag embed
+        captura EmbedException e devolve vazio quando o provider não é suportado, caindo no
+        fallback de link seguro abaixo. O dimensionamento é forçado por CSS porque a tag entrega
+        o iframe no tamanho padrão do provider (ex.: 200x113).
+        {% endcomment %}
+        {% embed page.source as embed_html %}
+        {% if embed_html %}
+        <div class="relative w-full bg-black" style="aspect-ratio: 16 / 9;">
+            <div class="absolute inset-0 [&>iframe]:h-full [&>iframe]:w-full [&>iframe]:border-0">
+                {{ embed_html }}
+            </div>
         </div>
+        {% endif %}
 
         {# Fallback de link externo seguro #}
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4">
             <p class="text-sm text-gray-600">
-                Se a animação não carregar, acesse diretamente pelo link abaixo.
+                {% if embed_html %}
+                    Problemas para carregar? Acesse diretamente pelo link abaixo.
+                {% else %}
+                    Este endereço não oferece incorporação direta. Acesse pelo link abaixo.
+                {% endif %}
             </p>
             <a
                 href="{{ page.source }}"
