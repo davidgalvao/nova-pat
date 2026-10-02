@@ -19,8 +19,8 @@ Para documentação humana, veja `README.md` e `docs/`.
      atualizado para refletir o ADR quando os dois divergirem.
   3. `docs/` global.
 - As regras que antes viviam em `.roo/` (não versionado, invisível para o time)
-  agora estão **neste arquivo**. O `.roo/` pode continuar no disco para o Roo
-  Code, mas **`AGENTS.md` é a fonte de verdade**.
+  foram migradas para **este arquivo**, que é a fonte de verdade. O diretório
+  `.roo/` foi **removido** do disco (há backup fora do repo) — não recriá-lo.
 
 ## Stack
 - Django 6.0 + Wagtail 8.0

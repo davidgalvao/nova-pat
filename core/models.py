@@ -156,7 +156,7 @@ class NavigationItem(models.Model):
 
     **Decisão de desambiguação**: o campo `position` (choices `header`/`footer`)
     é o discriminador explícito de onde o item deve aparecer — nunca inferimos
-    isso a partir de IDs ou de outros campos (ver skill data-modeling-guardrails).
+    isso a partir de IDs ou de outros campos (ver "Models e dados" em `AGENTS.md`).
     """
 
     POSITION_HEADER = "header"
@@ -245,7 +245,7 @@ class NavigationItem(models.Model):
 
         Usa o reverse manager `children` (related_name da FK auto-referencial
         `parent`). A hierarquia é derivada exclusivamente do campo explícito
-        `parent` (ver skill data-modeling-guardrails). Nome sem underscore
+        `parent` (ver "Models e dados" em `AGENTS.md`). Nome sem underscore
         para ser acessível no template Django (que bloqueia atributos com `_`).
         """
         return self.children.all().order_by("sort_order", "title")

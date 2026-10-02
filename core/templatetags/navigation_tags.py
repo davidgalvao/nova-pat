@@ -30,8 +30,8 @@ def _build_tree(items: List[NavigationItem]) -> List[NavigationItem]:
     manager `children` ordenado por `sort_order`/`title`).
 
     A hierarquia é derivada exclusivamente do campo explícito `parent`
-    (FK auto-referencial) — nunca de IDs ou heurísticas (ver skill
-    data-modeling-guardrails).
+    (FK auto-referencial) — nunca de IDs ou heurísticas (ver "Models e dados"
+    em `AGENTS.md`).
     """
     return [item for item in items if not item.parent_id]
 

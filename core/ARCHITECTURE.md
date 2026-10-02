@@ -47,7 +47,7 @@ Snippet para itens de navegação editáveis no admin (header e footer).
 
 - `title` — texto exibido no link.
 - `position` — choices `header`/`footer` (discriminador explícito de onde o item aparece — nunca inferir de IDs).
-- `parent` — FK auto-referencial para `self` (`related_name='children'`). Se preenchido, o item vira um **submenu** do item pai, permitindo hierarquia multinível arbitrária. A hierarquia é derivada **exclusivamente** deste campo explícito — nunca de IDs ou heurísticas (ver skill data-modeling-guardrails).
+- `parent` — FK auto-referencial para `self` (`related_name='children'`). Se preenchido, o item vira um **submenu** do item pai, permitindo hierarquia multinível arbitrária. A hierarquia é derivada **exclusivamente** deste campo explícito — nunca de IDs ou heurísticas (ver "Models e dados" em `AGENTS.md`).
 - `page` — FK para `Page` (página interna; se preenchida, tem prioridade sobre URL externa).
 - `link_url` — URL externa/caminho arbitrário (usada apenas se `page` vazia).
 - `sort_order` — ordenação (menor aparece primeiro).
