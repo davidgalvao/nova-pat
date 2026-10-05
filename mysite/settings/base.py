@@ -187,7 +187,7 @@ AUTH_USER_MODEL = "usuarios.User"
 
 # Wagtail settings
 
-WAGTAIL_SITE_NAME = "mysite"
+WAGTAIL_SITE_NAME = "Nova PAT"
 
 # Search
 # https://docs.wagtail.org/en/stable/topics/search/backends.html
