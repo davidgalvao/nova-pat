@@ -1,6 +1,6 @@
 # AGENTS.md — Nova PAT
 
-Instruções para agentes de IA (DSH, Cursor, Cline) trabalhando neste projeto.
+Instruções para agentes de IA (Cursor, Cline, etc) trabalhando neste projeto.
 Para documentação humana, veja `README.md` e `docs/`.
 
 ## Contexto do projeto
@@ -174,35 +174,6 @@ Contexto completo em `CONTRIBUTING.md`. Migração aplicada é **imutável**:
   com/sem parent_context.
 - Testes para toda lógica nova (models, blocos, view).
 - Não inventar CSS: reutilizar classes dos blocos existentes.
-
-## Docker — comandos permitidos
-
-Você agora TEM Docker CLI + socket. Use com responsabilidade.
-
-### Permitido sem aprovação
-- `docker compose -f /home/dgalvao/nova-pat/docker-compose.yml exec -T web pytest -x -q`
-- `docker compose ... exec -T web python manage.py <comando>`
-- `docker compose ... logs web --tail 30`
-- `docker compose ... restart web`
-- `docker compose ... ps`
-
-`-T` (sem TTY) é obrigatório em **`exec`** — você não tem terminal interativo.
-`-T` **não existe** para `logs`, `ps` ou `restart` (é flag exclusiva de `exec`);
-usá-la ali falha com `unknown shorthand flag: 'T'`.
-
-Se o diretório de trabalho não for `/home/dgalvao/nova-pat`, acrescente
-`-f /home/dgalvao/nova-pat/docker-compose.yml` (os `...` acima abreviavam isso).
-Dentro do diretório do projeto, `docker compose exec web <comando>` é válido.
-
-### Exige minha aprovação explícita
-- `docker compose down` ou `stop`
-- `docker system prune`, `docker volume rm`, `docker rmi`
-- Qualquer coisa que toque em `db` ou `postgres_data`
-- `docker rm` ou `docker kill`
-
-### Nunca
-- `docker compose exec` SEM `-T`
-- Comandos destrutivos em lote (`rm -rf`, `docker system prune -a`)
 
 ## Mídia externa
 - Gestor cola URL do navegador (youtube.com/watch, youtu.be, vimeo.com/ID)
