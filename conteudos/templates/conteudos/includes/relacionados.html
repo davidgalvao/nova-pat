@@ -1,0 +1,33 @@
+{% load wagtailcore_tags %}
+
+{% comment %}
+Sidebar de conteúdos relacionados na página de detalhe (NOVAPAT-44).
+
+Prioriza conteúdos da mesma CategoriaConteudo e com mais tags em comum,
+limitado a ``limit`` itens, filtrando apenas publicados e aprovados.
+Não usa media_avaliacao/total_avaliacoes em filtro nem ordenação
+(decisão fechada em docs/requisitos-vs-legado.md:71-76).
+
+Contexto esperado:
+  page   -> ConteudoPage atual (detalhe)
+  limit  -> quantidade máxima de itens (default 5)
+{% endcomment %}
+<aside class="sticky top-8 px-4 sm:px-6 lg:px-8">
+    <h2 class="text-sm font-semibold text-gray-800 mb-3">Conteúdos relacionados</h2>
+    {% if relacionados %}
+    <ul class="space-y-2 list-none p-0">
+        {% for relacionado in relacionados %}
+        <li>
+            <a
+                href="{% pageurl relacionado %}"
+                class="block rounded-md border border-gray-200 bg-white p-3 text-sm text-gray-700 hover:bg-brand-50 hover:text-brand-700 hover:border-brand-300 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 transition"
+            >
+                {{ relacionado.title }}
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-sm text-gray-500">Não há conteúdos relacionados no momento.</p>
+    {% endif %}
+</aside>
