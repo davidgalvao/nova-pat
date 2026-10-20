@@ -89,8 +89,10 @@ Pontos a decidir, não a inventar:
 9. Prazo de retenção de log de acesso bruto — ✅ proposta de ~90 dias documentada em `docs/runbook-backup-dr.md`, sujeita a padrão da PRODEB se já existir um.
 
 **Ainda em aberto, exige ação sua (não é decisão que se toma sozinha):**
-10. Procedimento formal de resposta a incidente de segurança — jurídico recomendou formalizar **antes de produção**: detecção, registro, contenção, avaliação de risco, comunicação interna, acionamento do Encarregado e, se cabível, comunicação à ANPD/titulares (prazo de 3 dias úteis, Resolução CD/ANPD nº 15/2024). Ainda não escrito em nenhum documento.
-11. RIPD (Relatório de Impacto) — jurídico recomendou elaborar **antes da entrada em produção**, dado o volume de dado e a presença de menor de idade. Não é obrigação automática de publicação total, mas recomenda versão pública distinta da versão técnica integral se houver informação sensível de segurança nela.
+(nenhum item restante neste grupo — ambos os documentos foram escritos)
+
+10. ✅ Procedimento formal de resposta a incidente de segurança — detecção, registro, contenção, avaliação de risco, comunicação interna, acionamento do Encarregado e comunicação à ANPD/titulares (prazo de 3 dias úteis, Resolução CD/ANPD nº 15/2024). Documentado em `docs/lgpd-procedimento-incidente.md`.
+11. ✅ RIPD (Relatório de Impacto à Proteção de Dados Pessoais) — elaborado dado o volume de dado e a presença de menor de idade, com versão pública distinta da versão técnica integral (publicidade exigida pelo Art. 32 da LGPD para órgão público). Documentado em `docs/lgpd-ripd.md`.
 
 ## Status
-🟢 Maioria das decisões técnicas e jurídicas centrais fechada. Restam: 2 itens a resolver internamente com SEC/IAT (não é decisão que se toma sozinho), e 2 documentos formais ainda não escritos (procedimento de incidente, RIPD) — ambos recomendados pelo jurídico como pré-requisito antes de produção, não apenas "bom ter".
+🟢 Maioria das decisões técnicas e jurídicas centrais fechada. Os 2 documentos formais recomendados pelo jurídico como pré-requisito antes de produção foram escritos: procedimento de incidente (`docs/lgpd-procedimento-incidente.md`) e RIPD (`docs/lgpd-ripd.md`) — itens 10 e 11 do mapeamento concluídos. Restam: 2 itens a resolver internamente com SEC/IAT (itens 5-7, redirecionados — não são decisão que se toma sozinho).
