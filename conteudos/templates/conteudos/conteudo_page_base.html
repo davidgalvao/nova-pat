@@ -1,11 +1,14 @@
 {% extends "base.html" %}
-{% load wagtailcore_tags wagtailimages_tags %}
+{% load wagtailcore_tags wagtailimages_tags conteudos_tags %}
 
 {% block body_class %}template-conteudo{% endblock %}
 
 {% block content %}
 <main role="main" class="bg-gray-50 min-h-screen">
-    <article class="max-w-5xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <div class="lg:col-span-3">
+                <article class="px-4 py-8 sm:px-6 lg:px-8">
         {# ============================================================ #}
         {# Cabeçalho editorial                                          #}
         {# ============================================================ #}
@@ -141,6 +144,14 @@
             {% endif %}
         </footer>
         {% endif %}
-    </article>
+                </article>
+            </div>
+            <div class="hidden lg:block lg:col-span-1">
+                <aside class="sticky top-8">
+                    {% conteudos_relacionados page=page limit=5 %}
+                </aside>
+            </div>
+        </div>
+    </div>
 </main>
 {% endblock %}
