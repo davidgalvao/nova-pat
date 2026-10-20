@@ -3,7 +3,7 @@
 ## 1. Stack Tecnológica e Infraestrutura
 * **Backend:** Django 6.0.8, Wagtail 8.0.
 * **Front-end:** Tailwind CSS (via CDN), templates semânticos em conformidade com WCAG 2.1 AA.
-* **Qualidade e Testes:** Suíte estável com 176 testes automatizados aprovados (`pytest`).
+* **Qualidade e Testes:** Suíte estável com 211 testes automatizados aprovados (`pytest`).
 * **Ambiente:** Execução containerizada via Docker / WSL 2.
 
 ## 2. Governança e Documentação

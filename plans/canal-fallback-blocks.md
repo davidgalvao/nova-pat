@@ -14,7 +14,7 @@ usando blocos da mesma coletânea.
 
 R1. ANTES de escrever qualquer código, LER:
     - `core/blocks.py` (blocos existentes — entender padrão)
-    - `core/templates/core/blocks/*.html` (templates existentes — copiar estilo)
+    - `core/templates/blocks/*.html` (templates existentes — copiar estilo)
     - CSS onde os blocos são estilizados (achar via grep por uma classe de bloco)
     - `home/templates/home/home_page.html` (como os blocos são renderizados lá)
     
@@ -40,11 +40,11 @@ R5. Ao terminar, TESTAR de verdade (Playwright MCP):
 
 Ambos adicionados ao `HomeStreamBlock` existente.
 
-### 2. `core/templates/core/blocks/ultimo_conteudo_player.html` (novo)
+### 2. `core/templates/blocks/ultimo_conteudo_player.html` (novo)
 Hero com `<video>` ou `<audio>` (depende do `mecanismo_exibicao` do conteúdo)
 ou capa com link. Reaproveitar classes CSS dos blocos existentes.
 
-### 3. `core/templates/core/blocks/ultimos_conteudos_carrossel.html` (novo)
+### 3. `core/templates/blocks/ultimos_conteudos_carrossel.html` (novo)
 Grade de 3 colunas, paginação com passadores (prev/next).
 Reaproveitar classes CSS.
 

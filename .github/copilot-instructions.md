@@ -2,7 +2,7 @@
 
 Objetivo: dar a um agente AI o contexto mínimo e ações concretas para ser produtivo neste projeto Django + Wagtail em Docker.
 
-- Projeto: Django (provavelmente Django 6.x) + Wagtail (ver `requirements.txt`: `wagtail==7.4.1`).
+- Projeto: Django (provavelmente Django 6.x) + Wagtail (ver `requirements.txt`: `wagtail>=8.0,<8.1`).
 - Execução local: via Docker Compose (arquivo `docker-compose.yml`) — código montado como volume `./:/code`.
 
 Pontos essenciais (o "porquê" e o fluxo):
@@ -47,7 +47,6 @@ Padrões e convenções do código (exemplos concretos):
 - Configuração: `manage.py` aponta por padrão para `mysite.settings.dev` — verificar esse módulo se precisar mudar o comportamento em dev.
 - Estrutura de templates/static: `home/templates/home/` contém páginas de front; `mysite/templates/` contém erros e `base.html`. Assets em `static/` e `mysite/static/`.
 - Padrão de busca: `search/views.py` usa `Page.objects.live().search(query)` e paginação com `django.core.paginator.Paginator` — siga esse padrão ao adicionar busca/filtragem.
-- Comentários úteis já existentes: o módulo `search` tem instruções comentadas para integrar `wagtail.contrib.search_promotions` — preserve a ideia de ativar via `INSTALLED_APPS` quando implementar promoção de resultados.
 
 Integrações e pontos de atenção (o que quebrará facilmente):
 

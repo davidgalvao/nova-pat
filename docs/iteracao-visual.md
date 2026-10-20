@@ -45,7 +45,7 @@ reaproveitar classes dos blocos existentes.
   alinhados à direita. Peso visual alinhado à função secundária.
 
 **O que funcionou:** markup validado no servidor local (h1 estilizado, hero em
-grid, áudio full-width, nav compacta). Suíte completa: 199 passed.
+grid, áudio full-width, nav compacta). Suíte completa: 211 passed.
 
 **Descartado:** `min-h-[70vh]` removido do hero — com a grade 2/5+3/5 a altura
 vem do conteúdo (player 16:9 define o ritmo); altura mínima fixa só criava

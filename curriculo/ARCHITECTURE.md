@@ -44,7 +44,7 @@ CurricularComponent (nome, FK category, FK nivel) — cada componente pertence a
 `ConteudoPage.componentes_curriculares` é M2M direta para `CurricularComponent` (não para `NivelEnsino` — filtrar por nível de ensino na busca significa fazer join através de `CurricularComponent.nivel`, não via campo direto no conteúdo). Ver RN-L5 em `conteudos/ARCHITECTURE.md`: mínimo 1 componente curricular por conteúdo é regra pedagógica obrigatória, não opcional.
 
 ## Relação com `canais` — filtro de categoria por canal
-**Resolvido**: a M2M entre `CanalPage` e `CurricularComponentCategory` (pivot `canal_cc_categories` no legado) foi implementada como `CanalPage.categorias_componente_permitidas` (M2M para `CurricularComponentCategory`, `related_name="canais_permitidos"` — ver `canais/ARCHITECTURE.md`). Um canal pode restringir quais **categorias** de componente curricular são relevantes para ele (mesmo padrão de restrição de `tipo_conteudo`). A direção da M2M vive em `canais.CanalPage`, não aqui.
+**Descontinuado**: a M2M entre `CanalPage` e `CurricularComponentCategory` (`categorias_componente_permitidas`, pivot `canal_cc_categories` no legado) foi **removida** (decisão D4 em `canais/ARCHITECTURE.md`; migração `0003_remove_canalpage_categorias_componente_permitidas`). Canal é agrupador, não filtro de quais categorias de componente curricular podem aparecer nele — a escolha de categoria é feita por conteúdo, não por canal. Ver `canais/ARCHITECTURE.md`.
 
 ## O que NÃO fazer neste app
 - Não tratar `CurricularComponent` como reaproveitável entre níveis — é FK fixa pra um nível só, replicar essa rigidez do legado, não "corrigir" pra M2M sem que isso seja pedido.
