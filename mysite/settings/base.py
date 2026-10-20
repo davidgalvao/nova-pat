@@ -206,3 +206,14 @@ WAGTAILADMIN_BASE_URL = "http://example.com"
 # if untrusted users are allowed to upload files -
 # see https://docs.wagtail.org/en/stable/advanced_topics/deploying.html#user-uploaded-files
 WAGTAILDOCS_EXTENSIONS: List[str] = ['csv', 'docx', 'key', 'odt', 'pdf', 'pptx', 'rtf', 'txt', 'xlsx', 'zip']
+
+# Finders de embed oEmbed (wagtail.embeds).
+# O finder custom do Google Slides fica primeiro: reconhece URLs do tipo
+# docs.google.com/presentation/d/<id> e mapeia para
+# https://docs.google.com/presentation/d/<id>/embed. Qualquer outra URL segue
+# o fluxo nativo (oEmbed) dos 80 providers cobertos pelo Wagtail.
+# Ver conteudos/ARCHITECTURE.md seção "Dívida técnica" (linhas 162-168).
+WAGTAILEMBEDS_FINDERS: List[Dict[str, str]] = [
+    {"class": "core.embeds.GoogleSlidesFinder"},
+    {"class": "wagtail.embeds.finders.oembed"},
+]
