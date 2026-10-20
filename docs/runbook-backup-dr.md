@@ -67,7 +67,7 @@ Duas categorias distintas de log, com regra de retenção diferente cada uma (ve
 **Retenção proposta: ~90 dias.** Justificativa: a finalidade (detectar abuso/ataque em tempo próximo ao evento) se esgota depois de um tempo relativamente curto — diferente da trilha de auditoria, aqui não há razão de accountability de longo prazo para manter IP bruto indefinidamente. Ajustar esse número se a equipe de segurança/infraestrutura (PRODEB) tiver política própria já estabelecida — não foi confirmado se PRODEB já tem um padrão corporativo para isso; se tiver, esse padrão prevalece sobre a proposta de 90 dias.
 
 ### O que implementar tecnicamente
-- Trilha de auditoria: pode usar solução nativa do Django (`django-simple-history` ou similar) ou log estruturado próprio — decisão de implementação, não muda a regra de retenção acima.
+- Trilha de auditoria: adotar `django-simple-history` (decisão fechada no ADR-005) para os models que exigem accountability — decisão de implementação já tomada, não muda a regra de retenção acima.
 - Log de acesso bruto: geralmente fica em nível de infraestrutura (servidor web/WAF), não em model de aplicação — se a infraestrutura for da PRODEB, confirmar com eles se há rotina de expurgo automática já configurada antes de assumir que a Nova PAT precisa implementar isso por conta própria.
 
 ## O que este documento NÃO resolve sozinho
