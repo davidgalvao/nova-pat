@@ -15,6 +15,7 @@ from canais.models import CanalPage
 from curriculo.models import NivelEnsino, CurricularComponentCategory, CurricularComponent
 from conteudos.models import Tipo, Licenca, CategoriaConteudo, ConteudoPage
 from usuarios.models import User, Role
+from usuarios.permissions import ConteudoPagePermissionPolicy
 
 
 class ConteudosModelsTestCase(TestCase):
@@ -517,3 +518,145 @@ class ConteudoPageSearchTestCase(TestCase):
         for expected in expected_related:
             self.assertIn(expected, related_field_names,
                 f"RelatedFields '{expected}' não encontrado em search_fields")
+
+
+class ConteudoPagePermissionTestCase(TestCase):
+    """
+    Testes para a política de permissão de ``ConteudoPage``.
+
+    Cobertura do aceite do NOVAPAT-41: usuário ``convidado`` ou ``editor``
+    não consegue criar ``ConteudoPage``; apenas coordenador+ (super-admin,
+    admin, coordenador) consegue. Os 5 papéis são cobertaos para
+    ``can_create``, ``can_edit`` e ``can_delete``.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        """Configuração inicial com os 5 papéis e um conteúdo de exemplo."""
+        cls.role_super_admin = Role.objects.get(slug="super-admin")
+        cls.role_admin = Role.objects.get(slug="admin")
+        cls.role_coordenador = Role.objects.get(slug="coordenador")
+        cls.role_editor = Role.objects.get(slug="editor")
+        cls.role_convidado = Role.objects.get(slug="convidado")
+
+        cls.root_page = Site.objects.get(is_default_site=True).root_page
+
+        cls.canal = CanalPage(
+            title="Canal Permissao",
+            name="Canal Permissao",
+            slug="canal-permissao",
+            is_active=True,
+        )
+        cls.root_page.add_child(instance=cls.canal)
+        cls.canal.save_revision().publish()
+
+        cls.tipo = Tipo.objects.create(
+            name="Vídeo",
+            slug="video-permissao",
+            options={"formatos": [".mp4"]},
+            is_active=True,
+            ordem=1,
+        )
+
+        cls.categoria = CategoriaConteudo.objects.create(
+            name="Categoria Permissao",
+            slug="categoria-permissao",
+            canal=cls.canal,
+            ordem=1,
+            is_active=True,
+        )
+
+        cls.licenca = Licenca.objects.create(
+            name="CC BY",
+            slug="cc-by-permissao",
+            is_active=True,
+        )
+
+        # Conteúdo de exemplo criado por um coordenador.
+        cls.coordenador_user = User.objects.create_user(
+            username="coord_perm",
+            email="coord_perm@test.com",
+            password="testpass123",
+            role=cls.role_coordenador,
+        )
+        cls.conteudo = ConteudoPage(
+            title="Conteúdo de permissão",
+            tipo=cls.tipo,
+            category=cls.categoria,
+            license=cls.licenca,
+            canal=cls.canal,
+            autor=cls.coordenador_user,
+        )
+        cls.canal.add_child(instance=cls.conteudo)
+        cls.conteudo.save()
+
+        cls.policy = ConteudoPagePermissionPolicy()
+
+    def _usuarios_por_role(self):
+        """Retorna um usuário para cada um dos 5 papéis."""
+        return [
+            ("super-admin", self.role_super_admin, True),
+            ("admin", self.role_admin, True),
+            ("coordenador", self.role_coordenador, True),
+            ("editor", self.role_editor, False),
+            ("convidado", self.role_convidado, False),
+        ]
+
+    def _make_user(self, role):
+        return User.objects.create_user(
+            username=f"perm_{role.slug}",
+            email=f"{role.slug}@perm.com",
+            password="testpass123",
+            role=role,
+        )
+
+    def test_can_create_coordenador_mais(self):
+        """can_create: True para coordenador+, False para editor/convidado."""
+        for slug, role, esperado in self._usuarios_por_role():
+            with self.subTest(role=slug):
+                user = self._make_user(role)
+                self.assertEqual(
+                    self.policy.can_create(user, self.canal),
+                    esperado,
+                    f"can_create({slug}) deveria ser {esperado}",
+                )
+
+    def test_can_edit_coordenador_mais(self):
+        """can_edit: True para coordenador+, False para editor/convidado."""
+        for slug, role, esperado in self._usuarios_por_role():
+            with self.subTest(role=slug):
+                user = self._make_user(role)
+                self.assertEqual(
+                    self.policy.can_edit(user, self.conteudo),
+                    esperado,
+                    f"can_edit({slug}) deveria ser {esperado}",
+                )
+
+    def test_can_delete_coordenador_mais(self):
+        """can_delete: True para coordenador+, False para editor/convidado."""
+        for slug, role, esperado in self._usuarios_por_role():
+            with self.subTest(role=slug):
+                user = self._make_user(role)
+                self.assertEqual(
+                    self.policy.can_delete(user, self.conteudo),
+                    esperado,
+                    f"can_delete({slug}) deveria ser {esperado}",
+                )
+
+    def test_nao_autenticado_nao_pode_criar(self):
+        """Usuário não autenticado não consegue criar ConteudoPage."""
+        self.assertFalse(self.policy.can_create(None, self.canal))
+
+    def test_convidado_e_editor_nao_criam_conteudo(self):
+        """Aceite NOVAPAT-41: convidado e editor não criam ConteudoPage."""
+        convidado = self._make_user(self.role_convidado)
+        editor = self._make_user(self.role_editor)
+        self.assertFalse(self.policy.can_create(convidado, self.canal))
+        self.assertFalse(self.policy.can_create(editor, self.canal))
+        # coordenador+ sim
+        self.assertTrue(self.policy.can_create(
+            self._make_user(self.role_coordenador), self.canal))
+        self.assertTrue(self.policy.can_create(
+            self._make_user(self.role_admin), self.canal))
+        self.assertTrue(self.policy.can_create(
+            self._make_user(self.role_super_admin), self.canal))

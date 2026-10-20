@@ -14,6 +14,9 @@ from wagtail.search import index
 # Import do core para herdar de RecursoBasePage
 from core.models import RecursoBasePage
 
+# Política de permissão baseada em papel (coordenador+ cria/edita/exclui).
+from usuarios.permissions import ConteudoPagePermissionPolicy
+
 
 # Extensões de arquivo consideradas seguras para upload, independentemente do
 # `tipo` (RN-L3). Reforça a validação por `tipo.options.formatos` com uma lista
@@ -344,6 +347,9 @@ class ConteudoPage(RecursoBasePage):
     # Configuração de árvore de páginas
     parent_page_types = ["canais.CanalPage", "series.Temporada"]
     subpage_types = []  # Conteúdo não tem filhos
+
+    # Política de permissão baseada em papel: apenas coordenador+ cria/edita/exclui.
+    permission_policy = ConteudoPagePermissionPolicy()
 
     # Painéis de conteúdo (herda de RecursoBasePage que já tem canal, autor, tags)
     content_panels = RecursoBasePage.content_panels + [
