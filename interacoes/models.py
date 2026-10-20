@@ -6,6 +6,50 @@ from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
 
 
+class ComentarioQuerySet(models.QuerySet):
+    """QuerySet para Comentario com filtro de soft delete."""
+
+    def ativos(self):
+        """Retorna apenas comentários não soft-deletados (deletado_em IS NULL)."""
+        return self.filter(deletado_em__isnull=True)
+
+    def deletados(self):
+        """Retorna apenas comentários soft-deletados (deletado_em IS NOT NULL)."""
+        return self.filter(deletado_em__isnull=False)
+
+    def soft_delete(self):
+        """Marca todos os comentários do queryset como deletados (soft delete)."""
+        from django.utils import timezone
+
+        return self.update(deletado_em=timezone.now())
+
+
+class ComentarioManager(models.Manager):
+    """Manager padrão de Comentario — exclui soft-deletados por defeito."""
+
+    def get_queryset(self):
+        return ComentarioQuerySet(self.model, using=self._db).ativos()
+
+    def all_objects(self):
+        """Retorna todos os comentários, incluindo soft-deletados (via QuerySet sem filtro)."""
+        return ComentarioQuerySet(self.model, using=self._db)
+
+
+class ComentarioAllObjectsManager(models.Manager):
+    """Manager alternativo que retorna TODOS os comentários, incluindo soft-deletados."""
+
+    def get_queryset(self):
+        return ComentarioQuerySet(self.model, using=self._db)
+
+    def ativos(self):
+        """Retorna apenas comentários não soft-deletados (deletado_em IS NULL)."""
+        return self.get_queryset().ativos()
+
+    def deletados(self):
+        """Retorna apenas comentários soft-deletados (deletado_em IS NOT NULL)."""
+        return self.get_queryset().deletados()
+
+
 class Comentario(models.Model):
     """
     Comentário em conteúdo educacional ou aplicativo.
@@ -13,7 +57,11 @@ class Comentario(models.Model):
     Moderação: usuários privilegiados (super-admin, admin, coordenador) publicam direto;
     demais usuários entram como is_approved=False, pendente de moderação.
     Ao excluir conta do usuário: anonimiza (SET_NULL), não apaga — preserva texto e trilha de moderação.
+    Soft delete: campo deletado_em marca o comentário como removido sem apagar a linha.
     """
+
+    objects = ComentarioManager()
+    all_objects = ComentarioAllObjectsManager()
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -55,6 +103,13 @@ class Comentario(models.Model):
 
     criado_em = models.DateTimeField(_("criado em"), auto_now_add=True)
 
+    deletado_em = models.DateTimeField(
+        _("deletado em"),
+        null=True,
+        blank=True,
+        help_text=_("Data/hora do soft delete. Nulo significa comentário ativo."),
+    )
+
     class Meta:
         verbose_name = _("comentário")
         verbose_name_plural = _("comentários")
@@ -62,6 +117,7 @@ class Comentario(models.Model):
         indexes = [
             models.Index(fields=["conteudo", "is_approved", "-criado_em"]),
             models.Index(fields=["aplicativo", "is_approved", "-criado_em"]),
+            models.Index(fields=["deletado_em"], name="interacoes_del_em_idx"),
         ]
 
     def __str__(self) -> str:
@@ -93,6 +149,24 @@ class Comentario(models.Model):
             except User.DoesNotExist:
                 pass
         super().save(*args, **kwargs)
+
+    def soft_delete(self):
+        """Marca este comentário como deletado (soft delete).
+
+        Usa ``update()`` direto no banco para evitar disparar signals do
+        Wagtail (ex: ``update_reference_index_task``), que usariam o manager
+        padrão ``objects`` — filtrado por soft-deletados — e falhariam ao não
+        encontrar o registro recém-marcado.
+        """
+        from django.utils import timezone
+
+        self.deletado_em = timezone.now()
+        Comentario.all_objects.filter(pk=self.pk).update(deletado_em=self.deletado_em)
+
+    def restore(self):
+        """Restaura um comentário soft-deletado (remove a marca de deletado_em)."""
+        self.deletado_em = None
+        self.save()
 
 
 class Like(models.Model):

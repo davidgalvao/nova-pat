@@ -282,6 +282,127 @@ class InteracoesModelsTestCase(TestCase):
         expected = f"Comentário de  em {self.conteudo}"
         self.assertEqual(str(comentario), expected)
 
+    # ==================== TESTES SOFT DELETE COMENTARIO ====================
+
+    def test_comentario_soft_delete_excludes_from_default_manager(self):
+        """Comentário soft-deletado não aparece no manager padrão (objects)."""
+        comentario = Comentario.objects.create(
+            user=self.convidado,
+            conteudo=self.conteudo,
+            body="Será soft-deletado",
+        )
+        comentario_id = comentario.id
+
+        # Antes do soft delete: aparece no manager padrão
+        self.assertTrue(Comentario.objects.filter(id=comentario_id).exists())
+
+        # Soft delete
+        comentario.soft_delete()
+        comentario.refresh_from_db()
+
+        # deletado_em deve estar preenchido
+        self.assertIsNotNone(comentario.deletado_em)
+
+        # Depois do soft delete: não aparece mais no manager padrão
+        self.assertFalse(Comentario.objects.filter(id=comentario_id).exists())
+
+    def test_comentario_soft_delete_includes_in_all_objects(self):
+        """Comentário soft-deletado aparece no all_objects (inclui deletados)."""
+        comentario = Comentario.objects.create(
+            user=self.convidado,
+            conteudo=self.conteudo,
+            body="Será soft-deletado",
+        )
+        comentario_id = comentario.id
+
+        comentario.soft_delete()
+
+        # Não aparece no objects (filtrado)
+        self.assertFalse(Comentario.objects.filter(id=comentario_id).exists())
+
+        # Aparece no all_objects (sem filtro)
+        self.assertTrue(Comentario.all_objects.filter(id=comentario_id).exists())
+
+    def test_comentario_soft_delete_queryset_methods(self):
+        """Testa QuerySet.ativos() e deletados()."""
+        c1 = Comentario.objects.create(user=self.convidado, conteudo=self.conteudo, body="Ativo")
+        c2 = Comentario.objects.create(user=self.convidado, conteudo=self.conteudo, body="Será deletado")
+        c2.soft_delete()
+
+        ativos = Comentario.all_objects.ativos()
+        deletados = Comentario.all_objects.deletados()
+
+        self.assertIn(c1, ativos)
+        self.assertNotIn(c2, ativos)
+        self.assertNotIn(c1, deletados)
+        self.assertIn(c2, deletados)
+
+    def test_comentario_soft_delete_queryset_bulk(self):
+        """Testa QuerySet.soft_delete() em massa."""
+        Comentario.objects.create(user=self.convidado, conteudo=self.conteudo, body="Um")
+        Comentario.objects.create(user=self.convidado, conteudo=self.conteudo, body="Dois")
+
+        Comentario.objects.all().soft_delete()
+
+        self.assertEqual(Comentario.objects.count(), 0)
+        self.assertEqual(Comentario.all_objects.count(), 2)
+        for c in Comentario.all_objects.all():
+            self.assertIsNotNone(c.deletado_em)
+
+    def test_comentario_restore_after_soft_delete(self):
+        """Comentário soft-deletado pode ser restaurado e volta a aparecer."""
+        comentario = Comentario.objects.create(
+            user=self.convidado,
+            conteudo=self.conteudo,
+            body="Será restaurado",
+        )
+        comentario_id = comentario.id
+
+        comentario.soft_delete()
+        self.assertFalse(Comentario.objects.filter(id=comentario_id).exists())
+
+        comentario.restore()
+        comentario.refresh_from_db()
+
+        self.assertIsNone(comentario.deletado_em)
+        self.assertTrue(Comentario.objects.filter(id=comentario_id).exists())
+
+    def test_comentario_hard_delete_still_works(self):
+        """Hard delete (delete()) remove o comentário completamente."""
+        comentario = Comentario.objects.create(
+            user=self.convidado,
+            conteudo=self.conteudo,
+            body="Será hard-deletado",
+        )
+        comentario_id = comentario.id
+
+        comentario.delete()
+
+        self.assertFalse(Comentario.objects.filter(id=comentario_id).exists())
+        self.assertFalse(Comentario.all_objects.filter(id=comentario_id).exists())
+
+    def test_comentario_soft_delete_compat_set_null_user_lgpd(self):
+        """LGPD: comentário soft-deletado com user=None (anonimizado) permanece excluído do padrão."""
+        comentario = Comentario.objects.create(
+            user=self.convidado,
+            conteudo=self.conteudo,
+            body="Anonimizado e soft-deletado",
+        )
+        comentario_id = comentario.id
+
+        # Anonimiza o usuário (SET_NULL)
+        self.convidado.delete()
+        comentario.refresh_from_db()
+        self.assertIsNone(comentario.user)
+
+        # Soft delete após anonimização
+        comentario.soft_delete()
+        self.assertIsNotNone(comentario.deletado_em)
+
+        # Mesmo com user=None, o comentário soft-deletado não aparece no padrão
+        self.assertFalse(Comentario.objects.filter(id=comentario_id).exists())
+        self.assertTrue(Comentario.all_objects.filter(id=comentario_id).exists())
+
     # ==================== TESTES LIKE ====================
 
     def test_like_creation_conteudo(self):

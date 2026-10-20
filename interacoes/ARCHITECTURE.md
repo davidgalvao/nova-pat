@@ -23,7 +23,9 @@ class Comentario(models.Model):
     body = models.TextField()
     is_approved = models.BooleanField(default=False)
     criado_em = models.DateTimeField(auto_now_add=True)
-    # soft delete — legado usa SoftDeletes, avaliar se replica via campo `deletado_em` ou lib de soft delete do Django
+    # soft delete — DECISÃO: replicar via campo `deletado_em` (DateTimeField nullable) em vez de biblioteca externa.
+    # Motivos: sem dependência extra, simples de consultar/indexar, consistente com a anonimização SET_NULL já existente,
+    # e espelha fielmente o conceito de SoftDeletes do legado. Manager padrão filtra deletado_em__isnull=True.
 ```
 
 **Resolvido**: ao excluir a conta de um usuário, `Comentario` é **anonimizado**, não apagado — diferente de `Like`/`FavoritoConteudo`/`AvaliacaoConteudo`, que são apagados (`on_delete=models.CASCADE`). Comentário carrega conteúdo substantivo e trilha de moderação, os outros três são só sinal de engajamento vulnerável a exploit de conta descartável. Implementar via `on_delete=models.SET_NULL` (ou campo `autor_removido` booleano) em vez de CASCADE nessa FK específica — ver `docs/lgpd-mapeamento-dados.md` para o raciocínio completo.
