@@ -1,11 +1,24 @@
 {% extends "base.html" %}
+{% load wagtailcore_tags %}
 
-{% block title %}Page not found{% endblock %}
+{% block title %}Página não encontrada{% endblock %}
 
 {% block body_class %}template-404{% endblock %}
 
 {% block content %}
-<h1>Page not found</h1>
-
-<h2>Sorry, this page could not be found.</h2>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
+    <div class="bg-brand-50 border border-brand-100 rounded-lg p-8 sm:p-12 inline-block">
+        <h1 class="text-3xl font-bold text-brand-700">Página não encontrada</h1>
+        <p class="mt-4 text-gray-600">Desculpe, esta página não pôde ser encontrada.</p>
+        {% slugurl 'home' as home_url %}
+        {% if home_url %}
+        <p class="mt-8">
+            <a href="{{ home_url }}"
+                class="px-4 py-2 rounded-md bg-brand-600 text-white text-sm font-medium hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2">
+                Voltar para a página inicial
+            </a>
+        </p>
+        {% endif %}
+    </div>
+</div>
 {% endblock %}

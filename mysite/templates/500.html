@@ -1,13 +1,21 @@
-<!DOCTYPE html>
-<html lang="en" dir="ltr">
-    <head>
-        <meta charset="utf-8" />
-        <title>Internal server error</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-    </head>
-    <body>
-        <h1>Internal server error</h1>
+{% extends "base.html" %}
 
-        <h2>Sorry, there seems to be an error. Please try again soon.</h2>
-    </body>
-</html>
+{% block title %}Erro no servidor{% endblock %}
+
+{% block body_class %}template-500{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
+    <div class="bg-gray-100 border border-gray-300 rounded-lg p-8 sm:p-12 inline-block">
+        <h1 class="text-3xl font-bold text-gray-900">Erro no servidor</h1>
+        <p class="mt-4 text-gray-600">
+            Desculpe, parece que houve um erro. Tente novamente em instantes.
+        </p>
+        <p class="mt-8">
+            <a href="/" class="px-4 py-2 rounded-md bg-brand-600 text-white text-sm font-medium hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2">
+                Tentar novamente
+            </a>
+        </p>
+    </div>
+</div>
+{% endblock %}
