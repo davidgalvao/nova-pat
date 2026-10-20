@@ -41,10 +41,10 @@
 ## Regras que não são só "sim/não" — cuidado ao consultar esta tabela isoladamente
 - **Aprovação de conteúdo não é sobre poder editar, é sobre poder pular a fila.** `coordenador` pra cima publica direto; abaixo disso, no legado, nem chega a criar (RN-L1 em `conteudos/ARCHITECTURE.md`).
 - **Playlist pessoal e Favorito/Avaliação/Like são construção nova** — não têm regra de autorização herdada do legado, a tabela reflete decisão já tomada (qualquer usuário logado), não comportamento confirmado em produção.
-- **`user_canal`** (vínculo de usuário a canal específico) pode restringir ainda mais o escopo de um `coordenador` (só canais vinculados) — **não está refletido nesta matriz** porque a semântica exata não foi confirmada (ver `usuarios/ARCHITECTURE.md`). Se confirmado, esta matriz precisa de uma coluna extra de "escopo por canal".
+- **`user_canal`** (vínculo de usuário a canal específico) é mantido como **vínculo informativo, sem efeito de permissão** (decisão D1, fechada — ver `docs/adr/README.md` e `usuarios/ARCHITECTURE.md`). Não restringe escopo de `coordenador` nem de qualquer outro papel na fase atual: as Policies checam apenas `role`, nunca `user_canal`. Não há coluna de "escopo por canal" nesta matriz a menos que a produção confirme o contrário.
 
 ## Quando atualizar este documento
 Toda vez que uma Policy nova for implementada (Wagtail permission ou lógica de role customizada), atualizar a linha correspondente aqui com o comportamento real implementado — não deixar esta matriz descrever intenção enquanto o código faz outra coisa.
 
 ## Status
-🟡 Em andamento — estrutura e conteúdo principal fechados. Pendente: confirmar semântica de `user_canal` e comportamento real de `editor` (ambos dependem de acesso a produção ou decisão de negócio, não de leitura de código).
+✅ Decidido — estrutura e conteúdo principal fechados. `user_canal` confirmado como vínculo informativo sem efeito de permissão (D1) e `editor` confirmado com comportamento igual a `convidado`, sem Policy associada (D2). Ambas as decisões estão registradas em `docs/adr/README.md` e `usuarios/ARCHITECTURE.md`; nenhuma alteração de código é necessária — o código já implementa as decisões (`PRIVILEGED_ROLE_SLUGS` exclui `editor`; nenhuma Policy checa `user_canal`).
