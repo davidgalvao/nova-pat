@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from wagtail.models import Page
+from wagtail.contrib.settings.models import BaseSiteSetting, register_setting
 from wagtail.admin.panels import FieldPanel, MultiFieldPanel
 from wagtail.images import get_image_model_string
 from taggit.managers import TaggableManager
@@ -249,3 +250,60 @@ class NavigationItem(models.Model):
         para ser acessível no template Django (que bloqueia atributos com `_`).
         """
         return self.children.all().order_by("sort_order", "title")
+
+
+@register_setting
+class SiteSettings(BaseSiteSetting):
+    """
+    Configurações editáveis do site (nome e logotipo) acessíveis no admin do
+    Wagtail, em "Configurações" → "Configurações do site".
+
+    Permite que gestores alterem o nome do site e façam upload de um logotipo,
+    sem editar código nem depender do `WAGTAIL_SITE_NAME` estático em
+    `mysite/settings/base.py`. O nome salvo aqui também é gravado em
+    `Site.site_name` do site padrão, mantendo paridade com o comportamento
+    legado e com o título do navegador/SEO.
+    """
+
+    site_name = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name="Nome do site",
+        help_text="Nome exibido no cabeçalho e no título do navegador.",
+    )
+
+    logo = models.ForeignKey(
+        get_image_model_string(),
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+        verbose_name="Logotipo",
+        help_text="Imagem de logotipo exibida no cabeçalho do site.",
+    )
+
+    panels = [
+        FieldPanel("site_name"),
+        FieldPanel("logo"),
+    ]
+
+    class Meta:
+        verbose_name = "Configurações do site"
+        verbose_name_plural = "Configurações do site"
+
+    def save(self, *args, **kwargs):
+        """
+        Persiste as configurações e sincroniza o nome com `Site.site_name`
+        do site padrão do Wagtail, para que o nome editado reflita no título
+        do navegador e em `<meta property="og:site_name">`.
+        """
+        super().save(*args, **kwargs)
+        from wagtail.models import Site
+
+        default_site = Site.objects.filter(is_default_site=True).first()
+        if default_site and self.site_name:
+            default_site.site_name = self.site_name
+            default_site.save(update_fields=["site_name"])
+
+    def __str__(self) -> str:
+        return self.site_name or "Configurações do site"
