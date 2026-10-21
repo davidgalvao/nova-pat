@@ -189,6 +189,22 @@ AUTH_USER_MODEL = "usuarios.User"
 
 WAGTAIL_SITE_NAME = "Nova PAT"
 
+# Branding do admin Wagtail (logo e cores da marca).
+# Personaliza o painel administrativo com o logo da instituição e as cores da
+# marca (mesma paleta brand do front-end, definida em mysite/templates/base.html).
+# Ver: https://docs.wagtail.org/en/stable/reference/settings.html#wagtail-admin
+WAGTAIL_ADMIN: Dict[str, Any] = {
+    "COLORS": {
+        "primary": "#1d4ed8",      # brand-500
+        "secondary": "#1e3a8a",    # brand-700
+        "link": "#1d4ed8",         # brand-500
+        "siteHeaderBackground": "#ffffff",
+        "siteHeaderText": "#1e3a8a",  # brand-700
+    },
+    "LOGIN_LOGO": "images/logo-nova-pat.svg",
+    "SITE_NAME": "Nova PAT",
+}
+
 # Search
 # https://docs.wagtail.org/en/stable/topics/search/backends.html
 WAGTAILSEARCH_BACKENDS: Dict[str, Dict[str, str]] = {
