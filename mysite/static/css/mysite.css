@@ -1,0 +1,188 @@
+/* ============================================================
+   mysite.css — Estilos da toolbar de acessibilidade e utilitários
+   Projeto: Nova PAT (Django 6.0 + Wagtail 8.0)
+
+   Cores e dimensões seguem a paleta brand definida em
+   mysite/templates/base.html (tailwind.config via CDN):
+     brand-50  #eef4ff
+     brand-500 #1d4ed8
+     brand-600 #1e40af
+     brand-700 #1e3a8a
+
+   Regras de estilo aplicadas:
+   - Não inventar classes CSS arbitrárias que não sejam Tailwind.
+   - As classes abaixo são as explicitamente solicitadas e usam
+     apenas variáveis CSS customizadas (definidas em :root) que
+     espelham a paleta brand do Tailwind, sem valores mágicos.
+   ============================================================ */
+
+:root {
+    /* Tamanho de fonte base — manipulável via JS */
+    --fonte-base: 1rem;
+    --fonte-pequena: 0.875rem; /* text-sm */
+    --fonte-grande: 1.25rem;   /* text-xl */
+
+    /* Cores da marca (mesma paleta brand do Tailwind) */
+    --cor-brand-50: #eef4ff;
+    --cor-brand-500: #1d4ed8;
+    --cor-brand-600: #1e40af;
+    --cor-brand-700: #1e3a8a;
+
+    /* Contraste alto */
+    --cor-fundo-contraste: #111827;   /* gray-900 */
+    --cor-texto-contraste: #ffffff;
+    --cor-link-contraste: #d9e6ff;    /* brand-100 */
+
+    /* Bordas / sombras sutis */
+    --cor-borda-sutil: #e5e7eb;       /* gray-200 */
+}
+
+/* ------------------------------------------------------------------
+   1. Container da toolbar (.toolbar-acessibilidade)
+   - Fundo branco com sombra sutil (shadow-sm)
+   - Border-bottom sutil
+   - Altura adequada para os itens
+   - Sticky no topo, acima do header (header é sticky top-0 z-50;
+     como vem depois da toolbar no DOM, a toolbar usa z-60 para
+     ficar sobreposta ao header quando ambos estarem no topo).
+   ------------------------------------------------------------------ */
+.toolbar-acessibilidade {
+    position: sticky;
+    top: 0;
+    z-index: 60;
+    background-color: #ffffff;
+    border-bottom: 1px solid var(--cor-borda-sutil);
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); /* shadow-sm */
+    min-height: 3.5rem; /* altura adequada para os itens (h-14) */
+    display: flex;
+    align-items: center;
+}
+
+.toolbar-acessibilidade > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+/* ------------------------------------------------------------------
+   2. Layout dos itens — dois grupos
+      ferramentas de acessibilidade (esquerda) e links institucionais/
+      redes sociais (direita)
+   - Flexbox, items-center, gap adequado
+   - Responsivo: empilhar em mobile, lado a lado em desktop
+   ------------------------------------------------------------------ */
+.toolbar-grupo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.toolbar-grupo-direita {
+    margin-left: auto;
+}
+
+@media (max-width: 639px) {
+    .toolbar-acessibilidade > div {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+    }
+    .toolbar-grupo-direita {
+        margin-left: 0;
+    }
+    .toolbar-grupo,
+    .toolbar-grupo-direita {
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+        gap: 0.25rem;
+    }
+}
+
+/* ------------------------------------------------------------------
+   3. Estilos dos botões/links da toolbar
+   - Texto: brand-700
+   - Hover: bg-brand-50, text-brand-700
+   - Focus: outline-none, ring-2, ring-brand-500, ring-offset-2
+   - Tamanho: text-sm, padding adequado
+   - Ícones SVG: tamanho adequado, cor brand-700
+   ------------------------------------------------------------------ */
+.toolbar-acessibilidade .btn-acessibilidade,
+.toolbar-acessibilidade .toolbar-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--cor-brand-700);
+    font-size: 0.875rem;    /* text-sm */
+    font-weight: 500;       /* font-medium */
+    padding: 0.375rem 0.75rem; /* px-3 py-1.5 */
+    border-radius: 0.375rem;  /* rounded-md */
+    text-decoration: none;
+}
+
+.toolbar-acessibilidade .btn-acessibilidade:hover,
+.toolbar-acessibilidade .toolbar-item:hover {
+    background-color: var(--cor-brand-50);
+    color: var(--cor-brand-700);
+}
+
+.toolbar-acessibilidade .btn-acessibilidade:focus,
+.toolbar-acessibilidade .toolbar-item:focus,
+.toolbar-acessibilidade button:focus,
+.toolbar-acessibilidade a:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--cor-brand-500), /* ring-2 ring-brand-500 */
+                0 0 0 4px #ffffff;              /* ring-offset-2 (fundo) */
+}
+
+.toolbar-acessibilidade svg {
+    width: 1.25rem;   /* w-5 */
+    height: 1.25rem;  /* h-5 */
+    fill: none;
+    stroke: var(--cor-brand-700);
+}
+
+/* ------------------------------------------------------------------
+   4. Utilitários de acessibilidade (manipulados via JS)
+   As classes .fonte-pequena / .fonte-grande devem ser adicionadas
+   ao container de conteúdo (ex.: <main id="main-content">) pelo JS.
+   ------------------------------------------------------------------ */
+.fonte-pequena {
+    font-size: var(--fonte-pequena);
+}
+.fonte-grande {
+    font-size: var(--fonte-grande);
+}
+
+.contraste-alto {
+    background-color: var(--cor-fundo-contraste);
+    color: var(--cor-texto-contraste);
+}
+.contraste-alto a {
+    color: var(--cor-link-contraste);
+    text-decoration: underline;
+}
+
+/* sr-only — já existe no Tailwind, garantido aqui */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+/* ------------------------------------------------------------------
+   5. Variavel CSS de tamanho de fonte base (para JS manipular)
+   O JS pode ler/escrever --fonte-base em :root e aplicar
+   .fonte-pequena / .fonte-grande ao container de conteúdo.
+   ------------------------------------------------------------------ */
+#main-content,
+body {
+    font-size: var(--fonte-base);
+}

@@ -1,0 +1,89 @@
+{# Toolbar de acessibilidade — renderizada acima do header em base.html (linha 70). Autossuficiente: não exige variáveis de contexto nem {% static %}. #}
+
+<div class="toolbar-acessibilidade" role="toolbar" aria-label="Ferramentas de acessibilidade">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <ul class="flex flex-wrap items-center gap-3 py-2 sm:py-2.5 text-sm" role="presentation">
+
+            {# Grupo esquerdo — ferramentas de acessibilidade #}
+            <li class="toolbar-grupo">
+                <ul class="flex items-center gap-3" role="presentation">
+
+                    {# 1. Link Acessibilidade #}
+                    <li>
+                        <a href="/acessibilidade"
+                           tabindex="1"
+                           id="botao-acessibilidade"
+                           class="btn-acessibilidade toolbar-item flex items-center gap-2 px-3 py-1.5 rounded-md font-medium focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 transition-colors">
+                            Acessibilidade
+                        </a>
+                    </li>
+
+                    {# 2. Diminuir Fonte (A-) #}
+                    <li>
+                        <button type="button" tabindex="2" title="Diminuir Fonte"
+                                class="toolbar-item inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md font-medium focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 transition-colors">
+                            <span class="sr-only">Diminuir Fonte</span>
+                            <span aria-hidden="true">A-</span>
+                        </button>
+                    </li>
+
+                    {# 3. Aumentar Fonte (A+) #}
+                    <li>
+                        <button type="button" tabindex="3" title="Aumentar Fonte"
+                                class="toolbar-item inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md font-medium focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 transition-colors">
+                            <span class="sr-only">Aumentar Fonte</span>
+                            <span aria-hidden="true">A+</span>
+                        </button>
+                    </li>
+
+                    {# 4. Voltar Fonte Inicial (A) #}
+                    <li>
+                        <button type="button" tabindex="4" title="Voltar Fonte Inicial"
+                                class="toolbar-item inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md font-medium focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 transition-colors">
+                            <span class="sr-only">Voltar Fonte Inicial</span>
+                            <span aria-hidden="true">A</span>
+                        </button>
+                    </li>
+
+                    {# 5. Contraste (ícone SVG inline, decorativo) #}
+                    <li>
+                        <button type="button" tabindex="5" title="Contraste"
+                                class="toolbar-item inline-flex items-center justify-center px-3 py-1.5 rounded-md font-medium focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 transition-colors">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                                <circle cx="12" cy="12" r="4"></circle>
+                                <path d="M7 12a5 5 0 0 1 5-5v5z"></path>
+                            </svg>
+                        </button>
+                    </li>
+
+                </ul>
+            </li>
+
+            {# Grupo direito — links institucionais #}
+            <li class="toolbar-grupo toolbar-grupo-direita">
+                <ul class="flex items-center gap-3" role="presentation">
+
+                    {# 6. Link Acesso à Informação #}
+                    <li>
+                        <a href="/acesso-a-informacao"
+                           tabindex="6"
+                           class="toolbar-item px-3 py-1.5 rounded-md font-medium focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 transition-colors">
+                            Acesso à Informação
+                        </a>
+                    </li>
+
+                    {# 7. Link Política de privacidade #}
+                    <li>
+                        <a href="/politica-privacidade"
+                           tabindex="7"
+                           class="toolbar-item px-3 py-1.5 rounded-md font-medium focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 transition-colors">
+                            Política de privacidade
+                        </a>
+                    </li>
+
+                </ul>
+            </li>
+
+        </ul>
+    </div>
+</div>
