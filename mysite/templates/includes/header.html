@@ -14,9 +14,9 @@
                 <a href="{{ home_url }}" class="flex items-center gap-2 text-brand-700 font-bold text-xl"
                     aria-label="{{ ss.site_name|default:"Nova PAT" }} — Página inicial">
                     {% if ss.logo %}
-                    {% image ss.logo fill-40x40 as logo_img %}
+                    {% image ss.logo width-200 as logo_img %}
                     <img src="{{ logo_img.url }}" alt="{{ ss.site_name|default:'Nova PAT' }}"
-                        class="w-9 h-9" />
+                        class="h-10 w-auto" />
                     {% endif %}
                     <span>{{ ss.site_name|default:"Nova PAT" }}</span>
                 </a>
