@@ -13,8 +13,10 @@
                     aria-label="{{ site_settings.site_name|default:"Nova PAT" }} — Página inicial">
                     {% if site_settings.logo %}
                     {% image site_settings.logo fill-40x40 as logo_img %}
-                    <img src="{{ logo_img.url }}" alt="{{ site_settings.site_name|default:'Nova PAT' }}"
-                        class="w-9 h-9 rounded-lg" />
+                    <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-brand-600">
+                        <img src="{{ logo_img.url }}" alt="{{ site_settings.site_name|default:'Nova PAT' }}"
+                            class="w-9 h-9 rounded-lg" />
+                    </span>
                     {% else %}
                     <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-brand-600 text-white text-lg"
                         aria-hidden="true">P</span>
