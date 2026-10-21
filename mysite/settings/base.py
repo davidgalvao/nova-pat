@@ -217,3 +217,28 @@ WAGTAILEMBEDS_FINDERS: List[Dict[str, str]] = [
     {"class": "core.embeds.GoogleSlidesFinder"},
     {"class": "wagtail.embeds.finders.oembed"},
 ]
+
+# Editor RichText do Wagtail Admin.
+# Define exatamente as features permitidas no editor de texto rico (Draftail),
+# conforme card NOVAPAT-27:
+# - Headings: h2, h3, h4
+# - Estilo: bold, italic
+# - Listas: ol, ul
+# - Links: link
+# - Utilidades: hr, blockquote
+# Nota: features definidas em campo (ex.: RichTextField(features=[...])) prevalecem
+# sobre este default por campo; este dicionário controla o editor padrão do admin.
+WAGTAILADMIN_RICH_TEXT_EDITORS: Dict[str, Dict[str, object]] = {
+    "default": {
+        "WIDGET": "wagtail.admin.rich_text.DraftailRichTextArea",
+        "OPTIONS": {
+            "features": [
+                "h2", "h3", "h4",   # Headings
+                "bold", "italic",   # Estilo
+                "ol", "ul",         # Listas
+                "link",             # Links
+                "hr", "blockquote", # Utilidades
+            ],
+        },
+    }
+}
