@@ -1,18 +1,25 @@
-{% load wagtailcore_tags navigation_tags %}
+{% load wagtailcore_tags navigation_tags wagtailsettings_tags wagtailimages_tags %}
 {% get_navigation_items as nav_items %}
+{% get_site_settings as site_settings %}
 <header class="bg-white shadow-sm sticky top-0 z-50" role="banner">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16 gap-4">
 
-            {# Logo / Marca — esquerda #}
+            {# Logo / Marca — esquerda (logo do SiteSettings, com fallback estático) #}
             <div class="flex-shrink-0">
                 {% slugurl 'home' as home_url %}
                 {% if home_url %}
                 <a href="{{ home_url }}" class="flex items-center gap-2 text-brand-700 font-bold text-xl"
-                    aria-label="Nova PAT — Página inicial">
+                    aria-label="{{ site_settings.site_name|default:"Nova PAT" }} — Página inicial">
+                    {% if site_settings.logo %}
+                    {% image site_settings.logo fill-40x40 as logo_img %}
+                    <img src="{{ logo_img.url }}" alt="{{ site_settings.site_name|default:'Nova PAT' }}"
+                        class="w-9 h-9 rounded-lg" />
+                    {% else %}
                     <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-brand-600 text-white text-lg"
                         aria-hidden="true">P</span>
-                    <span>Nova PAT</span>
+                    {% endif %}
+                    <span>{{ site_settings.site_name|default:"Nova PAT" }}</span>
                 </a>
                 {% endif %}
             </div>
