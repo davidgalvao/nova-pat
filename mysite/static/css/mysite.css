@@ -61,7 +61,7 @@
     color: var(--cor-texto-toolbar);
     border-bottom: 1px solid rgba(255, 255, 255, 0.3);
     box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.1);
-    min-height: 2.75rem; /* altura mais compacta (44px — mesma área mínima alvo de clique) */
+    height: 40px; /* altura compacta da barra (30-40px) */
     display: flex;
     align-items: center;
 }
@@ -110,64 +110,70 @@
 
 /* ------------------------------------------------------------------
    3. Estilos dos botões/links da toolbar
-   - Texto: branco
-   - Hover: azul um pouco mais claro, texto branco
-   - Focus: outline-none, ring-2, ring-white, ring-offset-2
-   - Tamanho: text-base, padding maior (px-4 py-2)
-   - Ícones SVG: tamanho adequado, cor branca
+   - Texto: branco, fonte pequena, caixa alta
+   - Sem padding, sem borda, sem fundo (texto puro)
+   - Hover: apenas cor do texto (#bae6fd), sem fundo/borda/padding
+   - Ícones: tamanho adequado, cor branca
    ------------------------------------------------------------------ */
 .toolbar-acessibilidade .btn-acessibilidade,
-.toolbar-acessibilidade .toolbar-item {
+.toolbar-acessibilidade button,
+.toolbar-acessibilidade a {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
     color: var(--cor-texto-toolbar);
-    font-size: 1rem;       /* text-base */
-    font-weight: 500;      /* font-medium */
-    padding: 0.375rem 0.75rem;  /* px-3 py-1.5 — itens mais compactos */
-    border-radius: 0.375rem;  /* rounded-md */
+    font-size: 0.875rem; /* no mínimo 14px (WCAG) */
+    font-weight: 500;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
     text-decoration: none;
-    /* Textos da toolbar em caixa alta com espaçamento para legibilidade (WCAG 1.4.12 espaçamento de texto) */
     text-transform: uppercase;
-    letter-spacing: 0.025em; /* tracking-wide */
+    letter-spacing: 0.025em;
 }
 
-.toolbar-acessibilidade .btn-acessibilidade:hover,
-.toolbar-acessibilidade .toolbar-item:hover {
-    background-color: var(--cor-hover-toolbar);
-    color: var(--cor-texto-toolbar);
+.toolbar-acessibilidade a i{
+    font-size: 1.5rem;
 }
 
-.toolbar-acessibilidade .btn-acessibilidade:focus,
-.toolbar-acessibilidade .toolbar-item:focus,
+.toolbar-acessibilidade button {
+    min-width: 44px;   /* área de clique mínima 44x44px */
+    min-height: 44px;
+}
+
+.toolbar-acessibilidade button:hover,
+.toolbar-acessibilidade a:hover {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    color: #bae6fd;
+    opacity: 1;
+}
+
 .toolbar-acessibilidade button:focus,
 .toolbar-acessibilidade a:focus {
     outline: none;
-    box-shadow: 0 0 0 2px var(--cor-texto-toolbar), /* ring-2 ring-white */
-                0 0 0 4px var(--cor-fundo-toolbar);  /* ring-offset-2 (fundo da toolbar) */
+    box-shadow: none;
 }
 
-.toolbar-acessibilidade svg {
-    width: 1.25rem;   /* w-5 */
-    height: 1.25rem;  /* h-5 */
+.toolbar-acessibilidade svg,
+.toolbar-acessibilidade .fa-adjust,
+.toolbar-acessibilidade .fa-brands,
+.toolbar-acessibilidade img.icon-info {
+    width: 1.25rem; /* 20px — tamanho visível (WCAG) */
+    height: 1.25rem;
     fill: none;
     stroke: var(--cor-texto-toolbar);
 }
 
-/* Ícones da toolbar (Font Awesome via web font) — ícone de contraste com área de clique mínima 44x44px */
+/* Ícones da toolbar (Font Awesome via web font) */
 .toolbar-acessibilidade .fa-adjust {
-    font-size: 1.25rem; /* text-xl */
+    font-size: 1rem;
     stroke: none;
 }
 
-/* Ícone PNG de informação antes de "Acesso à Informação" */
 .toolbar-acessibilidade img.icon-info {
     display: block;
-}
-
-/* Ícones das redes sociais (Font Awesome brands) */
-.toolbar-acessibilidade .fa-brands {
-    font-size: 1.125rem;
 }
 
 /* ------------------------------------------------------------------

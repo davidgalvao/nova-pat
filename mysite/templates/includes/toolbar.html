@@ -3,99 +3,81 @@
 
 <div class="toolbar-acessibilidade" role="toolbar" aria-label="Ferramentas de acessibilidade">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <ul class="flex flex-wrap items-center gap-3 py-1 sm:py-1.5 text-base" role="presentation">
+        <ul class="flex flex-nowrap items-center gap-8 w-full" role="presentation">
 
-            {# 1. Link Acessibilidade #}
-            <li>
+            {# Grupo Esquerdo — acessibilidade, fonte e contraste #}
+            <li class="flex items-center gap-2" role="group" aria-label="Ferramentas de acessibilidade">
                 <a href="/acessibilidade"
                    tabindex="1"
                    id="botao-acessibilidade"
-                   class="btn-acessibilidade toolbar-item flex items-center gap-2 px-3 py-1.5 rounded-md font-medium focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 transition-colors">
+                   class="btn-acessibilidade flex items-center gap-2 font-medium uppercase tracking-wide text-white focus:outline-none transition-colors hover:text-[#bae6fd]">
                     Acessibilidade
                 </a>
-            </li>
 
-            {# 2. Diminuir Fonte (A-) #}
-            <li>
                 <button type="button" tabindex="2" title="Diminuir Fonte"
-                        class="toolbar-item inline-flex items-center justify-center px-3 py-1.5 rounded-md font-medium focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 transition-colors">
+                        class="flex items-center justify-center font-medium uppercase tracking-wide text-white focus:outline-none transition-colors hover:text-[#bae6fd]">
                     <span class="sr-only">Diminuir Fonte</span>
                     <span aria-hidden="true">A-</span>
                 </button>
-            </li>
 
-            {# 3. Aumentar Fonte (A+) #}
-            <li>
                 <button type="button" tabindex="3" title="Aumentar Fonte"
-                        class="toolbar-item inline-flex items-center justify-center px-3 py-1.5 rounded-md font-medium focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 transition-colors">
+                        class="flex items-center justify-center font-medium uppercase tracking-wide text-white focus:outline-none transition-colors hover:text-[#bae6fd]">
                     <span class="sr-only">Aumentar Fonte</span>
                     <span aria-hidden="true">A+</span>
                 </button>
-            </li>
 
-            {# 4. Voltar Fonte Inicial (A) #}
-            <li>
                 <button type="button" tabindex="4" title="Voltar Fonte Inicial"
-                        class="toolbar-item inline-flex items-center justify-center px-3 py-1.5 rounded-md font-medium focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 transition-colors">
+                        class="flex items-center justify-center font-medium uppercase tracking-wide text-white focus:outline-none transition-colors hover:text-[#bae6fd]">
                     <span class="sr-only">Voltar Fonte Inicial</span>
                     <span aria-hidden="true">A</span>
                 </button>
-            </li>
 
-            {# 5. Contraste — ícone Font Awesome com área de clique acessível (44x44px) #}
-            <li>
                 <button type="button" tabindex="5" title="Contraste"
-                        class="toolbar-item inline-flex items-center justify-center px-3 py-1.5 rounded-md font-medium focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 transition-colors min-w-[2.75rem] min-h-[2.75rem]">
+                        class="flex items-center justify-center font-medium uppercase tracking-wide text-white focus:outline-none transition-colors hover:text-[#bae6fd]">
                     <span class="sr-only">Contraste</span>
-                    <i class="fa-solid fa-adjust text-xl" aria-hidden="true"></i>
+                    <i class="fa-solid fa-adjust" aria-hidden="true"></i>
                 </button>
             </li>
 
-            {# 6. Link Acesso à Informação — ícone PNG antes do texto #}
-            <li>
+            {# Grupo Centro — links institucionais #}
+            <li class="flex items-center gap-4" role="group" aria-label="Links institucionais">
                 <a href="https://www.ba.gov.br/comunicacao/lei-de-acesso-a-informacao"
                    tabindex="6"
                    target="_blank"
                    rel="noopener noreferrer"
-                   class="toolbar-item flex items-center gap-2 px-3 py-1.5 rounded-md font-medium focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 transition-colors">
+                   class="flex items-center gap-2 font-medium uppercase tracking-wide text-white focus:outline-none transition-colors hover:text-[#bae6fd]">
                     <img src="{% static 'img/info-icon.png' %}" alt="" width="20" height="20"
                          class="icon-info" aria-hidden="true" focusable="false">
                     Acesso à Informação
                 </a>
-            </li>
 
-            {# 7. Link Política de privacidade #}
-            <li>
                 <a href="/politica-privacidade"
                    tabindex="7"
-                   class="toolbar-item px-3 py-1.5 rounded-md font-medium focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 transition-colors">
+                   class="font-medium uppercase tracking-wide text-white focus:outline-none transition-colors hover:text-[#bae6fd]">
                     Política de privacidade
                 </a>
             </li>
 
-            {# Espaço muito grande antes das redes sociais #}
-            <li class="flex-1"></li>
-
-            {# Redes sociais — ícones Font Awesome, alinhados à direita #}
-            <li class="toolbar-grupo-redes flex items-center gap-3">
+            {# Grupo Direito — redes sociais (alinhado ao extremo direito da barra) #}
+            <li class="ml-auto flex items-center justify-end gap-4">
                 <a href="https://www.instagram.com/" tabindex="8" target="_blank" rel="noopener noreferrer"
-                   class="toolbar-item p-1.5 rounded-md focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 transition-colors" aria-label="Instagram">
-                    <i class="fa-brands fa-instagram text-lg" aria-hidden="true"></i>
+                   class="flex items-center justify-center font-medium uppercase tracking-wide text-white focus:outline-none transition-colors hover:text-[#bae6fd]" aria-label="Instagram">
+                    <i class="fa-brands fa-instagram" aria-hidden="true"></i>
                     <span class="sr-only">Instagram</span>
                 </a>
                 <a href="https://www.youtube.com/" tabindex="9" target="_blank" rel="noopener noreferrer"
-                   class="toolbar-item p-1.5 rounded-md focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 transition-colors" aria-label="YouTube">
-                    <i class="fa-brands fa-youtube text-lg" aria-hidden="true"></i>
+                   class="flex items-center justify-center font-medium uppercase tracking-wide text-white focus:outline-none transition-colors hover:text-[#bae6fd]" aria-label="YouTube">
+                    <i class="fa-brands fa-youtube" aria-hidden="true"></i>
                     <span class="sr-only">YouTube</span>
                 </a>
                 <a href="https://www.facebook.com/" tabindex="10" target="_blank" rel="noopener noreferrer"
-                   class="toolbar-item p-1.5 rounded-md focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 transition-colors" aria-label="Facebook">
-                    <i class="fa-brands fa-facebook text-lg" aria-hidden="true"></i>
+                   class="flex items-center justify-center font-medium uppercase tracking-wide text-white focus:outline-none transition-colors hover:text-[#bae6fd]" aria-label="Facebook">
+                    <i class="fa-brands fa-facebook" aria-hidden="true"></i>
                     <span class="sr-only">Facebook</span>
                 </a>
                 <a href="https://www.flickr.com/" tabindex="11" target="_blank" rel="noopener noreferrer"
-                   class="toolbar-item p-1.5 rounded-md focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 transition-colors" aria-label="Flickr">
-                    <i class="fa-brands fa-flickr text-lg" aria-hidden="true"></i>
+                   class="flex items-center justify-center font-medium uppercase tracking-wide text-white focus:outline-none transition-colors hover:text-[#bae6fd]" aria-label="Flickr">
+                    <i class="fa-brands fa-flickr" aria-hidden="true"></i>
                     <span class="sr-only">Flickr</span>
                 </a>
             </li>
