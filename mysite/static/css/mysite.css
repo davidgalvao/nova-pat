@@ -22,6 +22,9 @@
     --fonte-pequena: 0.875rem; /* text-sm */
     --fonte-grande: 1.25rem;   /* text-xl */
 
+    /* Cor da toolbar de acessibilidade (azul institucional) */
+    --cor-fundo-toolbar: #0756b1;
+
     /* Cores da marca (mesma paleta brand do Tailwind) */
     --cor-brand-50: #eef4ff;
     --cor-brand-500: #1d4ed8;
@@ -35,11 +38,15 @@
 
     /* Bordas / sombras sutis */
     --cor-borda-sutil: #e5e7eb;       /* gray-200 */
+
+    /* Cores da toolbar (azul #0756b1 com texto branco) */
+    --cor-texto-toolbar: #ffffff;
+    --cor-hover-toolbar: #0866c8;     /* azul um pouco mais claro para hover */
 }
 
 /* ------------------------------------------------------------------
    1. Container da toolbar (.toolbar-acessibilidade)
-   - Fundo branco com sombra sutil (shadow-sm)
+   - Fundo azul #0756b1 com texto branco
    - Border-bottom sutil
    - Altura adequada para os itens
    - Sticky no topo, acima do header (header é sticky top-0 z-50;
@@ -50,9 +57,10 @@
     position: sticky;
     top: 0;
     z-index: 60;
-    background-color: #ffffff;
-    border-bottom: 1px solid var(--cor-borda-sutil);
-    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); /* shadow-sm */
+    background-color: var(--cor-fundo-toolbar);
+    color: var(--cor-texto-toolbar);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.1);
     min-height: 3.5rem; /* altura adequada para os itens (h-14) */
     display: flex;
     align-items: center;
@@ -102,29 +110,29 @@
 
 /* ------------------------------------------------------------------
    3. Estilos dos botões/links da toolbar
-   - Texto: brand-700
-   - Hover: bg-brand-50, text-brand-700
-   - Focus: outline-none, ring-2, ring-brand-500, ring-offset-2
-   - Tamanho: text-sm, padding adequado
-   - Ícones SVG: tamanho adequado, cor brand-700
+   - Texto: branco
+   - Hover: azul um pouco mais claro, texto branco
+   - Focus: outline-none, ring-2, ring-white, ring-offset-2
+   - Tamanho: text-base, padding maior (px-4 py-2)
+   - Ícones SVG: tamanho adequado, cor branca
    ------------------------------------------------------------------ */
 .toolbar-acessibilidade .btn-acessibilidade,
 .toolbar-acessibilidade .toolbar-item {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    color: var(--cor-brand-700);
-    font-size: 0.875rem;    /* text-sm */
-    font-weight: 500;       /* font-medium */
-    padding: 0.375rem 0.75rem; /* px-3 py-1.5 */
+    color: var(--cor-texto-toolbar);
+    font-size: 1rem;       /* text-base */
+    font-weight: 500;      /* font-medium */
+    padding: 0.5rem 1rem;  /* px-4 py-2 */
     border-radius: 0.375rem;  /* rounded-md */
     text-decoration: none;
 }
 
 .toolbar-acessibilidade .btn-acessibilidade:hover,
 .toolbar-acessibilidade .toolbar-item:hover {
-    background-color: var(--cor-brand-50);
-    color: var(--cor-brand-700);
+    background-color: var(--cor-hover-toolbar);
+    color: var(--cor-texto-toolbar);
 }
 
 .toolbar-acessibilidade .btn-acessibilidade:focus,
@@ -132,15 +140,15 @@
 .toolbar-acessibilidade button:focus,
 .toolbar-acessibilidade a:focus {
     outline: none;
-    box-shadow: 0 0 0 2px var(--cor-brand-500), /* ring-2 ring-brand-500 */
-                0 0 0 4px #ffffff;              /* ring-offset-2 (fundo) */
+    box-shadow: 0 0 0 2px var(--cor-texto-toolbar), /* ring-2 ring-white */
+                0 0 0 4px var(--cor-fundo-toolbar);  /* ring-offset-2 (fundo da toolbar) */
 }
 
 .toolbar-acessibilidade svg {
     width: 1.25rem;   /* w-5 */
     height: 1.25rem;  /* h-5 */
     fill: none;
-    stroke: var(--cor-brand-700);
+    stroke: var(--cor-texto-toolbar);
 }
 
 /* ------------------------------------------------------------------
