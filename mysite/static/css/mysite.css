@@ -61,7 +61,7 @@
     color: var(--cor-texto-toolbar);
     border-bottom: 1px solid rgba(255, 255, 255, 0.3);
     box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.1);
-    min-height: 3.5rem; /* altura adequada para os itens (h-14) */
+    min-height: 2.75rem; /* altura mais compacta (44px — mesma área mínima alvo de clique) */
     display: flex;
     align-items: center;
 }
@@ -124,9 +124,12 @@
     color: var(--cor-texto-toolbar);
     font-size: 1rem;       /* text-base */
     font-weight: 500;      /* font-medium */
-    padding: 0.5rem 1rem;  /* px-4 py-2 */
+    padding: 0.375rem 0.75rem;  /* px-3 py-1.5 — itens mais compactos */
     border-radius: 0.375rem;  /* rounded-md */
     text-decoration: none;
+    /* Textos da toolbar em caixa alta com espaçamento para legibilidade (WCAG 1.4.12 espaçamento de texto) */
+    text-transform: uppercase;
+    letter-spacing: 0.025em; /* tracking-wide */
 }
 
 .toolbar-acessibilidade .btn-acessibilidade:hover,
@@ -149,6 +152,12 @@
     height: 1.25rem;  /* h-5 */
     fill: none;
     stroke: var(--cor-texto-toolbar);
+}
+
+/* Ícone de contraste maior (w-6/h-6 — 24px) para facilitar o toque/clique */
+.toolbar-acessibilidade svg.icone-contraste {
+    width: 1.5rem;
+    height: 1.5rem;
 }
 
 /* ------------------------------------------------------------------
