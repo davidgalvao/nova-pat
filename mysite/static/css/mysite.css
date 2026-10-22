@@ -154,10 +154,20 @@
     stroke: var(--cor-texto-toolbar);
 }
 
-/* Ícone de contraste maior (w-6/h-6 — 24px) para facilitar o toque/clique */
-.toolbar-acessibilidade svg.icone-contraste {
-    width: 1.5rem;
-    height: 1.5rem;
+/* Ícones da toolbar (Font Awesome via web font) — ícone de contraste com área de clique mínima 44x44px */
+.toolbar-acessibilidade .fa-adjust {
+    font-size: 1.25rem; /* text-xl */
+    stroke: none;
+}
+
+/* Ícone PNG de informação antes de "Acesso à Informação" */
+.toolbar-acessibilidade img.icon-info {
+    display: block;
+}
+
+/* Ícones das redes sociais (Font Awesome brands) */
+.toolbar-acessibilidade .fa-brands {
+    font-size: 1.125rem;
 }
 
 /* ------------------------------------------------------------------
