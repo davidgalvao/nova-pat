@@ -197,6 +197,49 @@
     text-decoration: underline;
 }
 
+/*
+ * Alto contraste — aplicado no <html> via JS.
+ * Todas as cores vêm exclusivamente das variáveis customizadas de :root
+ * (--cor-fundo-contraste, --cor-texto-contraste, --cor-link-contraste),
+ * sem valores mágicos. Os seletores compostos (.contraste-alto X) têm
+ * especificidade maior que as utilitárias do Tailwind, portanto
+ * sobrescrevem cores e fundos fixos enquanto o modo estiver ativo.
+ */
+
+/* Títulos costumam ter cor fixa (text-gray-900 etc.) que não herda de :root */
+.contraste-alto h1,
+.contraste-alto h2,
+.contraste-alto h3,
+.contraste-alto h4,
+.contraste-alto h5,
+.contraste-alto h6 {
+    color: var(--cor-texto-contraste);
+}
+
+/* Texto com cor fixa que não herda do :root */
+.contraste-alto .text-gray-300,
+.contraste-alto .text-gray-400,
+.contraste-alto .text-gray-500,
+.contraste-alto .text-gray-600,
+.contraste-alto .text-gray-700,
+.contraste-alto .text-gray-800,
+.contraste-alto .text-gray-900,
+.contraste-alto .text-brand-700 {
+    color: var(--cor-texto-contraste);
+}
+
+/* Fundos fixos (cards, caixas, cabeçalho, placeholders e seções) */
+.contraste-alto .bg-white,
+.contraste-alto .bg-gray-50,
+.contraste-alto .bg-gray-100,
+.contraste-alto .bg-black,
+.contraste-alto .bg-brand-50,
+.contraste-alto .bg-brand-500,
+.contraste-alto .bg-brand-600,
+.contraste-alto .bg-brand-700 {
+    background-color: var(--cor-fundo-contraste);
+}
+
 /* sr-only — já existe no Tailwind, garantido aqui */
 .sr-only {
     position: absolute;
@@ -219,3 +262,22 @@
 body {
     font-size: var(--fonte-base);
 }
+
+/* ------------------------------------------------------------------
+   6. Escala tipográfica de títulos (h1-h6)
+   Todos os títulos dentro do conteúdo principal usam `em`, que é
+   relativo ao font-size herdado do elemento pai — e esse, por sua
+   vez, herda de --fonte-base (definida em :root e manipulada pelo JS
+   da toolbar de acessibilidade). Assim, aumentar/diminuir/resetar a
+   fonte escala também os títulos, não apenas o texto corrido.
+   Valores aproximam a hierarquia visual existente sem hard-code de px.
+   A especificidade do seletor com #main-content garante sobreposição
+   às classes utilitárias do Tailwind (ex: .text-3xl) usadas nos
+   templates.
+   ------------------------------------------------------------------ */
+#main-content h1 { font-size: 2em; }
+#main-content h2 { font-size: 1.75em; }
+#main-content h3 { font-size: 1.5em; }
+#main-content h4 { font-size: 1.25em; }
+#main-content h5 { font-size: 1.125em; }
+#main-content h6 { font-size: 1em; }

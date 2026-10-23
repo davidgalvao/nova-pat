@@ -69,16 +69,23 @@
      * property CSS --fonte-base (definida em :root via mysite.css) e,
      * como fallback, define o fontSize inline em #main-content e body.
      *
+     * O valor usa a unidade `rem` (relativa ao <html>/root), nunca `em`:
+     * assim não há composição (compounding) entre body e #main-content e
+     * a custom property --fonte-base fica disponível para todos os
+     * elementos de texto, incluindo títulos h1-h6, que escalam via CSS
+     * em mysite.css.
+     *
      * @param {number} fator Fator de escala (ex: 1.0, 1.2, 0.8).
      */
     function aplicarFonte(fator) {
         var fatorArredondado = Math.round(fator * 100) / 100;
-        var tamanhoCss = fatorArredondado + 'em';
+        var tamanhoCss = fatorArredondado + 'rem';
 
         // Define a custom property na raiz do documento (mesma definida em mysite.css)
         document.documentElement.style.setProperty('--fonte-base', tamanhoCss);
 
-        // Fallback direto para os elementos de conteúdo principal
+        // Aplica diretamente aos elementos de conteúdo principal (sem
+        // compociação entre eles: ambos usam rem, relativa ao root).
         var mainContent = document.querySelector(SELETOR_MAIN_CONTENT);
         if (mainContent) {
             mainContent.style.fontSize = tamanhoCss;
