@@ -9,6 +9,8 @@ from django.test import TestCase
 from wagtail.models import Page, Site
 from wagtail.test.utils import WagtailPageTestCase
 
+from core.models import RedeSocial, SiteSettings
+
 
 class HomeSetUpTests(WagtailPageTestCase):
     """
@@ -165,3 +167,83 @@ class ContrasteAltoContratoTestes(SimpleTestCase):
     def test_css_cobre_links_em_contraste(self):
         css = self._ler_arquivo_estatico("mysite/static/css/mysite.css")
         self.assertIn(".contraste-alto a", css)
+
+
+class ToolbarRedesSociaisTests(TestCase):
+    """
+    Testes de integração da toolbar com redes sociais configuráveis via
+    SiteSettings (NOVAPAT-68).
+
+    Verifica que o template da toolbar renderiza apenas as redes sociais
+    ativas cadastradas nas configurações do site, com o link e o ícone
+    informados, e não renderiza links hardcoded nem redes inativas.
+    """
+
+    def setUp(self):
+        # Garante exatamente um Site default. O banco de teste do Wagtail pode
+        # já vir com um Site default; criar outro com is_default_site=True
+        # deixa múltiplos e levanta MultipleObjectsReturned em get(is_default_site=True).
+        Site.objects.filter(is_default_site=True).delete()
+        root_page = Page.get_first_root_node()
+        self.site = Site.objects.create(
+            hostname="localhost",
+            port=80,
+            site_name="Nova PAT",
+            root_page=root_page,
+            is_default_site=True,
+        )
+        self.settings = SiteSettings.objects.create(site=self.site)
+
+        self.homepage = HomePage(title="Home")
+        root_page.add_child(instance=self.homepage)
+
+        self.rede_ativa = RedeSocial.objects.create(
+            site_settings=self.settings,
+            url="https://www.instagram.com/novapat",
+            ativo=True,
+            sort_order=1,
+        )
+        self.rede_inativa = RedeSocial.objects.create(
+            site_settings=self.settings,
+            url="https://www.flickr.com/novapat",
+            ativo=False,
+            sort_order=2,
+        )
+
+        # Rede ativa sem ícone manual: o sistema detecta o ícone pela URL.
+        self.rede_sem_icone_manual = RedeSocial.objects.create(
+            site_settings=self.settings,
+            url="https://www.youtube.com/novapat",
+            ativo=True,
+            sort_order=3,
+        )
+
+    def test_toolbar_renderiza_rede_social_ativa(self):
+        """A toolbar renderiza o link e o ícone da rede social ativa."""
+        resposta = self.client.get(self.homepage.url)
+        self.assertContains(resposta, self.rede_ativa.url)
+        self.assertContains(resposta, "fa-instagram")
+        self.assertContains(resposta, "text-white")
+
+    def test_toolbar_detecta_icone_automaticamente_pela_url(self):
+        """Sem ícone manual, a toolbar renderiza o ícone detectado pela URL."""
+        resposta = self.client.get(self.homepage.url)
+        self.assertContains(resposta, "fa-youtube")
+        self.assertContains(resposta, self.rede_sem_icone_manual.url)
+
+    def test_toolbar_nao_renderiza_rede_social_inativa(self):
+        """Redes sociais inativas não aparecem na toolbar."""
+        resposta = self.client.get(self.homepage.url)
+        self.assertNotContains(resposta, self.rede_inativa.url)
+        self.assertNotContains(resposta, "fa-flickr")
+
+    def test_toolbar_nao_renderiza_links_hardcoded_quando_sem_configuracao(self):
+        """Sem redes sociais configuradas, não há links hardcoded (ex: instagram.com)."""
+        self.rede_ativa.delete()
+        self.rede_inativa.delete()
+        self.rede_sem_icone_manual.delete()
+        resposta = self.client.get(self.homepage.url)
+        self.assertNotContains(resposta, "instagram.com")
+        self.assertNotContains(resposta, "youtube.com")
+        self.assertNotContains(resposta, "facebook.com")
+        self.assertNotContains(resposta, "flickr.com")

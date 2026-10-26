@@ -10,15 +10,17 @@ redireciona diretamente para a edição da instância da `HomePage` (resolvida
 dinamicamente, sem hardcode de ID).
 """
 
+from django import forms
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 from wagtail import hooks
 from wagtail.admin.menu import MenuItem
+from wagtail.models import Site
 from wagtail.snippets.models import register_snippet
 from wagtail.snippets.views.snippets import SnippetViewSet
 
-from core.models import NavigationItem
+from core.models import NavigationItem, RedeSocial, SiteSettings
 from home.models import HomePage
 
 
@@ -148,4 +150,90 @@ def register_home_management_menu_item():
     return HomeManagementMenuItem()
 
 
+class RedeSocialForm(forms.ModelForm):
+    """
+    Formulário do snippet `RedeSocial`.
+
+    Filtra o seletor "Selecione a rede social" para exibir apenas as redes
+    que ainda não foram cadastradas para as configurações do site,
+    impedindo duplicatas.
+    """
+
+    class Meta:
+        model = RedeSocial
+        # site_settings é associado automaticamente no save(); não aparece no form.
+        fields = ["tipo_rede", "nome", "url", "ativo", "sort_order"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Descobre o SiteSettings: na edição usa o da instância; na criação,
+        # busca pelo site default.
+        site_settings = None
+        if self.instance and self.instance.pk and self.instance.site_settings_id:
+            site_settings = self.instance.site_settings
+        else:
+            default_site = Site.objects.filter(is_default_site=True).first()
+            if default_site:
+                site_settings = SiteSettings.objects.filter(
+                    site=default_site
+                ).first()
+
+        tipos_cadastrados = []
+        if site_settings:
+            queryset = RedeSocial.objects.filter(
+                site_settings=site_settings
+            )
+            # Na edição, não exclui a própria rede que está sendo editada.
+            if self.instance and self.instance.pk:
+                queryset = queryset.exclude(pk=self.instance.pk)
+            tipos_cadastrados = list(
+                queryset.values_list("tipo_rede", flat=True)
+            )
+
+        # Exibe apenas as redes ainda não cadastradas.
+        self.fields["tipo_rede"].choices = [
+            (valor, label)
+            for valor, label in RedeSocial.TIPO_REDE_CHOICES
+            if valor not in tipos_cadastrados
+        ]
+
+
+class RedeSocialViewSet(SnippetViewSet):
+    """
+    ViewSet do snippet `RedeSocial`.
+
+    Expõe o modelo como um item de menu dedicado ("Redes sociais") na raiz da
+    barra lateral do admin, permitindo que gestores cadastrem os links e ícones
+    que aparecem na toolbar do site (NOVAPAT-68).
+    """
+
+    model = RedeSocial
+    menu_label = _("Redes sociais")
+    menu_icon = "site"
+    menu_name = "redes_sociais"
+    add_to_admin_menu = True
+
+    def get_form_class(self, for_update=False):
+        """
+        Retorna a classe do formulário a ser usada nos forms de criar/editar.
+
+        O Wagtail 8 ignora o atributo ``form_class`` e constrói o formulário
+        via ``get_form_class()``. Sobrescrevemos para retornar o
+        ``RedeSocialForm``, que filtra o seletor de redes já cadastradas.
+        """
+        return RedeSocialForm
+
+    def get_menu_item(self, order=None):
+        item = super().get_menu_item(order=order)
+        return RestrictedNavigationMenuItem(
+            label=item.label,
+            url=item.url,
+            name=item.name,
+            icon_name=item.icon_name,
+            order=item.order,
+        )
+
+
 register_snippet(NavigationItemViewSet)
+register_snippet(RedeSocialViewSet)

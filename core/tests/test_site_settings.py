@@ -16,7 +16,8 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from wagtail.models import Site
 from wagtail.images import get_image_model
 
-from core.models import SiteSettings
+from core.models import RedeSocial, SiteSettings
+from core.wagtail_hooks import RedeSocialForm
 
 Image = get_image_model()
 
@@ -101,3 +102,146 @@ class SiteSettingsTest(TestCase):
         settings.refresh_from_db()
         self.assertIsNone(settings.logo)
         self.assertTrue(SiteSettings.objects.filter(pk=settings.pk).exists())
+
+
+class RedeSocialTest(TestCase):
+    """Testes do model `core.models.RedeSocial` (NOVAPAT-68).
+
+    Cobre:
+    - detecção automática de tipo por URL (Instagram, YouTube, Facebook, Flickr);
+    - preenchimento automático do nome com base na rede social detectada;
+    - rejeição de endereços de rede social não suportada;
+    - associação automática ao SiteSettings do site default;
+    - valor default de `ativo` (True);
+    - ordenação por `sort_order`;
+    - propriedade `icone_classe_efetiva` (classe Font Awesome do tipo detectado);
+    - `__str__` retorna o nome da rede social.
+    """
+
+    def setUp(self):
+        self.site, _ = Site.objects.get_or_create(
+            is_default_site=True,
+            defaults={
+                "hostname": "localhost",
+                "port": 80,
+                "site_name": "Nova PAT",
+            },
+        )
+        self.settings = SiteSettings.objects.create(site=self.site)
+
+    def _make_rede(self, **kwargs):
+        dados = dict(
+            site_settings=self.settings,
+            url="https://www.instagram.com/novapat",
+            ativo=True,
+            sort_order=0,
+        )
+        dados.update(kwargs)
+        return RedeSocial.objects.create(**dados)
+
+    def test_criacao_rede_social(self):
+        """RedeSocial aceita URL e ativo; tipo e nome são preenchidos automaticamente."""
+        rede = self._make_rede()
+        self.assertEqual(rede.tipo_rede, RedeSocial.TIPO_REDE_INSTAGRAM)
+        self.assertEqual(rede.nome, "Instagram")
+        self.assertEqual(rede.url, "https://www.instagram.com/novapat")
+        self.assertTrue(rede.ativo)
+        self.assertEqual(rede.site_settings, self.settings)
+
+    def test_nome_eh_preenchido_automaticamente(self):
+        """O nome é preenchido com base no tipo de rede social detectado."""
+        rede = self._make_rede(url="https://www.youtube.com/novapat")
+        self.assertEqual(rede.tipo_rede, RedeSocial.TIPO_REDE_YOUTUBE)
+        self.assertEqual(rede.nome, "YouTube")
+
+    def test_ativo_default_eh_true(self):
+        """Quando não informado, `ativo` padrão é True."""
+        rede = RedeSocial.objects.create(
+            site_settings=self.settings, url="https://youtube.com/novapat"
+        )
+        self.assertTrue(rede.ativo)
+
+    def test_ordenacao_por_sort_order(self):
+        """Redes sociais são ordenadas por `sort_order` (menor primeiro)."""
+        rede_a = self._make_rede(url="https://www.instagram.com/a", sort_order=10)
+        rede_b = self._make_rede(url="https://www.instagram.com/b", sort_order=5)
+        redes = list(RedeSocial.objects.filter(site_settings=self.settings))
+        self.assertEqual([r.pk for r in redes], [rede_b.pk, rede_a.pk])
+
+    def test_str_retorna_nome(self):
+        """__str__ retorna o nome da rede social."""
+        rede = self._make_rede()
+        self.assertEqual(str(rede), "Instagram")
+
+    def test_icone_url_eh_none_sem_upload(self):
+        """Não há upload de ícone, então `icone_url` é sempre None."""
+        rede = self._make_rede()
+        self.assertIsNone(rede.icone_url)
+
+    def test_detecta_tipo_por_url_instagram(self):
+        """URL do Instagram é detectada automaticamente como instagram."""
+        rede = self._make_rede()
+        self.assertEqual(rede.tipo_rede, RedeSocial.TIPO_REDE_INSTAGRAM)
+
+    def test_detecta_tipo_por_url_youtube(self):
+        """URL do YouTube é detectada automaticamente como youtube."""
+        rede = self._make_rede(url="https://www.youtube.com/novapat")
+        self.assertEqual(rede.tipo_rede, RedeSocial.TIPO_REDE_YOUTUBE)
+
+    def test_detecta_tipo_por_url_youtube_curto(self):
+        """URL curta do YouTube (youtu.be) é detectada como youtube."""
+        rede = self._make_rede(url="https://youtu.be/abc123")
+        self.assertEqual(rede.tipo_rede, RedeSocial.TIPO_REDE_YOUTUBE)
+
+    def test_detecta_tipo_por_url_facebook(self):
+        """URL do Facebook é detectada automaticamente como facebook."""
+        rede = self._make_rede(url="https://www.facebook.com/novapat")
+        self.assertEqual(rede.tipo_rede, RedeSocial.TIPO_REDE_FACEBOOK)
+
+    def test_detecta_tipo_por_url_flickr(self):
+        """URL do Flickr é detectada automaticamente como flickr."""
+        rede = self._make_rede(url="https://www.flickr.com/novapat")
+        self.assertEqual(rede.tipo_rede, RedeSocial.TIPO_REDE_FLICKR)
+
+    def test_url_nao_suportada_leva_validation_error(self):
+        """Endereço de rede social não suportada levanta ValidationError ao salvar."""
+        from django.core.exceptions import ValidationError
+
+        with self.assertRaises(ValidationError):
+            RedeSocial.objects.create(
+                site_settings=self.settings,
+                url="https://www.exemplo.com/perfil",
+            )
+
+    def test_site_settings_eh_associado_automaticamente(self):
+        """Quando não informado, `site_settings` é associado ao site default."""
+        rede = RedeSocial.objects.create(url="https://www.instagram.com/novapat")
+        self.assertEqual(rede.site_settings, self.settings)
+
+    def test_icone_classe_efetiva_retorna_classe_por_tipo(self):
+        """`icone_classe_efetiva` retorna a classe Font Awesome do tipo detectado."""
+        rede = self._make_rede(url="https://www.youtube.com/novapat")
+        self.assertEqual(rede.icone_classe_efetiva, "fa-youtube")
+
+    def test_form_filtra_redes_ja_cadastradas(self):
+        """O seletor do formulário não exibe redes sociais já cadastradas."""
+        # Cadastra Instagram
+        RedeSocial.objects.create(
+            site_settings=self.settings,
+            url="https://www.instagram.com/novapat",
+        )
+        form = RedeSocialForm()
+        choices = dict(form.fields["tipo_rede"].choices)
+        self.assertNotIn("instagram", choices)
+        self.assertIn("youtube", choices)
+        self.assertIn("facebook", choices)
+        self.assertIn("flickr", choices)
+
+    def test_form_exibe_todas_redes_quando_nenhuma_cadastrada(self):
+        """Quando nenhuma rede está cadastrada, o seletor exibe todas as opções."""
+        form = RedeSocialForm()
+        choices = dict(form.fields["tipo_rede"].choices)
+        self.assertIn("instagram", choices)
+        self.assertIn("youtube", choices)
+        self.assertIn("facebook", choices)
+        self.assertIn("flickr", choices)

@@ -307,3 +307,174 @@ class SiteSettings(BaseSiteSetting):
 
     def __str__(self) -> str:
         return self.site_name or "Configurações do site"
+
+
+class RedeSocial(models.Model):
+    """
+    Rede social configurável na toolbar do site, gerenciada via
+    SiteSettings → seção "Redes sociais da toolbar".
+
+    Cada registro representa um link com ícone branco que aparece na toolbar,
+    com contraste sobre o fundo azul da barra (NOVAPAT-68).
+
+    A rede social é identificada automaticamente pelo endereço (URL): ao salvar,
+    o sistema detecta se é Instagram, YouTube, Facebook ou Flickr e preenche
+    automaticamente o tipo, o nome e o ícone correspondente (classe Font Awesome
+    em branco, mesma abordagem leve usada pelos demais ícones do site).
+    """
+
+    # Redes sociais suportadas com detecção automática de ícone.
+    TIPO_REDE_INSTAGRAM = "instagram"
+    TIPO_REDE_YOUTUBE = "youtube"
+    TIPO_REDE_FACEBOOK = "facebook"
+    TIPO_REDE_FLICKR = "flickr"
+
+    TIPO_REDE_CHOICES = [
+        (TIPO_REDE_INSTAGRAM, "Instagram"),
+        (TIPO_REDE_YOUTUBE, "YouTube"),
+        (TIPO_REDE_FACEBOOK, "Facebook"),
+        (TIPO_REDE_FLICKR, "Flickr"),
+    ]
+
+    # Nome exibido automaticamente para cada tipo detectado.
+    NOME_POR_TIPO = {
+        TIPO_REDE_INSTAGRAM: "Instagram",
+        TIPO_REDE_YOUTUBE: "YouTube",
+        TIPO_REDE_FACEBOOK: "Facebook",
+        TIPO_REDE_FLICKR: "Flickr",
+    }
+
+    # Classe Font Awesome por tipo (ícones brancos via ``text-white`` no template).
+    ICONE_POR_TIPO = {
+        TIPO_REDE_INSTAGRAM: "fa-instagram",
+        TIPO_REDE_YOUTUBE: "fa-youtube",
+        TIPO_REDE_FACEBOOK: "fa-facebook",
+        TIPO_REDE_FLICKR: "fa-flickr",
+    }
+
+    # Padrões de detecção automática por URL.
+    DETECAO_POR_URL = [
+        (TIPO_REDE_INSTAGRAM, ("instagram.com",)),
+        (TIPO_REDE_YOUTUBE, ("youtube.com", "youtu.be")),
+        (TIPO_REDE_FACEBOOK, ("facebook.com",)),
+        (TIPO_REDE_FLICKR, ("flickr.com",)),
+    ]
+
+    site_settings = models.ForeignKey(
+        SiteSettings,
+        on_delete=models.CASCADE,
+        related_name="redes_sociais",
+        verbose_name="Configurações do site",
+    )
+
+    tipo_rede = models.CharField(
+        max_length=20,
+        choices=TIPO_REDE_CHOICES,
+        verbose_name="Selecione a rede social",
+        help_text="Escolha a rede social. O ícone e o nome são preenchidos automaticamente.",
+    )
+
+    nome = models.CharField(
+        max_length=100,
+        verbose_name="Nome da rede social",
+        help_text="Preenchido automaticamente com base na rede social selecionada.",
+    )
+
+    url = models.URLField(
+        verbose_name="Endereço da rede social",
+        help_text="Link do perfil da rede social "
+        "(ex.: https://www.instagram.com/novapat).",
+    )
+
+    ativo = models.BooleanField(
+        default=True,
+        verbose_name="Ativo",
+        help_text="Desmarque para ocultar esta rede social da toolbar sem excluí-la.",
+    )
+
+    sort_order = models.IntegerField(
+        default=0,
+        verbose_name="Ordem",
+        help_text="Ordem de exibição na toolbar (menor aparece primeiro).",
+    )
+
+    panels = [
+        FieldPanel("tipo_rede"),
+        FieldPanel("url"),
+        FieldPanel("ativo"),
+        FieldPanel("sort_order"),
+    ]
+
+    class Meta:
+        verbose_name = "Rede social"
+        verbose_name_plural = "Redes sociais"
+        ordering = ["sort_order", "nome"]
+
+    def detectar_tipo_por_url(self, url: str) -> str | None:
+        """
+        Identifica a rede social pelo endereço (URL).
+
+        Retorna o código do tipo (ex.: ``instagram``) quando o domínio da URL
+        corresponde a uma rede suportada; senão, retorna ``None``.
+        """
+        if not url:
+            return None
+        url_lower = url.lower()
+        for tipo, dominios in self.DETECAO_POR_URL:
+            if any(dominio in url_lower for dominio in dominios):
+                return tipo
+        return None
+
+    @property
+    def icone_classe_efetiva(self) -> str | None:
+        """
+        Retorna a classe Font Awesome do ícone a ser renderizada na toolbar.
+
+        O ícone é inferido da rede social selecionada e renderizado em branco
+        (``text-white``) no template.
+        """
+        return self.ICONE_POR_TIPO.get(self.tipo_rede)
+
+    @property
+    def icone_url(self) -> str | None:
+        """Sempre None, pois não há upload de ícone; o ícone é automático."""
+        return None
+
+    def save(self, *args, **kwargs):
+        """
+        Persiste a rede social, preenchendo automaticamente tipo, nome e
+        associando às configurações do site do site default.
+
+        - Detecta o tipo pela URL; se não corresponder a nenhuma rede suportada,
+          levanta ``ValidationError``.
+        - Preenche o nome automaticamente com base no tipo detectado.
+        - Associa ao ``SiteSettings`` do site default quando não informado.
+        """
+        from django.core.exceptions import ValidationError
+        from wagtail.models import Site
+
+        tipo_detectado = self.detectar_tipo_por_url(self.url)
+        if tipo_detectado is None:
+            raise ValidationError(
+                {
+                    "url": "Endereço não reconhecido. "
+                    "Aceita Instagram, YouTube, Facebook ou Flickr."
+                }
+            )
+        self.tipo_rede = tipo_detectado
+        self.nome = self.NOME_POR_TIPO[tipo_detectado]
+
+        if self.site_settings_id is None:
+            default_site = Site.objects.filter(is_default_site=True).first()
+            if default_site:
+                from core.models import SiteSettings
+
+                site_settings, _ = SiteSettings.objects.get_or_create(
+                    site=default_site,
+                )
+                self.site_settings = site_settings
+
+        super().save(*args, **kwargs)
+
+    def __str__(self) -> str:
+        return self.nome

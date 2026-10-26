@@ -73,6 +73,18 @@ Repositório Central de Componentes — blocos `StructBlock` reutilizáveis, con
 ### Taxonomias compartilhadas (Snippets)
 Confirmar antes de criar: um Snippet só entra em `core` se for usado por mais de um app. Candidatos identificados no schema legado que **são exclusivos de `conteudos`** (não devem morar em `core`): `Tipo` (com `options.formatos`, validação de extensão por tipo), `Licenca` (árvore), `NivelEnsino`, `CurricularComponent`. Esses ficam no app `conteudos` ou `curriculo`, não em `core`.
 
+### Redes sociais da toolbar (`RedeSocial`) — NOVAPAT-68
+
+`RedeSocial` é um model configurável pelo gestor (registrado como snippet "Redes sociais" no admin) que alimenta os links com ícones da toolbar do site, em `mysite/templates/includes/toolbar.html`.
+
+- **Motivo**: antes, os links de Instagram/YouTube/Facebook/Flickr estavam hardcoded no template. O card NOVAPAT-68 os tornou configuráveis via admin, para que o gestor cadastre o endereço e ative/desative, sem editar código.
+- **Cadastro simplificado**: o formulário do admin tem apenas quatro campos: "Selecione a rede social" (seletor: Instagram, YouTube, Facebook, Flickr), "Endereço da rede social" (URL do perfil), "Ativo" e "Ordem". O tipo, o nome e o ícone são preenchidos automaticamente com base na rede social selecionada — não há campo de nome nem de upload de ícone para evitar confusão.
+- **Ícone automático**: o ícone é inferido da rede social selecionada via classe Font Awesome (ex.: `fa-instagram`) e renderizado em branco (`text-white`) para contraste com o fundo azul da toolbar. Não há upload de ícone.
+- **Detecção automática**: se a URL corresponder ao domínio de uma rede suportada (instagram.com, youtube.com/youtu.be, facebook.com, flickr.com), o tipo, nome e ícone são preenchidos automaticamente ao salvar. Endereços não suportados levantam `ValidationError`.
+- **Relacionamento**: `ForeignKey` para `SiteSettings` (`related_name="redes_sociais"`, `on_delete=CASCADE`). `BaseSiteSetting` não é `ClusterableModel`, portanto não se usa `InlinePanel`/`ParentalKey`; o cadastro é feito como snippet dedicado (botão "Adicionar" no admin permite cadastrar quantas redes forem necessárias).
+- **Campos**: `tipo_rede` (choices: instagram, youtube, facebook, flickr), `nome` (preenchido automaticamente), `url` (endereço), `ativo` (Boolean, default True), `sort_order` (ordenação).
+- **Renderização**: o template acessa via `{% get_settings use_default_site=True as site_settings %}` + `{% with site_settings.core.sitesettings as ss %}` e itera `ss.redes_sociais.all`, renderizando apenas `ativo=True`. Ícones são brancos (`text-white` / classe `fa-brands`) para contraste com o fundo azul da toolbar. Sem ícones nem links hardcoded quando nada está configurado.
+
 ## O que NÃO fazer neste app
 - Não crie um model "genérico" de categoria/taxonomia pensando em reuso futuro hipotético. O legado já mostrou que categoria de conteúdo e categoria de aplicativo são coisas diferentes — replicar essa separação é fidelidade ao sistema real, não falta de abstração.
 - Não adicione lógica de aprovação/moderação aqui — isso é regra de `conteudos`, não de `core`.
