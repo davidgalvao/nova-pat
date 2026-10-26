@@ -1,4 +1,4 @@
-{% load static %}
+{% load static wagtailsettings_tags %}
 {# Toolbar de acessibilidade — renderizada acima do header em base.html (linha 70). #}
 
 <div class="toolbar-acessibilidade" role="toolbar" aria-label="Ferramentas de acessibilidade">
@@ -58,29 +58,25 @@
                 </a>
             </li>
 
-            {# Grupo Direito — redes sociais (alinhado ao extremo direito da barra) #}
+            {# Grupo Direito — redes sociais configuradas em SiteSettings → Toolbar (NOVAPAT-68) #}
+            {% get_settings use_default_site=True as site_settings %}
+            {% with site_settings.core.sitesettings as ss %}
+            {% if ss %}
             <li class="ml-auto flex items-center justify-end gap-4">
-                <a href="https://www.instagram.com/" tabindex="8" target="_blank" rel="noopener noreferrer"
-                   class="flex items-center justify-center font-medium uppercase tracking-wide text-white focus:outline-none transition-colors hover:text-[#bae6fd]" aria-label="Instagram">
-                    <i class="fa-brands fa-instagram" aria-hidden="true"></i>
-                    <span class="sr-only">Instagram</span>
-                </a>
-                <a href="https://www.youtube.com/" tabindex="9" target="_blank" rel="noopener noreferrer"
-                   class="flex items-center justify-center font-medium uppercase tracking-wide text-white focus:outline-none transition-colors hover:text-[#bae6fd]" aria-label="YouTube">
-                    <i class="fa-brands fa-youtube" aria-hidden="true"></i>
-                    <span class="sr-only">YouTube</span>
-                </a>
-                <a href="https://www.facebook.com/" tabindex="10" target="_blank" rel="noopener noreferrer"
-                   class="flex items-center justify-center font-medium uppercase tracking-wide text-white focus:outline-none transition-colors hover:text-[#bae6fd]" aria-label="Facebook">
-                    <i class="fa-brands fa-facebook" aria-hidden="true"></i>
-                    <span class="sr-only">Facebook</span>
-                </a>
-                <a href="https://www.flickr.com/" tabindex="11" target="_blank" rel="noopener noreferrer"
-                   class="flex items-center justify-center font-medium uppercase tracking-wide text-white focus:outline-none transition-colors hover:text-[#bae6fd]" aria-label="Flickr">
-                    <i class="fa-brands fa-flickr" aria-hidden="true"></i>
-                    <span class="sr-only">Flickr</span>
-                </a>
+                {% for rede in ss.redes_sociais.all %}
+                    {% if rede.ativo %}
+                    <a href="{{ rede.url }}" tabindex="{{ forloop.counter0|add:8 }}" target="_blank" rel="noopener noreferrer"
+                       class="flex items-center justify-center font-medium uppercase tracking-wide text-white focus:outline-none transition-colors hover:text-[#bae6fd]" aria-label="{{ rede.nome }}">
+                        <i class="fa-brands {{ rede.icone_classe_efetiva }} text-white" aria-hidden="true"></i>
+                        <span class="sr-only">{{ rede.nome }}</span>
+                    </a>
+                    {% endif %}
+                {% empty %}
+                    {# Nenhuma rede social configurada: grupo fica sem links (sem hardcode). #}
+                {% endfor %}
             </li>
+            {% endif %}
+            {% endwith %}
 
         </ul>
     </div>
