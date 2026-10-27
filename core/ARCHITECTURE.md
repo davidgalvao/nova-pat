@@ -85,6 +85,14 @@ Confirmar antes de criar: um Snippet só entra em `core` se for usado por mais d
 - **Campos**: `tipo_rede` (choices: instagram, youtube, facebook, flickr), `nome` (preenchido automaticamente), `url` (endereço), `ativo` (Boolean, default True), `sort_order` (ordenação).
 - **Renderização**: o template acessa via `{% get_settings use_default_site=True as site_settings %}` + `{% with site_settings.core.sitesettings as ss %}` e itera `ss.redes_sociais.all`, renderizando apenas `ativo=True`. Ícones são brancos (`text-white` / classe `fa-brands`) para contraste com o fundo azul da toolbar. Sem ícones nem links hardcoded quando nada está configurado.
 
+### Links editáveis da toolbar — NOVAPAT-67
+
+Os links institucionais da toolbar — 'Acessibilidade', 'Política de privacidade' e 'Acesso à Informação' — deixaram de ser hardcoded em `mysite/templates/includes/toolbar.html` e passaram a ser configuráveis pelo gestor via `SiteSettings` ("Configurações do site" → seção "Links da toolbar"), em `core/models.py`.
+
+- **Motivo**: antes, as URLs e os textos desses três links estavam hardcoded no template. O card NOVAPAT-67 os tornou configuráveis via admin, para que o gestor altere endereço e texto sem editar código, seguindo o mesmo padrão estabelecido pelo NOVAPAT-68 para as redes sociais.
+- **Campos de `SiteSettings`**: `link_acessibilidade_url` / `link_acessibilidade_texto` (defaults `/acessibilidade` e `Acessibilidade`), `link_privacidade_url` / `link_privacidade_texto` (defaults `/politica-privacidade` e `Política de privacidade`), `link_acesso_informacao_url` / `link_acesso_informacao_texto` (defaults `https://www.ba.gov.br/comunicacao/lei-de-acesso-a-informacao` e `Acesso à Informação`).
+- **Renderização**: o template acessa via `{% get_settings use_default_site=True as site_settings %}` + `{% with site_settings.core.sitesettings as ss %}` e renderiza cada link usando `{{ ss.link_<nome>_url }}` e `{{ ss.link_<nome>_texto }}`. Os defaults preservam o comportamento anterior quando nada foi alterado pelo gestor.
+
 ## O que NÃO fazer neste app
 - Não crie um model "genérico" de categoria/taxonomia pensando em reuso futuro hipotético. O legado já mostrou que categoria de conteúdo e categoria de aplicativo são coisas diferentes — replicar essa separação é fidelidade ao sistema real, não falta de abstração.
 - Não adicione lógica de aprovação/moderação aqui — isso é regra de `conteudos`, não de `core`.

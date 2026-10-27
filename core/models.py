@@ -1,10 +1,34 @@
+from django.core.exceptions import ValidationError
+from django.core.validators import URLValidator
 from django.db import models
 from django.conf import settings
+from wagtail.admin.widgets.chooser import AdminPageChooser
 from wagtail.models import Page
 from wagtail.contrib.settings.models import BaseSiteSetting, register_setting
 from wagtail.admin.panels import FieldPanel, MultiFieldPanel
 from wagtail.images import get_image_model_string
 from taggit.managers import TaggableManager
+
+
+def validar_url_relativa_ou_absoluta(valor):
+    """
+    Valida que o valor seja um caminho relativo (ex.: /acessibilidade) ou uma
+    URL absoluta (http:// ou https://). Rejeita strings vazias só quando o
+    campo não permite blank.
+    """
+    if not valor:
+        return
+    # Caminho relativo do próprio site é aceito.
+    if valor.startswith("/"):
+        return
+    # URL absoluta com esquema http/https também é aceita.
+    try:
+        URLValidator(schemes=["http", "https"])(valor)
+    except ValidationError:
+        raise ValidationError(
+            "Informe um caminho relativo (ex.: /acessibilidade) "
+            "ou uma URL absoluta (http:// ou https://)."
+        )
 
 
 class FlexLayoutMixin(models.Model):
@@ -282,9 +306,132 @@ class SiteSettings(BaseSiteSetting):
         help_text="Imagem de logotipo exibida no cabeçalho do site.",
     )
 
+    link_acessibilidade_url = models.CharField(
+        max_length=500,
+        default="/acessibilidade",
+        blank=True,
+        verbose_name="URL do link 'Acessibilidade'",
+        help_text="Caminho relativo (ex.: /acessibilidade) ou URL absoluta (http:// ou https://).",
+        validators=[validar_url_relativa_ou_absoluta],
+    )
+    link_acessibilidade_page = models.ForeignKey(
+        Page,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+        verbose_name="Página (Acessibilidade)",
+        help_text="Se preenchida, tem prioridade sobre o campo URL acima.",
+    )
+    link_acessibilidade_texto = models.CharField(
+        max_length=100,
+        default="Acessibilidade",
+        blank=True,
+        verbose_name="Texto do link 'Acessibilidade'",
+        help_text="Texto exibido no link 'Acessibilidade' da toolbar do site.",
+    )
+    link_privacidade_url = models.CharField(
+        max_length=500,
+        default="/politica-privacidade",
+        blank=True,
+        verbose_name="URL do link 'Política de privacidade'",
+        help_text="Caminho relativo (ex.: /politica-privacidade) ou URL absoluta (http:// ou https://).",
+        validators=[validar_url_relativa_ou_absoluta],
+    )
+    link_privacidade_page = models.ForeignKey(
+        Page,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+        verbose_name="Página (Política de privacidade)",
+        help_text="Se preenchida, tem prioridade sobre o campo URL acima.",
+    )
+    link_privacidade_texto = models.CharField(
+        max_length=100,
+        default="Política de privacidade",
+        blank=True,
+        verbose_name="Texto do link 'Política de privacidade'",
+        help_text="Texto exibido no link 'Política de privacidade' da toolbar do site.",
+    )
+    link_acesso_informacao_url = models.CharField(
+        max_length=500,
+        default="https://www.ba.gov.br/comunicacao/lei-de-acesso-a-informacao",
+        blank=True,
+        verbose_name="URL do link 'Acesso à Informação'",
+        help_text="Caminho relativo (ex.: /acesso-informacao) ou URL absoluta (http:// ou https://).",
+        validators=[validar_url_relativa_ou_absoluta],
+    )
+    link_acesso_informacao_page = models.ForeignKey(
+        Page,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+        verbose_name="Página (Acesso à Informação)",
+        help_text="Se preenchida, tem prioridade sobre o campo URL acima.",
+    )
+    link_acesso_informacao_texto = models.CharField(
+        max_length=100,
+        default="Acesso à Informação",
+        blank=True,
+        verbose_name="Texto do link 'Acesso à Informação'",
+        help_text="Texto exibido no link 'Acesso à Informação' da toolbar do site.",
+    )
+
+    def url_acessibilidade(self) -> str:
+        """
+        Retorna a URL efetiva do link 'Acessibilidade'.
+
+        Prioriza a página selecionada (link_acessibilidade_page.url);
+        caso contrário, usa o campo URL direto (link_acessibilidade_url).
+        """
+        if self.link_acessibilidade_page_id:
+            return self.link_acessibilidade_page.url
+        return self.link_acessibilidade_url or "/acessibilidade"
+
+    def url_privacidade(self) -> str:
+        """
+        Retorna a URL efetiva do link 'Política de privacidade'.
+
+        Prioriza a página selecionada (link_privacidade_page.url);
+        caso contrário, usa o campo URL direto (link_privacidade_url).
+        """
+        if self.link_privacidade_page_id:
+            return self.link_privacidade_page.url
+        return self.link_privacidade_url or "/politica-privacidade"
+
+    def url_acesso_informacao(self) -> str:
+        """
+        Retorna a URL efetiva do link 'Acesso à Informação'.
+
+        Prioriza a página selecionada (link_acesso_informacao_page.url);
+        caso contrário, usa o campo URL direto (link_acesso_informacao_url).
+        """
+        if self.link_acesso_informacao_page_id:
+            return self.link_acesso_informacao_page.url
+        return self.link_acesso_informacao_url or (
+            "https://www.ba.gov.br/comunicacao/lei-de-acesso-a-informacao"
+        )
+
     panels = [
         FieldPanel("site_name"),
         FieldPanel("logo"),
+        MultiFieldPanel(
+            [
+                FieldPanel("link_acessibilidade_page", widget=AdminPageChooser),
+                FieldPanel("link_acessibilidade_url"),
+                FieldPanel("link_acessibilidade_texto"),
+                FieldPanel("link_privacidade_page", widget=AdminPageChooser),
+                FieldPanel("link_privacidade_url"),
+                FieldPanel("link_privacidade_texto"),
+                FieldPanel("link_acesso_informacao_page", widget=AdminPageChooser),
+                FieldPanel("link_acesso_informacao_url"),
+                FieldPanel("link_acesso_informacao_texto"),
+            ],
+            heading="Links da toolbar",
+            classname="collapsible collapsed links-da-toolbar-separators",
+        ),
     ]
 
     class Meta:

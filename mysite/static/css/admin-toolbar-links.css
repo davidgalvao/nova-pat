@@ -1,0 +1,35 @@
+/**
+ * Separadores visuais entre as opções de links da toolbar
+ * no painel "Links da toolbar" do SiteSettings (admin do Wagtail 8).
+ *
+ * Cada campo (w-field) recebe uma borda superior para separá-lo
+ * visualmente do campo anterior, deixando o formulário menos confuso
+ * para o gestor. O primeiro campo não recebe borda acima.
+ */
+
+/* Alvo: campos dentro do MultiFieldPanel "Links da toolbar" */
+.links-da-toolbar-separators .w-panel__content .w-field {
+    border-top: 1px solid #cbd5e1;
+    padding-top: 12px;
+    margin-top: 12px;
+}
+
+/* Remove a borda do primeiro campo */
+.links-da-toolbar-separators .w-panel__content .w-field:first-child {
+    border-top: none;
+    padding-top: 0;
+    margin-top: 0;
+}
+
+/* Destaca o label de cada campo */
+.links-da-toolbar-separators .w-field__label {
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 6px;
+    display: block;
+}
+
+/* Espaçamento entre o PageChooser e o campo URL dentro do mesmo grupo */
+.links-da-toolbar-separators .w-field__input {
+    margin-bottom: 0;
+}

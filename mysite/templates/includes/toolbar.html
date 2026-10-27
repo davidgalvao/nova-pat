@@ -1,5 +1,7 @@
 {% load static wagtailsettings_tags %}
 {# Toolbar de acessibilidade — renderizada acima do header em base.html (linha 70). #}
+{% get_settings use_default_site=True as site_settings %}
+{% with site_settings.core.sitesettings as ss %}
 
 <div class="toolbar-acessibilidade" role="toolbar" aria-label="Ferramentas de acessibilidade">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -7,11 +9,11 @@
 
             {# Grupo Esquerdo — acessibilidade, fonte e contraste #}
             <li class="flex items-center gap-2" role="group" aria-label="Ferramentas de acessibilidade">
-                <a href="/acessibilidade"
+                <a href="{{ ss.url_acessibilidade }}"
                    tabindex="1"
                    id="botao-acessibilidade"
                    class="btn-acessibilidade flex items-center gap-2 font-medium uppercase tracking-wide text-white focus:outline-none transition-colors hover:text-[#bae6fd]">
-                    Acessibilidade
+                    {{ ss.link_acessibilidade_texto }}
                 </a>
 
                 <button type="button" tabindex="2" title="Diminuir Fonte"
@@ -41,26 +43,24 @@
 
             {# Grupo Centro — links institucionais #}
             <li class="flex items-center gap-4" role="group" aria-label="Links institucionais">
-                <a href="https://www.ba.gov.br/comunicacao/lei-de-acesso-a-informacao"
+                <a href="{{ ss.url_acesso_informacao }}"
                    tabindex="6"
                    target="_blank"
                    rel="noopener noreferrer"
                    class="flex items-center gap-2 font-medium uppercase tracking-wide text-white focus:outline-none transition-colors hover:text-[#bae6fd]">
                     <img src="{% static 'img/info-icon.png' %}" alt="" width="20" height="20"
                          class="icon-info" aria-hidden="true" focusable="false">
-                    Acesso à Informação
+                    {{ ss.link_acesso_informacao_texto }}
                 </a>
 
-                <a href="/politica-privacidade"
+                <a href="{{ ss.url_privacidade }}"
                    tabindex="7"
                    class="font-medium uppercase tracking-wide text-white focus:outline-none transition-colors hover:text-[#bae6fd]">
-                    Política de privacidade
+                    {{ ss.link_privacidade_texto }}
                 </a>
             </li>
 
             {# Grupo Direito — redes sociais configuradas em SiteSettings → Toolbar (NOVAPAT-68) #}
-            {% get_settings use_default_site=True as site_settings %}
-            {% with site_settings.core.sitesettings as ss %}
             {% if ss %}
             <li class="ml-auto flex items-center justify-end gap-4">
                 {% for rede in ss.redes_sociais.all %}
@@ -76,8 +76,8 @@
                 {% endfor %}
             </li>
             {% endif %}
-            {% endwith %}
 
         </ul>
     </div>
 </div>
+{% endwith %}

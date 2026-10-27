@@ -11,6 +11,7 @@ dinamicamente, sem hardcode de ID).
 """
 
 from django import forms
+from django.templatetags.static import static
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
@@ -233,6 +234,24 @@ class RedeSocialViewSet(SnippetViewSet):
             icon_name=item.icon_name,
             order=item.order,
         )
+
+
+@hooks.register("insert_admin_js")
+def inserir_js_chooser_toolbar():
+    """
+    Injetar o JS que preenche automaticamente o campo URL quando uma página
+    é selecionada no PageChooserWidget dos links da toolbar.
+    """
+    return '<script src="%s"></script>' % static("js/toolbar-settings-chooser.js")
+
+
+@hooks.register("insert_global_admin_css")
+def inserir_css_separadores_toolbar():
+    """
+    Injetar CSS com separadores visuais entre cada opção de link da toolbar
+    no painel "Links da toolbar" do SiteSettings (admin do Wagtail).
+    """
+    return '<link rel="stylesheet" href="%s">' % static("css/admin-toolbar-links.css")
 
 
 register_snippet(NavigationItemViewSet)
