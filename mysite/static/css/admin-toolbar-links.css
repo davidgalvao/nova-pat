@@ -9,9 +9,8 @@
 
 /* Alvo: campos dentro do MultiFieldPanel "Links da toolbar" */
 .links-da-toolbar-separators .w-panel__content .w-field {
-    border-top: 1px solid #cbd5e1;
-    padding-top: 12px;
-    margin-top: 12px;
+    padding-top: 0px;
+    margin-top: 0px;
 }
 
 /* Remove a borda do primeiro campo */
@@ -24,7 +23,7 @@
 /* Destaca o label de cada campo */
 .links-da-toolbar-separators .w-field__label {
     font-weight: 600;
-    color: #475569;
+    color: #e7eaed;
     margin-bottom: 6px;
     display: block;
 }
@@ -32,4 +31,17 @@
 /* Espaçamento entre o PageChooser e o campo URL dentro do mesmo grupo */
 .links-da-toolbar-separators .w-field__input {
     margin-bottom: 0;
+}
+
+/* Adiciona uma borda apenas nos grupos que têm a classe 'grupo-separado' */
+.grupo-separado {
+    border-top: 1px solid var(--w-color-grey-100) !important;
+    padding-top: 1rem !important;
+    margin-top: 1.5rem !important;
+}
+
+/* Remove a borda do primeiro grupo para não ficar estranho */
+.grupo-separado:first-of-type {
+    border-top: none !important;
+    margin-top: 0 !important;
 }

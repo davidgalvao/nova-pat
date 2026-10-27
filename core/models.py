@@ -419,18 +419,52 @@ class SiteSettings(BaseSiteSetting):
         FieldPanel("logo"),
         MultiFieldPanel(
             [
-                FieldPanel("link_acessibilidade_page", widget=AdminPageChooser),
-                FieldPanel("link_acessibilidade_url"),
-                FieldPanel("link_acessibilidade_texto"),
-                FieldPanel("link_privacidade_page", widget=AdminPageChooser),
-                FieldPanel("link_privacidade_url"),
-                FieldPanel("link_privacidade_texto"),
-                FieldPanel("link_acesso_informacao_page", widget=AdminPageChooser),
-                FieldPanel("link_acesso_informacao_url"),
-                FieldPanel("link_acesso_informacao_texto"),
+                MultiFieldPanel(
+                    [
+                        FieldPanel(
+                            "link_acessibilidade_page",
+                            heading="Página",
+                            widget=AdminPageChooser,
+                        ),
+                        FieldPanel("link_acessibilidade_url", heading="URL"),
+                        FieldPanel(
+                            "link_acessibilidade_texto", heading="Texto do Link"
+                        ),
+                    ],
+                    heading="Acessibilidade",
+                    classname="grupo-separado",
+                ),
+                MultiFieldPanel(
+                    [
+                        FieldPanel(
+                            "link_privacidade_page",
+                            heading="Página",
+                            widget=AdminPageChooser,
+                        ),
+                        FieldPanel("link_privacidade_url", heading="URL"),
+                        FieldPanel("link_privacidade_texto", heading="Texto do Link"),
+                    ],
+                    heading="Privacidade",
+                    classname="grupo-separado",
+                ),
+                MultiFieldPanel(
+                    [
+                        FieldPanel(
+                            "link_acesso_informacao_page",
+                            heading="Página",
+                            widget=AdminPageChooser,
+                        ),
+                        FieldPanel("link_acesso_informacao_url", heading="URL"),
+                        FieldPanel(
+                            "link_acesso_informacao_texto", heading="Texto do Link"
+                        ),
+                    ],
+                    heading="Acesso à Informação",
+                    classname="grupo-separado",
+                ),
             ],
             heading="Links da toolbar",
-            classname="collapsible collapsed links-da-toolbar-separators",
+            classname="collapsible collapsed",
         ),
     ]
 
