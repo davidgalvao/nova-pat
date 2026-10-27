@@ -214,12 +214,23 @@ class User(AbstractUser):
         """
         Salva o usuário definindo o ``role`` padrão na criação.
 
+        Garante que usuários com o papel ``super-admin`` (nível mais alto de
+        admin) tenham as flags do Django ``is_staff`` e ``is_superuser``,
+        necessárias para acessar o admin do Wagtail/Django. Sem isso, o
+        papel do sistema sozinho não libera a entrada em ``/admin/``.
+
         Args:
             *args, **kwargs: Argumentos repassados ao ``super().save()``.
         """
         # Define role padrão na criação se não definido
         if not self.pk and not self.role_id:
             self.role = Role.get_default_role()
+
+        # Super-admin do papel precisa de acesso ao admin do Wagtail/Django
+        if self.role and self.role.slug == "super-admin":
+            self.is_staff = True
+            self.is_superuser = True
+
         super().save(*args, **kwargs)
 
     def soft_delete(self, deleted_by: Optional["User"] = None) -> None:

@@ -1,0 +1,105 @@
+{% extends "wagtailadmin/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Retenção de usuários inativos" %}{% endblock %}
+
+{% block content %}
+<div class="nice-padding">
+    <h1>{% trans "Retenção de usuários inativos" %}</h1>
+
+    <p class="help">
+        {% blocktrans %}
+        Política de expurgo de dados pessoais de usuários inativos, conforme LGPD.
+        O expurgo é executado automaticamente pelo comando de gestão
+        ``expurgar_usuarios_inativos`` (agendado via cron), não por ação manual nesta tela.
+        {% endblocktrans %}
+    </p>
+
+    <div class="row">
+        <div class="col6">
+            <div>
+                <h2>
+                    {% trans "Elegíveis ao expurgo" %}
+                    <span class="tag count">{{ total_elegiveis }}</span>
+                </h2>
+                {% if total_elegiveis == 0 %}
+                <p>{% trans "Não há usuários elegíveis ao expurgo no momento." %}</p>
+                {% else %}
+                <table class="listing">
+                    <thead>
+                        <tr>
+                            <th>{% trans "Usuário" %}</th>
+                            <th>{% trans "E-mail" %}</th>
+                            <th>{% trans "Papel" %}</th>
+                            <th>{% trans "Verificado" %}</th>
+                            <th>{% trans "Grupo" %}</th>
+                            <th>{% trans "Último acesso" %}</th>
+                            <th>{% trans "Criado em" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in elegiveis.convidados_nao_verificados %}
+                        <tr>
+                            <td>{{ u.username }}</td>
+                            <td>{{ u.email }}</td>
+                            <td>{{ u.role.slug }}</td>
+                            <td>{% trans "Não" %}</td>
+                            <td>{% trans "Convidado não verificado" %}</td>
+                            <td>{% trans "Nunca" %}</td>
+                            <td>{{ u.date_joined|date:"d/m/Y" }}</td>
+                        </tr>
+                        {% endfor %}
+                        {% for u in elegiveis.ativos_inativos %}
+                        <tr>
+                            <td>{{ u.username }}</td>
+                            <td>{{ u.email }}</td>
+                            <td>{{ u.role.slug }}</td>
+                            <td>{% if u.verified %}{% trans "Sim" %}{% else %}{% trans "Não" %}{% endif %}</td>
+                            <td>{% trans "Ativo inativo" %}</td>
+                            <td>{{ u.last_login|date:"d/m/Y" }}</td>
+                            <td>{{ u.date_joined|date:"d/m/Y" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col6">
+            <div>
+                <h2>
+                    {% trans "Já expurgados" %}
+                    <span class="tag count">{{ total_expurgados }}</span>
+                </h2>
+                {% if total_expurgados == 0 %}
+                <p>{% trans "Nenhum usuário foi expurgado até o momento." %}</p>
+                {% else %}
+                <table class="listing">
+                    <thead>
+                        <tr>
+                            <th>{% trans "Usuário" %}</th>
+                            <th>{% trans "E-mail" %}</th>
+                            <th>{% trans "Papel" %}</th>
+                            <th>{% trans "Expurgado em" %}</th>
+                            <th>{% trans "Expurgado por" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in expurgados %}
+                        <tr>
+                            <td>{{ u.username }}</td>
+                            <td>{{ u.email }}</td>
+                            <td>{{ u.role.slug }}</td>
+                            <td>{{ u.deleted_at|date:"d/m/Y H:i" }}</td>
+                            <td>{{ u.deleted_by|default:"—" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
