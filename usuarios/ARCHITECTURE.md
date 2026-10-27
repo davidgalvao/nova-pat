@@ -56,6 +56,21 @@ Todo cadastro novo entra como `convidado` (role padrão) — replicar isso.
 ## Gestão de papel (role) — só super-admin
 `RolePolicy`: criar, editar, deletar, listar papéis é ação exclusiva de `super-admin`. Nem `admin` mexe na estrutura de papéis em si (só nos usuários que os têm).
 
+## Retenção de usuário inativo (LGPD) — implementado em 2026-10-27 (card NOVAPAT-62)
+Política de expurgo de dados pessoais de usuários inativos, conforme `docs/lgpd-mapeamento-dados.md`:
+
+| Grupo | Critério | Prazo |
+|---|---|---|
+| Convidado não verificado, nunca acessou | role=convidado, verified=False, last_login=null | 3 meses da criação |
+| Usuário ativo inativo | ja fez ao menos 1 login, sem acessar ha | 18 meses sem acesso |
+
+- O expurgo usa **soft delete** (`User.soft_delete`): `is_active=False`, `deleted_at`, `deleted_by` — dados mantidos para auditoria/LGPD.
+- Super-admins e superusers **nunca** são expurgos automaticamente (medida de segurança).
+- Executado pelo comando `expurgar_usuarios_inativos` (dry-run por padrão; `--execute` para rodar de fato, pronto para cron).
+- Acesso à página de retenção no admin restrito ao papel `super-admin` (nível mais alto).
+
+Implementado em: `usuarios/services.py`, `usuarios/constants.py`, `usuarios/admin_views.py`, `usuarios/management/commands/expurgar_usuarios_inativos.py`, `usuarios/tests/test_expurgacao.py`.
+
 ## Vínculo usuário-canal (`user_canal`)
 Pivot simples (`user_id`, `canal_id`, chave composta) — liga um usuário a um ou mais canais específicos.
 
