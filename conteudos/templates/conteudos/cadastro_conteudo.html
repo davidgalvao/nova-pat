@@ -32,25 +32,25 @@
       <!-- 12. Episódio de Série — COMEÇO do formulário -->
       <!-- ======================================================== -->
       <li class="field">
-        {% include "wagtailadmin/shared/field_as_li.html" with field=form.eh_episodio classes="checkbox" %}
-        <span class="help">{{ form.eh_episodio.help_text }}</span>
+        {% formattedfield form.eh_episodio %}
+        <p class="help">{{ form.eh_episodio.help_text }}</p>
       </li>
 
       <div id="bloco-serie" style="display:none;">
         <li class="field">
-          {% include "wagtailadmin/shared/field_as_li.html" with field=form.serie %}
+          {% formattedfield form.serie %}
         </li>
         <li class="field">
-          {% include "wagtailadmin/shared/field_as_li.html" with field=form.serie_nova_nome %}
+          {% formattedfield form.serie_nova_nome %}
         </li>
         <li class="field">
-          {% include "wagtailadmin/shared/field_as_li.html" with field=form.temporada %}
+          {% formattedfield form.temporada %}
         </li>
         <li class="field">
-          {% include "wagtailadmin/shared/field_as_li.html" with field=form.temporada_nova_numero %}
+          {% formattedfield form.temporada_nova_numero %}
         </li>
         <li class="field">
-          {% include "wagtailadmin/shared/field_as_li.html" with field=form.numero_episodio %}
+          {% formattedfield form.numero_episodio %}
         </li>
       </div>
 
@@ -58,16 +58,16 @@
       <!-- Identificação básica -->
       <!-- ======================================================== -->
       <li class="field">
-        {% include "wagtailadmin/shared/field_as_li.html" with field=form.title %}
+        {% formattedfield form.title %}
       </li>
 
       <li class="field">
-        {% include "wagtailadmin/shared/field_as_li.html" with field=form.search_description %}
+        {% formattedfield form.search_description %}
       </li>
 
       {% if form.autor.field.widget.input_type != 'hidden' %}
       <li class="field">
-        {% include "wagtailadmin/shared/field_as_li.html" with field=form.autor %}
+        {% formattedfield form.autor %}
       </li>
       {% else %}
         {{ form.autor }}
@@ -75,7 +75,7 @@
 
       <!-- Tags com autocomplete -->
       <li class="field">
-        {% include "wagtailadmin/shared/field_as_li.html" with field=form.tags %}
+        {% formattedfield form.tags %}
         <div id="tags-autocomplete-dropdown" class="tags-autocomplete-dropdown" style="display:none;"></div>
         <div id="selected-tags-display" style="margin-top:8px;"></div>
       </li>
@@ -84,7 +84,7 @@
       <!-- Canal (com botão "Criar Novo Canal" ABAIXO do dropdown) -->
       <!-- ======================================================== -->
       <li class="field">
-        {% include "wagtailadmin/shared/field_as_li.html" with field=form.canal %}
+        {% formattedfield form.canal %}
         <div style="margin-top: 8px;">
           <button type="button" class="button button-secondary" id="btn-criar-canal" title="{% trans 'Criar novo canal' %}">
             {% trans "Criar Novo Canal" %}
@@ -96,14 +96,14 @@
       <!-- Arquivo de mídia (com "x" para remover) × URL externa -->
       <!-- ======================================================== -->
       <li class="field">
-        {% include "wagtailadmin/shared/field_as_li.html" with field=form.arquivo %}
+        {% formattedfield form.arquivo %}
         <button type="button" class="button button-secondary" id="btn-remover-arquivo" style="display:none; margin-top:8px;" title="{% trans 'Remover arquivo selecionado' %}">
           {% trans "Remover arquivo" %}
         </button>
       </li>
 
       <li class="field">
-        {% include "wagtailadmin/shared/field_as_li.html" with field=form.source %}
+        {% formattedfield form.source %}
       </li>
 
       <div class="help-block" style="background:#fff3cd;border:1px solid #ffc107;border-radius:4px;padding:12px;margin:16px 0;">
@@ -117,14 +117,14 @@
       <!-- Tipo de conteúdo (só leitura, depois de Arquivo/URL) -->
       <!-- ======================================================== -->
       <li class="field">
-        {% include "wagtailadmin/shared/field_as_li.html" with field=form.tipo %}
+        {% formattedfield form.tipo %}
       </li>
 
       <!-- ======================================================== -->
       <!-- Categoria (NÃO obrigatória, NÃO escopada por canal) -->
       <!-- ======================================================== -->
       <li class="field">
-        {% include "wagtailadmin/shared/field_as_li.html" with field=form.category %}
+        {% formattedfield form.category %}
         <div style="margin-top: 8px;">
           <button type="button" class="button button-secondary" id="btn-criar-categoria" title="{% trans 'Criar nova categoria' %}">
             {% trans "Criar Nova Categoria" %}
@@ -136,7 +136,7 @@
       <!-- Licença (dropdown) -->
       <!-- ======================================================== -->
       <li class="field">
-        {% include "wagtailadmin/shared/field_as_li.html" with field=form.license %}
+        {% formattedfield form.license %}
       </li>
 
       <!-- ======================================================== -->
@@ -151,7 +151,7 @@
               <div id="filtro-niveis" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;"></div>
               <p class="help" style="margin-top:8px;">{% trans "Marque os níveis de ensino para exibir apenas os componentes daqueles anos. Ao desmarcar todos, todos os componentes são exibidos." %}</p>
             </div>
-            {{ form.componentes_curriculares }}
+            {% formattedfield form.componentes_curriculares %}
             {% if form.componentes_curriculares.help_text %}<p class="help">{{ form.componentes_curriculares.help_text }}</p>{% endif %}
           </div>
         </div>
@@ -161,7 +161,7 @@
       <!-- Opções extras (JSON com explicação e exemplo de acessibilidade) -->
       <!-- ======================================================== -->
       <li class="field">
-        {% include "wagtailadmin/shared/field_as_li.html" with field=form.options %}
+        {% formattedfield form.options %}
         <div class="help-block" style="background:#f7f9fc;border:1px solid #d1dbe5;border-radius:4px;padding:12px;margin-top:12px;">
           <strong>{% trans "Exemplo para acessibilidade:" %}</strong>
           <pre style="margin:8px 0; padding:8px; background:#fff; border:1px solid #d1dbe5; border-radius:4px; font-size:0.8125rem; overflow-x:auto;"><code>{
@@ -183,13 +183,13 @@
       <!-- Status e destaque -->
       <!-- ======================================================== -->
       <li class="field">
-        {% include "wagtailadmin/shared/field_as_li.html" with field=form.is_approved classes="checkbox" %}
+        {% formattedfield form.is_approved %}
       </li>
       <li class="field">
-        {% include "wagtailadmin/shared/field_as_li.html" with field=form.is_featured classes="checkbox" %}
+        {% formattedfield form.is_featured %}
       </li>
       <li class="field">
-        {% include "wagtailadmin/shared/field_as_li.html" with field=form.is_site classes="checkbox" %}
+        {% formattedfield form.is_site %}
       </li>
 
     </ul>
