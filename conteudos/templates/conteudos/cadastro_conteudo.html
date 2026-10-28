@@ -3,227 +3,28 @@
 
 {% block titletag %}{{ titulo_pagina }} - Nova PAT{% endblock %}
 
-{% block extra_css %}
-<style>
-  .required {
-    color: #c53030;
-    font-weight: bold;
-    margin-left: 4px;
-  }
-  .field-block {
-    margin: 12px 0;
-    padding: 12px;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-  }
-  input[readonly], select[readonly], input[disabled], select[disabled] {
-    background-color: #edf2f7;
-    color: #718096;
-    cursor: not-allowed;
-    border-color: #cbd5e0;
-  }
-  #btn-remover-arquivo {
-    background: #fed7d7;
-    color: #c53030;
-    border: 1px solid #fc8181;
-  }
-  #btn-remover-arquivo:hover {
-    background: #fc8181;
-    color: #fff;
-  }
-  .btn-secondary-custom {
-    background: #edf2f7;
-    color: #4a5568;
-    border: 1px solid #cbd5e0;
-    padding: 6px 12px;
-    border-radius: 4px;
-    font-size: 0.875rem;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .btn-secondary-custom:hover {
-    background: #e2e8f0;
-    color: #2d3748;
-  }
-  .alert-box {
-    background: #eef4ff;
-    border-left: 4px solid #1d4ed8;
-    padding: 10px 14px;
-    margin: 16px 0;
-    border-radius: 4px;
-  }
-  .alert-box strong {
-    color: #1d4ed8;
-  }
-  .info-box {
-    background: #f7fafc;
-    border: 1px solid #cbd5e0;
-    border-radius: 4px;
-    padding: 10px 14px;
-    margin-top: 12px;
-    font-size: 0.875rem;
-  }
-  .info-box strong {
-    color: #1d4ed8;
-  }
-  .help {
-    font-size: 0.875rem;
-    color: #718096;
-  }
-  .label {
-    font-weight: 600;
-    color: #2d3748;
-    margin-bottom: 4px;
-    display: block;
-  }
-  .input {
-    margin-top: 4px;
-  }
-  /* Tags autocomplete dropdown */
-  .tags-autocomplete-dropdown {
-    position: absolute;
-    z-index: 100;
-    background: #fff;
-    border: 1px solid #cbd5e0;
-    border-radius: 4px;
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
-    max-height: 200px;
-    overflow-y: auto;
-    width: 100%;
-    display: none;
-  }
-  .tags-autocomplete-dropdown.show {
-    display: block;
-  }
-  .tag-autocomplete-item {
-    padding: 8px 12px;
-    cursor: pointer;
-    border-bottom: 1px solid #edf2f7;
-  }
-  .tag-autocomplete-item:last-child {
-    border-bottom: none;
-  }
-  .tag-autocomplete-item:hover,
-  .tag-autocomplete-item.selected {
-    background: #eef4ff;
-    color: #1d4ed8;
-  }
-  .tag-autocomplete-item .tag-name {
-    font-weight: 500;
-  }
-  .tag-autocomplete-item .tag-count {
-    font-size: 0.75rem;
-    color: #718096;
-    margin-left: 8px;
-  }
-  .selected-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-top: 8px;
-    min-height: 24px;
-  }
-  .selected-tag {
-    display: inline-flex;
-    align-items: center;
-    background: #eef4ff;
-    color: #1d4ed8;
-    padding: 4px 10px;
-    border-radius: 9999px;
-    font-size: 0.8125rem;
-    font-weight: 500;
-  }
-  .selected-tag button {
-    margin-left: 6px;
-    background: none;
-    border: none;
-    color: #1d4ed8;
-    cursor: pointer;
-    padding: 0;
-    font-size: 1rem;
-    line-height: 1;
-  }
-  .selected-tag button:hover {
-    color: #c53030;
-  }
-  /* Níveis de ensino checkboxes */
-  .niveis-filter {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin: 8px 0;
-  }
-  .nivel-checkbox {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    background: #edf2f7;
-    border: 1px solid #cbd5e0;
-    border-radius: 9999px;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-size: 0.875rem;
-  }
-  .nivel-checkbox:hover {
-    background: #e2e8f0;
-  }
-  .nivel-checkbox input {
-    width: 1rem;
-    height: 1rem;
-    accent-color: #1d4ed8;
-  }
-  .nivel-checkbox.selected {
-    background: #1d4ed8;
-    border-color: #1d4ed8;
-    color: #fff;
-  }
-  .nivel-checkbox.selected input {
-    accent-color: #fff;
-  }
-  /* Componentes select multiple improvements */
-  select[multiple] option {
-    padding: 6px 8px;
-  }
-  select[multiple] option[data-nivel] {
-    padding-left: 24px;
-  }
-</style>
-{% endblock %}
-
 {% block content %}
 <div class="nice-padding">
 
-  <header class="mb-4">
-    <h1 class="icon icon-site" style="background-color: #1d4ed8;">
-      {{ titulo_pagina }}
-    </h1>
+  <header class="page-header">
+    <h1 class="icon icon-doc-full-inverse">{{ titulo_pagina }}</h1>
     <p class="help">
       {% trans "Cadastro dedicado de conteúdo de mídia educacional (vídeo, áudio, documento, apresentação, link externo, animação externa)." %}
     </p>
   </header>
 
   {% if messages %}
-    <div class="mb-4">
-      {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">
-          {{ message }}
-        </div>
-      {% endfor %}
-    </div>
+    {% include "wagtailadmin/shared/messages.html" %}
   {% endif %}
 
-  {% if form.non_field_errors %}
-    <div class="mb-4">
+  <form method="post" enctype="multipart/form-data" id="form-cadastro-conteudo" novalidate>
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
       <div class="alert alert-error">
         {% for error in form.non_field_errors %}{{ error }}{% endfor %}
       </div>
-    </div>
-  {% endif %}
-
-  <form method="post" enctype="multipart/form-data" id="form-cadastro-conteudo">
-    {% csrf_token %}
+    {% endif %}
 
     <ul class="fields">
 
@@ -231,113 +32,63 @@
       <!-- 12. Episódio de Série — COMEÇO do formulário -->
       <!-- ======================================================== -->
       <li class="field">
-        <label class="checkbox">
-          {{ form.eh_episodio }}
-          <strong>{{ form.eh_episodio.label }}</strong>
-          <span class="help">
-            {% trans "Marque se este conteúdo é um episódio de uma série (estilo Netflix). Esta é uma das primeiras opções no fluxo de cadastro." %}
-          </span>
-        </label>
+        {% include "wagtailadmin/shared/field_as_li.html" with field=form.eh_episodio classes="checkbox" %}
+        <span class="help">{{ form.eh_episodio.help_text }}</span>
       </li>
 
       <div id="bloco-serie" style="display:none;">
-        <div class="field-block">
-          <li class="field">
-            <label class="label">{{ form.serie.label }}</label>
-            <div class="input">
-              {{ form.serie }}
-              <span class="help">{{ form.serie.help_text }}</span>
-            </div>
-          </li>
-          <li class="field">
-            <label class="label">{{ form.serie_nova_nome.label }} <span class="required">*</span></label>
-            <div class="input">
-              {{ form.serie_nova_nome }}
-              <span class="help">{% trans "Ou crie uma nova série (será criada a temporada 1 automaticamente)." %}</span>
-            </div>
-          </li>
-          <li class="field">
-            <label class="label">{{ form.temporada.label }}</label>
-            <div class="input">
-              {{ form.temporada }}
-              <span class="help">{{ form.temporada.help_text }}</span>
-            </div>
-          </li>
-          <li class="field">
-            <label class="label">{{ form.temporada_nova_numero.label }}</label>
-            <div class="input">
-              {{ form.temporada_nova_numero }}
-              <span class="help">{% trans "Número da nova temporada (padrão: 1)." %}</span>
-            </div>
-          </li>
-          <li class="field">
-            <label class="label">{{ form.numero_episodio.label }} <span class="required">*</span></label>
-            <div class="input">
-              {{ form.numero_episodio }}
-              <span class="help">{{ form.numero_episodio.help_text }}</span>
-            </div>
-          </li>
-        </div>
+        <li class="field">
+          {% include "wagtailadmin/shared/field_as_li.html" with field=form.serie %}
+        </li>
+        <li class="field">
+          {% include "wagtailadmin/shared/field_as_li.html" with field=form.serie_nova_nome %}
+        </li>
+        <li class="field">
+          {% include "wagtailadmin/shared/field_as_li.html" with field=form.temporada %}
+        </li>
+        <li class="field">
+          {% include "wagtailadmin/shared/field_as_li.html" with field=form.temporada_nova_numero %}
+        </li>
+        <li class="field">
+          {% include "wagtailadmin/shared/field_as_li.html" with field=form.numero_episodio %}
+        </li>
       </div>
 
       <!-- ======================================================== -->
       <!-- Identificação básica -->
       <!-- ======================================================== -->
       <li class="field">
-        <label class="label">{{ form.title.label }} <span class="required">*</span></label>
-        <div class="input">
-          {{ form.title }}
-          <span class="help"></span>
-        </div>
+        {% include "wagtailadmin/shared/field_as_li.html" with field=form.title %}
       </li>
 
       <li class="field">
-        <label class="label">{{ form.search_description.label }}</label>
-        <div class="input">
-          {{ form.search_description }}
-          <span class="help"></span>
-        </div>
+        {% include "wagtailadmin/shared/field_as_li.html" with field=form.search_description %}
       </li>
 
       {% if form.autor.field.widget.input_type != 'hidden' %}
       <li class="field">
-        <label class="label">{{ form.autor.label }} <span class="required">*</span></label>
-        <div class="input">
-          {{ form.autor }}
-          <span class="help">{% trans "Usuário que está publicando este recurso. Visível apenas para administradores." %}</span>
-        </div>
+        {% include "wagtailadmin/shared/field_as_li.html" with field=form.autor %}
       </li>
       {% else %}
-      {{ form.autor }}
+        {{ form.autor }}
       {% endif %}
 
       <!-- Tags com autocomplete -->
       <li class="field">
-        <label class="label">{{ form.tags.label }} <span class="required">*</span></label>
-        <div class="input" style="position: relative;">
-          {{ form.tags }}
-          <div id="tags-autocomplete-dropdown" class="tags-autocomplete-dropdown"></div>
-          <div id="selected-tags-display" class="selected-tags" role="list" aria-label="{% trans 'Tags selecionadas' %}"></div>
-          <span class="help">{{ form.tags.help_text }}</span>
-        </div>
+        {% include "wagtailadmin/shared/field_as_li.html" with field=form.tags %}
+        <div id="tags-autocomplete-dropdown" class="tags-autocomplete-dropdown" style="display:none;"></div>
+        <div id="selected-tags-display" style="margin-top:8px;"></div>
       </li>
 
       <!-- ======================================================== -->
       <!-- Canal (com botão "Criar Novo Canal" ABAIXO do dropdown) -->
       <!-- ======================================================== -->
       <li class="field">
-        <label class="label">{{ form.canal.label }} <span class="required">*</span></label>
-        <div class="input">
-          {{ form.canal }}
-          <div style="margin-top: 8px;">
-            <button type="button" class="btn-secondary-custom" id="btn-criar-canal" title="{% trans 'Criar novo canal' %}">
-              {% trans "Criar Novo Canal" %}
-            </button>
-          </div>
-          <span class="help">{{ form.canal.help_text }}</span>
-          <span class="help" style="font-size: 0.75rem; color: #718096;">
-            {% trans "O botão acima abre o cadastro de páginas do Wagtail para criar um novo canal (atalho quando o canal ainda não existe)." %}
-          </span>
+        {% include "wagtailadmin/shared/field_as_li.html" with field=form.canal %}
+        <div style="margin-top: 8px;">
+          <button type="button" class="button button-secondary" id="btn-criar-canal" title="{% trans 'Criar novo canal' %}">
+            {% trans "Criar Novo Canal" %}
+          </button>
         </div>
       </li>
 
@@ -345,57 +96,39 @@
       <!-- Arquivo de mídia (com "x" para remover) × URL externa -->
       <!-- ======================================================== -->
       <li class="field">
-        <label class="label">{{ form.arquivo.label }}</label>
-        <div class="input">
-          <div style="margin-bottom: 8px;">
-            {{ form.arquivo }}
-            <button type="button" class="btn-secondary-custom" id="btn-remover-arquivo" style="display:none; margin-left: 8px;" title="{% trans 'Remover arquivo selecionado' %}">
-              ✕ {% trans "Remover" %}
-            </button>
-          </div>
-          <span class="help">{{ form.arquivo.help_text }}</span>
-        </div>
+        {% include "wagtailadmin/shared/field_as_li.html" with field=form.arquivo %}
+        <button type="button" class="button button-secondary" id="btn-remover-arquivo" style="display:none; margin-top:8px;" title="{% trans 'Remover arquivo selecionado' %}">
+          {% trans "Remover arquivo" %}
+        </button>
       </li>
 
       <li class="field">
-        <label class="label">{{ form.source.label }}</label>
-        <div class="input">
-          {{ form.source }}
-          <span class="help">{{ form.source.help_text }}</span>
-        </div>
+        {% include "wagtailadmin/shared/field_as_li.html" with field=form.source %}
       </li>
 
-      <div class="alert-box">
+      <div class="help-block" style="background:#fff3cd;border:1px solid #ffc107;border-radius:4px;padding:12px;margin:16px 0;">
         <strong>{% trans "Seleção exclusiva:" %}</strong>
-        <span style="display:block;margin-top:4px; color:#4a5568;">
+        <p style="margin:8px 0 0 0;">
           {% trans "Ao enviar um arquivo, o campo URL fica desabilitado. Ao colar uma URL, o campo Arquivo fica desabilitado. Não é possível preencher ambos." %}
-        </span>
+        </p>
       </div>
 
       <!-- ======================================================== -->
       <!-- Tipo de conteúdo (só leitura, depois de Arquivo/URL) -->
       <!-- ======================================================== -->
       <li class="field">
-        <label class="label">{{ form.tipo.label }} <span class="required">*</span></label>
-        <div class="input">
-          {{ form.tipo }}
-          <span class="help">{{ form.tipo.help_text }}</span>
-        </div>
+        {% include "wagtailadmin/shared/field_as_li.html" with field=form.tipo %}
       </li>
 
       <!-- ======================================================== -->
       <!-- Categoria (NÃO obrigatória, NÃO escopada por canal) -->
       <!-- ======================================================== -->
       <li class="field">
-        <label class="label">{{ form.category.label }}</label>
-        <div class="input">
-          <div style="display:flex; flex-wrap:wrap; align-items:center; gap: 10px;">
-            {{ form.category }}
-            <button type="button" class="btn-secondary-custom" id="btn-criar-categoria" title="{% trans 'Criar nova categoria' %}">
-              {% trans "Criar Nova Categoria" %}
-            </button>
-          </div>
-          <span class="help">{{ form.category.help_text }}</span>
+        {% include "wagtailadmin/shared/field_as_li.html" with field=form.category %}
+        <div style="margin-top: 8px;">
+          <button type="button" class="button button-secondary" id="btn-criar-categoria" title="{% trans 'Criar nova categoria' %}">
+            {% trans "Criar Nova Categoria" %}
+          </button>
         </div>
       </li>
 
@@ -403,28 +136,24 @@
       <!-- Licença (dropdown) -->
       <!-- ======================================================== -->
       <li class="field">
-        <label class="label">{{ form.license.label }}</label>
-        <div class="input">
-          {{ form.license }}
-          <span class="help">{{ form.license.help_text }}</span>
-        </div>
+        {% include "wagtailadmin/shared/field_as_li.html" with field=form.license %}
       </li>
 
       <!-- ======================================================== -->
       <!-- Componentes curriculares (com filtro por níveis de ensino) -->
       <!-- ======================================================== -->
       <li class="field">
-        <label class="label">{{ form.componentes_curriculares.label }} <span class="required">*</span></label>
-        <div class="input">
-          <div class="info-box">
-            <strong>{% trans "Filtre por nível de ensino:" %}</strong>
-            <div id="filtro-niveis" class="niveis-filter" role="group" aria-label="{% trans 'Níveis de ensino para filtrar componentes' %}"></div>
-            <span class="help" style="font-size: 0.75rem; display: block; margin-top: 8px;">
-              {% trans "Marque os níveis de ensino para exibir apenas os componentes daqueles anos. Ao desmarcar todos, todos os componentes são exibidos." %}
-            </span>
+        <div class="field-content">
+          <label class="label">{{ form.componentes_curriculares.label }}{% if form.componentes_curriculares.field.required %}<span class="required">*</span>{% endif %}</label>
+          <div class="input">
+            <div class="help-block" style="background:#f7f9fc;border:1px solid #d1dbe5;border-radius:4px;padding:12px;margin-bottom:12px;">
+              <strong>{% trans "Filtre por nível de ensino:" %}</strong>
+              <div id="filtro-niveis" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;"></div>
+              <p class="help" style="margin-top:8px;">{% trans "Marque os níveis de ensino para exibir apenas os componentes daqueles anos. Ao desmarcar todos, todos os componentes são exibidos." %}</p>
+            </div>
+            {{ form.componentes_curriculares }}
+            {% if form.componentes_curriculares.help_text %}<p class="help">{{ form.componentes_curriculares.help_text }}</p>{% endif %}
           </div>
-          {{ form.componentes_curriculares }}
-          <span class="help">{{ form.componentes_curriculares.help_text }}</span>
         </div>
       </li>
 
@@ -432,13 +161,10 @@
       <!-- Opções extras (JSON com explicação e exemplo de acessibilidade) -->
       <!-- ======================================================== -->
       <li class="field">
-        <label class="label">{{ form.options.label }}</label>
-        <div class="input">
-          {{ form.options }}
-          <span class="help">{{ form.options.help_text }}</span>
-          <div class="info-box">
-            <strong>{% trans "Exemplo para acessibilidade:" %}</strong>
-            <pre style="margin:8px 0; padding:8px; background:#fff; border:1px solid #cbd5e0; border-radius:4px; font-size:0.75rem; overflow-x:auto;"><code>{
+        {% include "wagtailadmin/shared/field_as_li.html" with field=form.options %}
+        <div class="help-block" style="background:#f7f9fc;border:1px solid #d1dbe5;border-radius:4px;padding:12px;margin-top:12px;">
+          <strong>{% trans "Exemplo para acessibilidade:" %}</strong>
+          <pre style="margin:8px 0; padding:8px; background:#fff; border:1px solid #d1dbe5; border-radius:4px; font-size:0.8125rem; overflow-x:auto;"><code>{
   "acessibilidade": {
     "legendas": true,
     "audiodescricao": false,
@@ -449,10 +175,7 @@
   "formato_video": "16:9",
   "duracao_segundos": 1200
 }</code></pre>
-            <span style="font-size: 0.75rem; color: #718096;">
-              {% trans "Use apenas chaves e valores válidos em JSON. Deixe vazio se não houver dados extras. As chaves de acessibilidade ajudam na exibição correta do conteúdo." %}
-            </span>
-          </div>
+          <p class="help" style="margin-top:8px;">{% trans "Use apenas chaves e valores válidos em JSON. Deixe vazio se não houver dados extras. As chaves de acessibilidade ajudam na exibição correta do conteúdo." %}</p>
         </div>
       </li>
 
@@ -460,30 +183,18 @@
       <!-- Status e destaque -->
       <!-- ======================================================== -->
       <li class="field">
-        <label class="checkbox">
-          {{ form.is_approved }}
-          <strong>{{ form.is_approved.label }}</strong>
-          <span class="help">{% trans "Somente usuários com papel coordenador+ podem aprovar conteúdo para publicação." %}</span>
-        </label>
+        {% include "wagtailadmin/shared/field_as_li.html" with field=form.is_approved classes="checkbox" %}
       </li>
       <li class="field">
-        <label class="checkbox">
-          {{ form.is_featured }}
-          <strong>{{ form.is_featured.label }}</strong>
-          <span class="help">{% trans "Exibir em destaque na home e listagens (blocos automáticos ou pré-selecionados pelo gestor)." %}</span>
-        </label>
+        {% include "wagtailadmin/shared/field_as_li.html" with field=form.is_featured classes="checkbox" %}
       </li>
       <li class="field">
-        <label class="checkbox">
-          {{ form.is_site }}
-          <strong>{{ form.is_site.label }}</strong>
-          <span class="help">{% trans "Marca se o conteúdo é um site associado." %}</span>
-        </label>
+        {% include "wagtailadmin/shared/field_as_li.html" with field=form.is_site classes="checkbox" %}
       </li>
 
     </ul>
 
-    <div class="buttons" style="margin-top: 24px;">
+    <div class="buttons">
       <button type="submit" class="button button-success button-serial">
         {% trans "Salvar e Publicar Conteúdo" %}
       </button>
@@ -530,7 +241,6 @@ document.addEventListener("DOMContentLoaded", function () {
   function toggleSerieBloco() {
     if (ehEpisodioCheckbox.checked) {
       blocoSerie.style.display = "block";
-      // Habilita o primeiro dropdown
       serieSelect.removeAttribute("disabled");
       temporadaSelect.removeAttribute("disabled");
       numeroEpisodioInput.removeAttribute("disabled");
@@ -539,7 +249,6 @@ document.addEventListener("DOMContentLoaded", function () {
       serieSelect.setAttribute("disabled", "disabled");
       temporadaSelect.setAttribute("disabled", "disabled");
       numeroEpisodioInput.setAttribute("disabled", "disabled");
-      // Reset campos
       serieSelect.value = "";
       serieNovaInput.value = "";
       temporadaSelect.innerHTML = '<option value="">{% trans "Selecione uma temporada" %}</option>';
@@ -556,13 +265,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const temSerieNova = serieNovaInput.value.trim() !== "";
     const temTemporadaNova = temporadaNovaInput.value.trim() !== "";
 
-    // Série existente vs nova
     serieNovaInput.disabled = temSerieExistente;
-    if (temSerieExistente) {
-      serieNovaInput.value = "";
-    }
+    if (temSerieExistente) serieNovaInput.value = "";
 
-    // Temporada existente vs nova
     temporadaSelect.disabled = temSerieNova || !temSerieExistente;
     temporadaNovaInput.disabled = !temSerieNova;
 
@@ -619,7 +324,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const temArquivo = this.files && this.files.length > 0;
     btnRemoverArquivo.style.display = temArquivo ? "inline-flex" : "none";
 
-    // Travamento mútuo: arquivo ativo => URL desabilitada
     sourceInput.disabled = temArquivo;
     if (temArquivo) {
       sourceInput.classList.add("disabled");
@@ -637,7 +341,6 @@ document.addEventListener("DOMContentLoaded", function () {
     sourceInput.disabled = false;
     sourceInput.classList.remove("disabled");
     sourceInput.removeAttribute("readonly");
-    // Reset tipo para auto
     tipoSelect.value = "";
   });
 
@@ -670,7 +373,6 @@ document.addEventListener("DOMContentLoaded", function () {
   arquivoInput.addEventListener("change", toggleArquivoUrl);
   sourceInput.addEventListener("input", toggleArquivoUrl);
 
-  // Estado inicial
   toggleArquivoUrl();
 
   // ====================================================================
@@ -688,41 +390,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (extensao) {
       const mapaExtensaoTipo = {
-        ".mp4": "Vídeo",
-        ".webm": "Vídeo",
-        ".mov": "Vídeo",
-        ".avi": "Vídeo",
-        ".mkv": "Vídeo",
-        ".m4v": "Vídeo",
-        ".mp3": "Áudio",
-        ".wav": "Áudio",
-        ".ogg": "Áudio",
-        ".m4a": "Áudio",
-        ".aac": "Áudio",
-        ".flac": "Áudio",
-        ".pdf": "Documento",
-        ".doc": "Documento",
-        ".docx": "Documento",
-        ".odt": "Documento",
-        ".rtf": "Documento",
-        ".txt": "Documento",
-        ".csv": "Documento",
-        ".xls": "Documento",
-        ".xlsx": "Documento",
-        ".ppt": "Apresentação",
-        ".pptx": "Apresentação",
-        ".odp": "Apresentação",
-        ".key": "Apresentação",
-        ".zip": "Download binário",
-        ".rar": "Download binário",
-        ".7z": "Download binário",
-        ".exe": "Download binário",
-        ".jpg": "Imagem",
-        ".jpeg": "Imagem",
-        ".png": "Imagem",
-        ".gif": "Imagem",
-        ".svg": "Imagem",
-        ".webp": "Imagem",
+        ".mp4": "Vídeo", ".webm": "Vídeo", ".mov": "Vídeo", ".avi": "Vídeo", ".mkv": "Vídeo", ".m4v": "Vídeo",
+        ".mp3": "Áudio", ".wav": "Áudio", ".ogg": "Áudio", ".m4a": "Áudio", ".aac": "Áudio", ".flac": "Áudio",
+        ".pdf": "Documento", ".doc": "Documento", ".docx": "Documento", ".odt": "Documento", ".rtf": "Documento",
+        ".txt": "Documento", ".csv": "Documento", ".xls": "Documento", ".xlsx": "Documento",
+        ".ppt": "Apresentação", ".pptx": "Apresentação", ".odp": "Apresentação", ".key": "Apresentação",
+        ".zip": "Download binário", ".rar": "Download binário", ".7z": "Download binário", ".exe": "Download binário",
+        ".jpg": "Imagem", ".jpeg": "Imagem", ".png": "Imagem", ".gif": "Imagem", ".svg": "Imagem", ".webp": "Imagem",
       };
       const tipoNome = mapaExtensaoTipo[extensao];
       if (tipoNome && tipoSelect) {
@@ -734,7 +408,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       }
     } else {
-      // URL sem extensão reconhecida -> Site Externo
       if (tipoSelect) {
         for (let i = 0; i < tipoSelect.options.length; i++) {
           if (tipoSelect.options[i].text.includes("Site Externo") || tipoSelect.options[i].text.includes("Externo")) {
@@ -778,7 +451,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // ====================================================================
-  // Tipo: só leitura por padrão (sem campo mecanismo no form)
+  // Tipo: só leitura por padrão
   // ====================================================================
   if (tipoSelect) {
     tipoSelect.setAttribute("readonly", "readonly");
@@ -789,7 +462,6 @@ document.addEventListener("DOMContentLoaded", function () {
   // 5. Tags Autocomplete (debounce 1s, busca a partir 3ª letra)
   // ====================================================================
   if (tagsInput && tagsDropdown && selectedTagsDisplay) {
-    // Parse tags iniciais (do value do input)
     function parseTags() {
       const val = tagsInput.value.trim();
       if (!val) return [];
@@ -800,15 +472,13 @@ document.addEventListener("DOMContentLoaded", function () {
       selectedTagsDisplay.innerHTML = "";
       selectedTags.forEach((tag, idx) => {
         const el = document.createElement("span");
-        el.className = "selected-tag";
-        el.setAttribute("role", "listitem");
+        el.style.cssText = "display:inline-flex;align-items:center;background:#eef4ff;color:#1d4ed8;padding:4px 10px;border-radius:9999px;font-size:0.8125rem;font-weight:500;margin-right:6px;margin-bottom:6px;";
         el.innerHTML = `
-          <span class="tag-name">${escapeHtml(tag)}</span>
-          <button type="button" aria-label="{% trans 'Remover tag' %}" data-index="${idx}">×</button>
+          <span>${escapeHtml(tag)}</span>
+          <button type="button" aria-label="{% trans 'Remover tag' %}" data-index="${idx}" style="margin-left:6px;background:none;border:none;color:#1d4ed8;cursor:pointer;padding:0;font-size:1rem;line-height:1;">×</button>
         `;
         selectedTagsDisplay.appendChild(el);
       });
-      // Atualiza o input hidden real
       tagsInput.value = selectedTags.join(", ");
     }
 
@@ -818,14 +488,12 @@ document.addEventListener("DOMContentLoaded", function () {
       return div.innerHTML;
     }
 
-    // Inicializa selectedTags do value atual
     selectedTags = parseTags();
     renderSelectedTags();
 
-    // Busca tags via API
     async function buscarTags(query) {
       if (query.length < 3) {
-        tagsDropdown.classList.remove("show");
+        tagsDropdown.style.display = "none";
         return;
       }
       try {
@@ -833,22 +501,20 @@ document.addEventListener("DOMContentLoaded", function () {
         const data = await resp.json();
         if (data.tags && data.tags.length > 0) {
           tagsDropdown.innerHTML = "";
-          data.tags.forEach((tag, idx) => {
+          data.tags.forEach((tag) => {
             const item = document.createElement("div");
-            item.className = "tag-autocomplete-item";
-            item.setAttribute("role", "option");
-            item.setAttribute("data-tag", tag.name);
-            item.innerHTML = `<span class="tag-name">${escapeHtml(tag.name)}</span>`;
+            item.style.cssText = "padding:8px 12px;cursor:pointer;border-bottom:1px solid #edf2f7;";
+            item.textContent = tag.name;
             item.addEventListener("click", () => adicionarTag(tag.name));
             tagsDropdown.appendChild(item);
           });
-          tagsDropdown.classList.add("show");
+          tagsDropdown.style.display = "block";
         } else {
-          tagsDropdown.classList.remove("show");
+          tagsDropdown.style.display = "none";
         }
       } catch (e) {
         console.error("Erro ao buscar tags:", e);
-        tagsDropdown.classList.remove("show");
+        tagsDropdown.style.display = "none";
       }
     }
 
@@ -862,7 +528,7 @@ document.addEventListener("DOMContentLoaded", function () {
         renderSelectedTags();
       }
       tagsInput.value = "";
-      tagsDropdown.classList.remove("show");
+      tagsDropdown.style.display = "none";
       tagsInput.focus();
     }
 
@@ -883,52 +549,20 @@ document.addEventListener("DOMContentLoaded", function () {
       const query = this.value.trim();
       tagsDebounceTimer = setTimeout(() => {
         buscarTags(query);
-      }, 1000); // debounce 1s
+      }, 1000);
     });
 
     tagsInput.addEventListener("focus", function () {
       const query = this.value.trim();
-      if (query.length >= 3) {
-        buscarTags(query);
-      }
+      if (query.length >= 3) buscarTags(query);
     });
 
-    // Fechar dropdown ao clicar fora
     document.addEventListener("click", function (e) {
       if (!tagsInput.contains(e.target) && !tagsDropdown.contains(e.target)) {
-        tagsDropdown.classList.remove("show");
+        tagsDropdown.style.display = "none";
       }
     });
 
-    // Navegação por teclado no dropdown
-    tagsInput.addEventListener("keydown", function (e) {
-      if (!tagsDropdown.classList.contains("show")) return;
-      const items = tagsDropdown.querySelectorAll(".tag-autocomplete-item");
-      if (items.length === 0) return;
-      let currentIdx = Array.from(items).findIndex(el => el.classList.contains("selected"));
-      if (e.key === "ArrowDown") {
-        e.preventDefault();
-        items[currentIdx]?.classList.remove("selected");
-        currentIdx = (currentIdx + 1) % items.length;
-        items[currentIdx].classList.add("selected");
-        items[currentIdx].scrollIntoView({ block: "nearest" });
-      } else if (e.key === "ArrowUp") {
-        e.preventDefault();
-        items[currentIdx]?.classList.remove("selected");
-        currentIdx = (currentIdx - 1 + items.length) % items.length;
-        items[currentIdx].classList.add("selected");
-        items[currentIdx].scrollIntoView({ block: "nearest" });
-      } else if (e.key === "Enter") {
-        e.preventDefault();
-        if (currentIdx >= 0) {
-          adicionarTag(items[currentIdx].dataset.tag);
-        }
-      } else if (e.key === "Escape") {
-        tagsDropdown.classList.remove("show");
-      }
-    });
-
-    // Se usuário digitar vírgula, adiciona como tag customizada
     tagsInput.addEventListener("keydown", function (e) {
       if (e.key === ",") {
         e.preventDefault();
@@ -942,7 +576,6 @@ document.addEventListener("DOMContentLoaded", function () {
   // 7. Componentes curriculares - filtro por níveis de ensino
   // ====================================================================
   if (componentesSelect && filtroNiveisContainer) {
-    // Guardar todas as opções originais com seus níveis
     Array.from(componentesSelect.options).forEach(function (opt) {
       const nivel = opt.dataset.nivel || "";
       const nomeNivel = opt.dataset.nivelNome || "";
@@ -953,31 +586,31 @@ document.addEventListener("DOMContentLoaded", function () {
         nivelNome: nomeNivel,
         element: opt
       });
-      if (nivel && !selectedNiveis.has(nivel)) {
-        selectedNiveis.add(nivel);
-      }
+      if (nivel && !selectedNiveis.has(nivel)) selectedNiveis.add(nivel);
     });
 
-    // Criar checkboxes de níveis de ensino
     const niveisUnicos = Array.from(selectedNiveis).sort();
     niveisUnicos.forEach(function (nivelId) {
-      // Encontrar o nome do nível
       const comp = allComponentes.find(c => c.nivel === nivelId);
       const nivelNome = comp ? comp.nivelNome : ("Nível " + nivelId);
 
       const label = document.createElement("label");
-      label.className = "nivel-checkbox selected";
+      label.style.cssText = "display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:#edf2f7;border:1px solid #cbd5e0;border-radius:9999px;cursor:pointer;font-size:0.875rem;";
       label.innerHTML = `
-        <input type="checkbox" value="${nivelId}" checked>
+        <input type="checkbox" value="${nivelId}" checked style="width:1rem;height:1rem;accent-color:#1d4ed8;">
         <span>${escapeHtml(nivelNome)}</span>
       `;
       label.querySelector("input").addEventListener("change", function () {
         if (this.checked) {
           selectedNiveis.add(nivelId);
-          label.classList.add("selected");
+          label.style.background = "#1d4ed8";
+          label.style.borderColor = "#1d4ed8";
+          label.style.color = "#fff";
         } else {
           selectedNiveis.delete(nivelId);
-          label.classList.remove("selected");
+          label.style.background = "#edf2f7";
+          label.style.borderColor = "#cbd5e0";
+          label.style.color = "";
         }
         filtrarComponentes();
       });
@@ -993,7 +626,6 @@ document.addEventListener("DOMContentLoaded", function () {
           comp.element.style.display = "none";
         }
       });
-      // Se todos os níveis desmarcados, mostrar todos
       if (selectedNiveis.size === 0) {
         allComponentes.forEach(function (comp) {
           comp.element.style.display = "";
@@ -1002,9 +634,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  // ====================================================================
-  // Helper: escape HTML
-  // ====================================================================
   function escapeHtml(text) {
     const div = document.createElement("div");
     div.textContent = text;
