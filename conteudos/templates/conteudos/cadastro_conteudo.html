@@ -26,85 +26,128 @@
       </div>
     {% endif %}
 
-    <ul class="fields">
+    <!-- ======================================================== -->
+    <!-- 12. Episódio de Série — COMEÇO do formulário -->
+    <!-- ======================================================== -->
+    <fieldset class="w-fieldset">
+      <legend class="w-fieldset__legend">
+        <span class="w-fieldset__legend-text">{% trans "Episódio de Série (RF008)" %}</span>
+        <span class="w-fieldset__legend-description">{% trans "Marque se este conteúdo é um episódio de uma série (estilo Netflix)." %}</span>
+      </legend>
 
-      <!-- ======================================================== -->
-      <!-- 12. Episódio de Série — COMEÇO do formulário -->
-      <!-- ======================================================== -->
-      <li class="field">
-        {% formattedfield form.eh_episodio %}
-        <p class="help">{{ form.eh_episodio.help_text }}</p>
-      </li>
+      <ul class="fields">
+        <li class="field">
+          {% formattedfield form.eh_episodio %}
+          <p class="help">{{ form.eh_episodio.help_text }}</p>
+        </li>
+      </ul>
 
       <div id="bloco-serie" style="display:none;">
-        <li class="field">
-          {% formattedfield form.serie %}
-        </li>
-        <li class="field">
-          {% formattedfield form.serie_nova_nome %}
-        </li>
-        <li class="field">
-          {% formattedfield form.temporada %}
-        </li>
-        <li class="field">
-          {% formattedfield form.temporada_nova_numero %}
-        </li>
-        <li class="field">
-          {% formattedfield form.numero_episodio %}
-        </li>
+        <ul class="fields">
+          <li class="field">
+            {% formattedfield form.serie %}
+          </li>
+          <li class="field">
+            {% formattedfield form.serie_nova_nome %}
+          </li>
+          <li class="field">
+            {% formattedfield form.temporada %}
+          </li>
+          <li class="field">
+            {% formattedfield form.temporada_nova_numero %}
+          </li>
+          <li class="field">
+            {% formattedfield form.numero_episodio %}
+          </li>
+        </ul>
       </div>
+    </fieldset>
 
-      <!-- ======================================================== -->
-      <!-- Identificação básica -->
-      <!-- ======================================================== -->
-      <li class="field">
-        {% formattedfield form.title %}
-      </li>
+    <!-- ======================================================== -->
+    <!-- Identificação básica -->
+    <!-- ======================================================== -->
+    <fieldset class="w-fieldset">
+      <legend class="w-fieldset__legend">
+        <span class="w-fieldset__legend-text">{% trans "Identificação Básica" %}</span>
+        <span class="w-fieldset__legend-description">{% trans "Título, descrição e autor do conteúdo." %}</span>
+      </legend>
 
-      <li class="field">
-        {% formattedfield form.search_description %}
-      </li>
+      <ul class="fields">
+        <li class="field">
+          {% formattedfield form.title %}
+        </li>
+        <li class="field">
+          {% formattedfield form.search_description %}
+        </li>
+        {% if form.autor.field.widget.input_type != 'hidden' %}
+        <li class="field">
+          {% formattedfield form.autor %}
+        </li>
+        {% else %}
+          {{ form.autor }}
+        {% endif %}
+      </ul>
+    </fieldset>
 
-      {% if form.autor.field.widget.input_type != 'hidden' %}
-      <li class="field">
-        {% formattedfield form.autor %}
-      </li>
-      {% else %}
-        {{ form.autor }}
-      {% endif %}
+    <!-- ======================================================== -->
+    <!-- Tags -->
+    <!-- ======================================================== -->
+    <fieldset class="w-fieldset">
+      <legend class="w-fieldset__legend">
+        <span class="w-fieldset__legend-text">{% trans "Tags" %}</span>
+        <span class="w-fieldset__legend-description">{% trans "Palavras-chave para busca e organização (mín. 3, máx. 50)." %}</span>
+      </legend>
 
-      <!-- Tags com autocomplete -->
-      <li class="field">
-        {% formattedfield form.tags %}
-        <div id="tags-autocomplete-dropdown" class="tags-autocomplete-dropdown" style="display:none;"></div>
-        <div id="selected-tags-display" style="margin-top:8px;"></div>
-      </li>
+      <ul class="fields">
+        <li class="field">
+          {% formattedfield form.tags %}
+          <div id="tags-autocomplete-dropdown" class="tags-autocomplete-dropdown" style="display:none;"></div>
+          <div id="selected-tags-display" style="margin-top:8px;"></div>
+        </li>
+      </ul>
+    </fieldset>
 
-      <!-- ======================================================== -->
-      <!-- Canal (com botão "Criar Novo Canal" ABAIXO do dropdown) -->
-      <!-- ======================================================== -->
-      <li class="field">
-        {% formattedfield form.canal %}
-        <div style="margin-top: 8px;">
-          <button type="button" class="button button-secondary" id="btn-criar-canal" title="{% trans 'Criar novo canal' %}">
-            {% trans "Criar Novo Canal" %}
+    <!-- ======================================================== -->
+    <!-- Canal -->
+    <!-- ======================================================== -->
+    <fieldset class="w-fieldset">
+      <legend class="w-fieldset__legend">
+        <span class="w-fieldset__legend-text">{% trans "Canal de Publicação" %}</span>
+        <span class="w-fieldset__legend-description">{% trans "Canal onde o conteúdo será publicado (metadado, não pai hierárquico)." %}</span>
+      </legend>
+
+      <ul class="fields">
+        <li class="field">
+          {% formattedfield form.canal %}
+          <div style="margin-top: 8px;">
+            <button type="button" class="button button-secondary" id="btn-criar-canal" title="{% trans 'Criar novo canal' %}">
+              {% trans "Criar Novo Canal" %}
+            </button>
+          </div>
+        </li>
+      </ul>
+    </fieldset>
+
+    <!-- ======================================================== -->
+    <!-- Arquivo de mídia × URL externa -->
+    <!-- ======================================================== -->
+    <fieldset class="w-fieldset">
+      <legend class="w-fieldset__legend">
+        <span class="w-fieldset__legend-text">{% trans "Mídia: Arquivo ou URL Externa" %}</span>
+        <span class="w-fieldset__legend-description">{% trans "Selecione um arquivo OU informe uma URL. Não é possível preencher ambos." %}</span>
+      </legend>
+
+      <ul class="fields">
+        <li class="field">
+          {% formattedfield form.arquivo %}
+          <button type="button" class="button button-secondary" id="btn-remover-arquivo" style="display:none; margin-top:8px;" title="{% trans 'Remover arquivo selecionado' %}">
+            {% trans "Remover arquivo" %}
           </button>
-        </div>
-      </li>
-
-      <!-- ======================================================== -->
-      <!-- Arquivo de mídia (com "x" para remover) × URL externa -->
-      <!-- ======================================================== -->
-      <li class="field">
-        {% formattedfield form.arquivo %}
-        <button type="button" class="button button-secondary" id="btn-remover-arquivo" style="display:none; margin-top:8px;" title="{% trans 'Remover arquivo selecionado' %}">
-          {% trans "Remover arquivo" %}
-        </button>
-      </li>
-
-      <li class="field">
-        {% formattedfield form.source %}
-      </li>
+        </li>
+        <li class="field">
+          {% formattedfield form.source %}
+        </li>
+      </ul>
 
       <div class="help-block" style="background:#fff3cd;border:1px solid #ffc107;border-radius:4px;padding:12px;margin:16px 0;">
         <strong>{% trans "Seleção exclusiva:" %}</strong>
@@ -112,59 +155,80 @@
           {% trans "Ao enviar um arquivo, o campo URL fica desabilitado. Ao colar uma URL, o campo Arquivo fica desabilitado. Não é possível preencher ambos." %}
         </p>
       </div>
+    </fieldset>
 
-      <!-- ======================================================== -->
-      <!-- Tipo de conteúdo (só leitura, depois de Arquivo/URL) -->
-      <!-- ======================================================== -->
-      <li class="field">
-        {% formattedfield form.tipo %}
-      </li>
+    <!-- ======================================================== -->
+    <!-- Classificação (Tipo, Categoria, Licença) -->
+    <!-- ======================================================== -->
+    <fieldset class="w-fieldset">
+      <legend class="w-fieldset__legend">
+        <span class="w-fieldset__legend-text">{% trans "Classificação do Conteúdo" %}</span>
+        <span class="w-fieldset__legend-description">{% trans "Tipo (auto-detectado), categoria opcional e licença de uso." %}</span>
+      </legend>
 
-      <!-- ======================================================== -->
-      <!-- Categoria (NÃO obrigatória, NÃO escopada por canal) -->
-      <!-- ======================================================== -->
-      <li class="field">
-        {% formattedfield form.category %}
-        <div style="margin-top: 8px;">
-          <button type="button" class="button button-secondary" id="btn-criar-categoria" title="{% trans 'Criar nova categoria' %}">
-            {% trans "Criar Nova Categoria" %}
-          </button>
-        </div>
-      </li>
-
-      <!-- ======================================================== -->
-      <!-- Licença (dropdown) -->
-      <!-- ======================================================== -->
-      <li class="field">
-        {% formattedfield form.license %}
-      </li>
-
-      <!-- ======================================================== -->
-      <!-- Componentes curriculares (com filtro por níveis de ensino) -->
-      <!-- ======================================================== -->
-      <li class="field">
-        <div class="field-content">
-          <label class="label">{{ form.componentes_curriculares.label }}{% if form.componentes_curriculares.field.required %}<span class="required">*</span>{% endif %}</label>
-          <div class="input">
-            <div class="help-block" style="background:#f7f9fc;border:1px solid #d1dbe5;border-radius:4px;padding:12px;margin-bottom:12px;">
-              <strong>{% trans "Filtre por nível de ensino:" %}</strong>
-              <div id="filtro-niveis" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;"></div>
-              <p class="help" style="margin-top:8px;">{% trans "Marque os níveis de ensino para exibir apenas os componentes daqueles anos. Ao desmarcar todos, todos os componentes são exibidos." %}</p>
-            </div>
-            {% formattedfield form.componentes_curriculares %}
-            {% if form.componentes_curriculares.help_text %}<p class="help">{{ form.componentes_curriculares.help_text }}</p>{% endif %}
+      <ul class="fields">
+        <li class="field">
+          {% formattedfield form.tipo %}
+        </li>
+        <li class="field">
+          {% formattedfield form.category %}
+          <div style="margin-top: 8px;">
+            <button type="button" class="button button-secondary" id="btn-criar-categoria" title="{% trans 'Criar nova categoria' %}">
+              {% trans "Criar Nova Categoria" %}
+            </button>
           </div>
-        </div>
-      </li>
+        </li>
+        <li class="field">
+          {% formattedfield form.license %}
+        </li>
+      </ul>
+    </fieldset>
 
-      <!-- ======================================================== -->
-      <!-- Opções extras (JSON com explicação e exemplo de acessibilidade) -->
-      <!-- ======================================================== -->
-      <li class="field">
-        {% formattedfield form.options %}
-        <div class="help-block" style="background:#f7f9fc;border:1px solid #d1dbe5;border-radius:4px;padding:12px;margin-top:12px;">
-          <strong>{% trans "Exemplo para acessibilidade:" %}</strong>
-          <pre style="margin:8px 0; padding:8px; background:#fff; border:1px solid #d1dbe5; border-radius:4px; font-size:0.8125rem; overflow-x:auto;"><code>{
+    <!-- ======================================================== -->
+    <!-- Componentes curriculares -->
+    <!-- ======================================================== -->
+    <fieldset class="w-fieldset">
+      <legend class="w-fieldset__legend">
+        <span class="w-fieldset__legend-text">{% trans "Componentes Curriculares" %}</span>
+        <span class="w-fieldset__legend-description">{% trans "Selecione os componentes curriculares relacionados. Filtre por nível de ensino." %}</span>
+      </legend>
+
+      <ul class="fields">
+        <li class="field">
+          <div class="field-content">
+            <label class="label">{{ form.componentes_curriculares.label }}{% if form.componentes_curriculares.field.required %}<span class="required">*</span>{% endif %}</label>
+            <div class="input">
+              <div class="help-block" style="background:#f7f9fc;border:1px solid #d1dbe5;border-radius:4px;padding:12px;margin-bottom:12px;">
+                <strong>{% trans "Filtre por nível de ensino:" %}</strong>
+                <div id="filtro-niveis" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;"></div>
+                <p class="help" style="margin-top:8px;">{% trans "Marque os níveis de ensino para exibir apenas os componentes daqueles anos. Ao desmarcar todos, todos os componentes são exibidos." %}</p>
+              </div>
+              {% formattedfield form.componentes_curriculares %}
+              {% if form.componentes_curriculares.help_text %}<p class="help">{{ form.componentes_curriculares.help_text }}</p>{% endif %}
+            </div>
+          </div>
+        </li>
+      </ul>
+    </fieldset>
+
+    <!-- ======================================================== -->
+    <!-- Opções extras (JSON) -->
+    <!-- ======================================================== -->
+    <fieldset class="w-fieldset">
+      <legend class="w-fieldset__legend">
+        <span class="w-fieldset__legend-text">{% trans "Opções Extras (JSON)" %}</span>
+        <span class="w-fieldset__legend-description">{% trans "Configurações avançadas: acessibilidade, site associado, formato, duração." %}</span>
+      </legend>
+
+      <ul class="fields">
+        <li class="field">
+          {% formattedfield form.options %}
+        </li>
+      </ul>
+
+      <div class="help-block" style="background:#f7f9fc;border:1px solid #d1dbe5;border-radius:4px;padding:12px;margin-top:12px;">
+        <strong>{% trans "Exemplo para acessibilidade:" %}</strong>
+        <pre style="margin:8px 0; padding:8px; background:#fff; border:1px solid #d1dbe5; border-radius:4px; font-size:0.8125rem; overflow-x:auto;"><code>{
   "acessibilidade": {
     "legendas": true,
     "audiodescricao": false,
@@ -175,24 +239,31 @@
   "formato_video": "16:9",
   "duracao_segundos": 1200
 }</code></pre>
-          <p class="help" style="margin-top:8px;">{% trans "Use apenas chaves e valores válidos em JSON. Deixe vazio se não houver dados extras. As chaves de acessibilidade ajudam na exibição correta do conteúdo." %}</p>
-        </div>
-      </li>
+        <p class="help" style="margin-top:8px;">{% trans "Use apenas chaves e valores válidos em JSON. Deixe vazio se não houver dados extras. As chaves de acessibilidade ajudam na exibição correta do conteúdo." %}</p>
+      </div>
+    </fieldset>
 
-      <!-- ======================================================== -->
-      <!-- Status e destaque -->
-      <!-- ======================================================== -->
-      <li class="field">
-        {% formattedfield form.is_approved %}
-      </li>
-      <li class="field">
-        {% formattedfield form.is_featured %}
-      </li>
-      <li class="field">
-        {% formattedfield form.is_site %}
-      </li>
+    <!-- ======================================================== -->
+    <!-- Status e destaque -->
+    <!-- ======================================================== -->
+    <fieldset class="w-fieldset">
+      <legend class="w-fieldset__legend">
+        <span class="w-fieldset__legend-text">{% trans "Status e Destaque" %}</span>
+        <span class="w-fieldset__legend-description">{% trans "Controle de publicação e exibição em destaque." %}</span>
+      </legend>
 
-    </ul>
+      <ul class="fields">
+        <li class="field">
+          {% formattedfield form.is_approved %}
+        </li>
+        <li class="field">
+          {% formattedfield form.is_featured %}
+        </li>
+        <li class="field">
+          {% formattedfield form.is_site %}
+        </li>
+      </ul>
+    </fieldset>
 
     <div class="buttons">
       <button type="submit" class="button button-success button-serial">
