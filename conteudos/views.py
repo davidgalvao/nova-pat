@@ -55,7 +55,14 @@ def cadastro_conteudo(request):
                 _("Corrija os erros indicados no formulário."),
             )
     else:
-        form = ConteudoCadastroForm(request.GET, user=request.user)
+        # Form NÃO-bindado no GET para evitar validação prematura (bordas vermelhas)
+        # Usamos initial apenas para pré-preencher parâmetros de "Adicionar EP"
+        initial = {}
+        if request.GET.get("serie"):
+            initial["serie"] = request.GET.get("serie")
+        if request.GET.get("temporada"):
+            initial["temporada"] = request.GET.get("temporada")
+        form = ConteudoCadastroForm(initial=initial, user=request.user)
 
     contexto = {
         "form": form,
