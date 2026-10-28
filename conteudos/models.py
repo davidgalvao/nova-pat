@@ -327,6 +327,12 @@ class ConteudoPage(RecursoBasePage):
         help_text="Preenchido apenas quando o conteúdo é filho de uma Temporada (app series).",
     )
 
+    eh_episodio = models.BooleanField(
+        default=False,
+        verbose_name="É episódio de série",
+        help_text="Marca se este conteúdo é um episódio de uma série (estilo Netflix).",
+    )
+
     # Campos desnormalizados para exibição (atualizados via signal do app interacoes)
     media_avaliacao = models.DecimalField(
         max_digits=3,

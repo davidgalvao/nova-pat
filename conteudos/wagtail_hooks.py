@@ -7,6 +7,7 @@ from wagtail.snippets.models import register_snippet
 from wagtail.snippets.views.snippets import SnippetViewSet
 
 from .models import Tipo, Licenca, CategoriaConteudo, ConteudoPage
+from series.models import Serie
 
 
 class TipoSnippetViewSet(SnippetViewSet):
@@ -102,16 +103,14 @@ class CadastroConteudoMenuItem(MenuItem):
 
     def get_url(self, request=None):
         """
-        Retorna a URL para a lista de páginas filtrada por ConteudoPage.
+        Retorna a URL da view dedicada de cadastro de conteúdo de mídia
+        (fora do fluxo de sub-página do Wagtail).
         
-        Usa o parâmetro `content_type` para pré-filtrar a lista de páginas
-        no admin do Wagtail, direcionando o usuário diretamente para a
-        criação de ConteudoPage sem depender de parent_page_id hardcoded.
-        
-        O parâmetro `content_type=conteudos.ConteudoPage` funciona no Wagtail 8+
-        e pré-seleciona o tipo de página no formulário de criação.
+        O item de menu "Gestão de Conteúdos" leva agora a um formulário
+        próprio de cadastro, onde o gestor escolhe o canal como metadado
+        de publicação (não como pai hierárquico obrigatório).
         """
-        return reverse("wagtailadmin_explore_root") + "?content_type=conteudos.ConteudoPage"
+        return reverse("conteudos:cadastro_conteudo")
 
     @property
     def url(self):
@@ -122,3 +121,43 @@ class CadastroConteudoMenuItem(MenuItem):
 @hooks.register("register_admin_menu_item")
 def register_cadastro_conteudo_menu_item():
     return CadastroConteudoMenuItem()
+
+
+class SeriesMenuItem(MenuItem):
+    """
+    Item de menu "Séries" na barra lateral do admin.
+    
+    Leva à listagem de séries (RF008), onde o gestor pode
+    editar séries existentes ou adicionar episódios.
+    """
+
+    def __init__(self, order=210):
+        self.label = _("Séries")
+        self.name = "series"
+        self.icon_name = "media"
+        self.order = order
+        self.classname = ""
+        self.attrs = {}
+        self._url = ""
+
+    def is_shown(self, request):
+        user = request.user
+        if not user or not user.is_authenticated:
+            return False
+        if user.is_superuser:
+            return True
+        return user.groups.filter(
+            permissions__codename="access_admin"
+        ).exists()
+
+    def get_url(self, request=None):
+        return reverse("conteudos:lista_series")
+
+    @property
+    def url(self):
+        return self.get_url()
+
+
+@hooks.register("register_admin_menu_item")
+def register_series_menu_item():
+    return SeriesMenuItem()

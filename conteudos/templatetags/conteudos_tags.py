@@ -15,6 +15,29 @@ def filename(value):
     """
     Retorna o nome base de um caminho de arquivo (sem diretórios).
 
+    Uso: ``{{ page.arquivo.name|filename }}`
+    """
+    if not value:
+        return ""
+    return str(value).split("/")[-1]
+
+
+@register.filter
+def total_episodios(serie):
+    """
+    Retorna o total de episódios (ConteudoPage) de uma série,
+    somando todas as suas temporadas.
+    """
+    from series.models import Temporada
+    from conteudos.models import ConteudoPage
+
+    total = 0
+    for temporada in serie.get_children().type(Temporada):
+        total += ConteudoPage.objects.child_of(temporada).count()
+    return total
+    """
+    Retorna o nome base de um caminho de arquivo (sem diretórios).
+
     Uso: ``{{ page.arquivo.name|filename }}``
     """
     if not value:

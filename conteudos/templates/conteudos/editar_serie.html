@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% load static i18n wagtailcore_tags %}
+
+{% block title %}{{ titulo_pagina }} - Nova PAT{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+  <header class="mb-8 flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">{{ titulo_pagina }}</h1>
+      <p class="text-gray-600 mt-1">
+        {% trans "Edite Título, Capa, Sinopse e metadados da série." %}
+      </p>
+    </div>
+    <a href="{% url 'conteudos:lista_series' %}" class="text-brand-600 hover:text-brand-700 hover:underline">
+      {% trans "← Voltar à lista de séries" %}
+    </a>
+  </header>
+
+  {% if messages %}
+    <div class="mb-6">
+      {% for message in messages %}
+        <div class="p-4 rounded {% if message.tags == 'success' %}bg-green-50 border border-green-200 text-green-800{% else %}bg-red-50 border border-red-200 text-red-800{% endif %}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
+    <form method="post">
+      {% csrf_token %}
+
+      <div class="campo-grupo mb-6">
+        <label class="rotulo-campo">{% trans "Título da Série" %}</label>
+        <input type="text" name="title" value="{{ serie.title }}" required
+          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-lg font-medium"
+          placeholder="{% trans 'Ex: Série de Biologia do Ensino Médio' %}">
+      </div>
+
+      <div class="campo-grupo mb-6">
+        <label class="rotulo-campo">{% trans "Sinopse / Descrição" %}</label>
+        <textarea name="sinopse" rows="4"
+          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">{{ serie.sinopse }}</textarea>
+        <p class="ajuda-campo">{% trans "Descrição/sinopse da série para exibição na página da série." %}</p>
+      </div>
+
+      <div class="campo-grupo mb-6">
+        <label class="rotulo-campo">{% trans "Capa da Série" %}</label>
+        {% if serie.capa %}
+          <img src="{% image serie.capa fill-400x225 %}" alt="{{ serie.title }}" class="mb-2 rounded border border-gray-200">
+          <p class="text-xs text-gray-500">{% trans "Capa atual da série." %}</p>
+        {% else %}
+          <p class="text-xs text-gray-500">{% trans "Nenhuma capa definida. A capa pode ser definida no admin do Wagtail." %}</p>
+        {% endif %}
+      </div>
+
+      <div class="bg-gray-50 p-4 rounded mb-6 border border-gray-200">
+        <h3 class="text-sm font-semibold text-gray-800 mb-3">{% trans "Temporadas" %}</h3>
+        {% if temporadas %}
+          <ul class="divide-y divide-gray-200">
+            {% for temporada in temporadas %}
+              <li class="py-2 flex justify-between items-center">
+                <span class="text-sm text-gray-700">{% trans "Temporada" %} {{ temporada.numero }}</span>
+                <span class="text-xs text-gray-500">{{ temporada.sinopse|default:"Sem sinopse" }}</span>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="text-sm text-gray-500">{% trans "Esta série ainda não tem temporadas." %}</p>
+        {% endif %}
+      </div>
+
+      <div class="flex gap-3">
+        <button type="submit" class="px-6 py-3 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2">
+          {% trans "Salvar Série" %}
+        </button>
+        <a href="{% url 'conteudos:lista_series' %}" class="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium rounded-md transition-colors">
+          {% trans "Cancelar" %}
+        </a>
+      </div>
+    </form>
+  </div>
+
+</div>
+{% endblock %}

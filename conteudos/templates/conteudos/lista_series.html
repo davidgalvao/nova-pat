@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% load static i18n conteudos_tags %}
+
+{% block title %}{{ titulo_pagina }} - Nova PAT{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+  <header class="mb-8 flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">{{ titulo_pagina }}</h1>
+      <p class="text-gray-600 mt-1">
+        {% trans "Gerencie séries de conteúdo estilo streaming. Cada série pode ter múltiplas temporadas e episódios." %}
+      </p>
+    </div>
+    <div class="flex gap-2">
+      <a href="{% url 'admin:index' %}" class="text-brand-600 hover:text-brand-700 hover:underline px-3 py-2">
+        {% trans "← Voltar ao admin" %}
+      </a>
+    </div>
+  </header>
+
+  {% if messages %}
+    <div class="mb-6">
+      {% for message in messages %}
+        <div class="p-4 rounded {% if message.tags == 'success' %}bg-green-50 border border-green-200 text-green-800{% else %}bg-red-50 border border-red-200 text-red-800{% endif %}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="bg-white border border-gray-200 rounded-lg shadow-sm">
+    <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+      <h2 class="text-lg font-semibold text-gray-900">{% trans "Séries cadastradas" %}</h2>
+      <a href="{% url 'admin:index' %}" class="text-sm text-brand-600 hover:text-brand-700">
+        {% trans "Criar nova série via admin Wagtail" %}
+      </a>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left">
+        <thead>
+          <tr class="border-b border-gray-200">
+            <th class="px-6 py-3 text-sm font-semibold text-gray-600">{% trans "Título" %}</th>
+            <th class="px-6 py-3 text-sm font-semibold text-gray-600">{% trans "Sinopse" %}</th>
+            <th class="px-6 py-3 text-sm font-semibold text-gray-600">{% trans "Temporadas" %}</th>
+            <th class="px-6 py-3 text-sm font-semibold text-gray-600">{% trans "Episódios" %}</th>
+            <th class="px-6 py-3 text-sm font-semibold text-gray-600 text-right">{% trans "Ações" %}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for serie in series %}
+          <tr class="border-b border-gray-100 hover:bg-gray-50">
+            <td class="px-6 py-4">
+              <a href="{% url 'conteudos:editar_serie' serie.id %}" class="text-brand-600 hover:text-brand-700 font-medium">{{ serie.title }}</a>
+            </td>
+            <td class="px-6 py-4 text-gray-600 max-w-xs truncate">{{ serie.sinopse|default:"—" }}</td>
+            <td class="px-6 py-4 text-sm text-gray-600">
+              {% with serie.temporadas.count as qtd_temp %}
+                {{ qtd_temp }} {% trans "temporada(s)" %}
+              {% endwith %}
+            </td>
+            <td class="px-6 py-4 text-sm text-gray-600">
+              {% total_episodios serie as total_eps %}
+              {{ total_eps }} {% trans "episódio(s)" %}
+            </td>
+            <td class="px-6 py-4 text-right text-sm">
+              <a href="{% url 'conteudos:editar_serie' serie.id %}" class="text-brand-600 hover:text-brand-700 mr-3">{% trans "Editar" %}</a>
+              <a href="{% url 'conteudos:adicionar_ep' serie.id %}" class="bg-brand-600 hover:bg-brand-700 text-white px-3 py-1.5 rounded text-xs transition-colors">{% trans "Adicionar EP" %}</a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+              {% trans "Nenhuma série cadastrada ainda." %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,587 @@
+{% extends "wagtailadmin/base.html" %}
+{% load wagtailadmin_tags i18n static %}
+
+{% block titletag %}{{ titulo_pagina }} - Nova PAT{% endblock %}
+
+{% block content %}
+<div class="nice-padding">
+
+  <header class="mb-4">
+    <h1 class="icon icon-site" style="background-color: #1d4ed8;">
+      {{ titulo_pagina }}
+    </h1>
+    <p class="help">
+      {% trans "Cadastro dedicado de conteúdo de mídia educacional (vídeo, áudio, documento, apresentação, link externo, animação externa)." %}
+    </p>
+  </header>
+
+  {% if messages %}
+    <div class="mb-4">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {% if form.non_field_errors %}
+    <div class="mb-4">
+      <div class="alert alert-error">
+        {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data" id="form-cadastro-conteudo">
+    {% csrf_token %}
+
+    <ul class="fields">
+
+      <!-- ======================================================== -->
+      <!-- 12. Episódio de Série — COMEÇO do formulário -->
+      <!-- ======================================================== -->
+      <li class="field">
+        <label class="checkbox">
+          {{ form.eh_episodio }}
+          <strong>{{ form.eh_episodio.label }}</strong>
+          <span class="help">
+            {% trans "Marque se este conteúdo é um episódio de uma série (estilo Netflix). Esta é uma das primeiras opções no fluxo de cadastro." %}
+          </span>
+        </label>
+      </li>
+
+      <div id="bloco-serie" style="display:none; margin-left: 20px; border-left: 3px solid #1d4ed8; padding-left: 15px; background: #f8fafc;">
+        <li class="field">
+          <label class="label">{{ form.serie.label }}</label>
+          <div class="input">
+            {{ form.serie }}
+            <span class="help">{{ form.serie.help_text }}</span>
+          </div>
+        </li>
+        <li class="field">
+          <label class="label">{{ form.serie_nova_nome.label }} <span class="required">*</span></label>
+          <div class="input">
+            {{ form.serie_nova_nome }}
+            <span class="help">{% trans "Ou crie uma nova série (será criada a temporada 1 automaticamente)." %}</span>
+          </div>
+        </li>
+        <li class="field">
+          <label class="label">{{ form.temporada.label }}</label>
+          <div class="input">
+            {{ form.temporada }}
+            <span class="help">{{ form.temporada.help_text }}</span>
+          </div>
+        </li>
+        <li class="field">
+          <label class="label">{{ form.temporada_nova_numero.label }}</label>
+          <div class="input">
+            {{ form.temporada_nova_numero }}
+            <span class="help">{% trans "Número da nova temporada (padrão: 1)." %}</span>
+          </div>
+        </li>
+        <li class="field">
+          <label class="label">{{ form.numero_episodio.label }} <span class="required">*</span></label>
+          <div class="input">
+            {{ form.numero_episodio }}
+            <span class="help">{{ form.numero_episodio.help_text }}</span>
+          </div>
+        </li>
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- Identificação básica -->
+      <!-- ======================================================== -->
+      <li class="field">
+        <label class="label">{{ form.title.label }} <span class="required">*</span></label>
+        <div class="input">
+          {{ form.title }}
+          <span class="help"></span>
+        </div>
+      </li>
+
+      <li class="field">
+        <label class="label">{{ form.search_description.label }}</label>
+        <div class="input">
+          {{ form.search_description }}
+          <span class="help"></span>
+        </div>
+      </li>
+
+      <li class="field">
+        <label class="label">{{ form.autor.label }} <span class="required">*</span></label>
+        <div class="input">
+          {{ form.autor }}
+          <span class="help">{% trans "Usuário que está publicando este recurso." %}</span>
+        </div>
+      </li>
+
+      <li class="field">
+        <label class="label">{{ form.tags.label }} <span class="required">*</span></label>
+        <div class="input">
+          {{ form.tags }}
+          <span class="help">{{ form.tags.help_text }}</span>
+        </div>
+      </li>
+
+      <!-- ======================================================== -->
+      <!-- Canal (com botão Criar Novo Canal) -->
+      <!-- ======================================================== -->
+      <li class="field">
+        <label class="label">{{ form.canal.label }} <span class="required">*</span></label>
+        <div class="input">
+          <div style="display:flex; align-items:center; gap: 10px; flex-wrap: wrap;">
+            {{ form.canal }}
+            <button type="button" class="button button-small button-secondary" id="btn-criar-canal" title="{% trans 'Criar novo canal' %}">
+              {% trans "Criar Novo Canal" %}
+            </button>
+          </div>
+          <span class="help">{{ form.canal.help_text }}</span>
+          <span class="help" style="color: #718096; font-size: 0.875rem;">
+            {% trans "O botão acima abre o cadastro de páginas do Wagtail para criar um novo canal (atalho quando o canal ainda não existe)." %}
+          </span>
+        </div>
+      </li>
+
+      <!-- ======================================================== -->
+      <!-- Arquivo de mídia (com "x" para remover) × URL externa -->
+      <!-- ======================================================== -->
+      <li class="field">
+        <label class="label">{{ form.arquivo.label }}</label>
+        <div class="input">
+          <div style="margin-bottom: 8px;">
+            {{ form.arquivo }}
+            <button type="button" class="button button-small button-secondary" id="btn-remover-arquivo" style="display:none; margin-left: 8px;" title="{% trans 'Remover arquivo selecionado' %}">
+              ✕
+            </button>
+          </div>
+          <span class="help">{{ form.arquivo.help_text }}</span>
+        </div>
+      </li>
+
+      <li class="field">
+        <label class="label">{{ form.source.label }}</label>
+        <div class="input">
+          {{ form.source }}
+          <span class="help">{{ form.source.help_text }}</span>
+        </div>
+      </li>
+
+      <div style="background:#eef4ff;border-left:4px solid #1d4ed8;padding:10px 14px;margin:16px 0;border-radius:4px;">
+        <strong style="color:#1d4ed8;">{% trans "Seleção exclusiva:" %}</strong>
+        <span style="display:block;margin-top:4px; color:#4a5568;">
+          {% trans "Ao enviar um arquivo, o campo URL fica desabilitado. Ao colar uma URL, o campo Arquivo fica desabilitado. Não é possível preencher ambos." %}
+        </span>
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- Tipo de conteúdo (só leitura, depois de Arquivo/URL) -->
+      <!-- ======================================================== -->
+      <li class="field">
+        <label class="label">{{ form.tipo.label }} <span class="required">*</span></label>
+        <div class="input">
+          {{ form.tipo }}
+          <span class="help">{{ form.tipo.help_text }}</span>
+        </div>
+      </li>
+
+      <!-- ======================================================== -->
+      <!-- Categoria (com botão Criar Nova Categoria) -->
+      <!-- ======================================================== -->
+      <li class="field">
+        <label class="label">{{ form.category.label }} <span class="required">*</span></label>
+        <div class="input">
+          <div style="display:flex; align-items:center; gap: 10px; flex-wrap: wrap;">
+            {{ form.category }}
+            <button type="button" class="button button-small button-secondary" id="btn-criar-categoria" title="{% trans 'Criar nova categoria' %}">
+              {% trans "Criar Nova Categoria" %}
+            </button>
+          </div>
+          <span class="help">{{ form.category.help_text }}</span>
+        </div>
+      </li>
+
+      <!-- ======================================================== -->
+      <!-- Licença (dropdown) -->
+      <!-- ======================================================== -->
+      <li class="field">
+        <label class="label">{{ form.license.label }}</label>
+        <div class="input">
+          {{ form.license }}
+          <span class="help">{{ form.license.help_text }}</span>
+        </div>
+      </li>
+
+      <!-- ======================================================== -->
+      <!-- Componentes curriculares (filtro por níveis de ensino) -->
+      <!-- ======================================================== -->
+      <li class="field">
+        <label class="label">{{ form.componentes_curriculares.label }} <span class="required">*</span></label>
+        <div class="input">
+          <div style="background:#f7fafc;border:1px solid #cbd5e0;border-radius:4px;padding:12px;margin-bottom:12px;">
+            <p style="font-size:0.875rem; font-weight:600; color:#4a5568; margin:0 0 8px 0;">
+              {% trans "Filtre por nível de ensino:" %}
+            </p>
+            <div id="filtro-niveis" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:8px;"></div>
+            <span class="help" style="font-size:0.75rem; color:#718096;">
+              {% trans "Marque os níveis de ensino para exibir apenas os componentes daqueles anos." %}
+            </span>
+          </div>
+          {{ form.componentes_curriculares }}
+          <span class="help">{{ form.componentes_curriculares.help_text }}</span>
+        </div>
+      </li>
+
+      <!-- ======================================================== -->
+      <!-- Opções extras (JSON com explicação) -->
+      <!-- ======================================================== -->
+      <li class="field">
+        <label class="label">{{ form.options.label }}</label>
+        <div class="input">
+          {{ form.options }}
+          <span class="help">{{ form.options.help_text }}</span>
+          <div style="background:#eef4ff;border:1px solid #cbd5e0;border-radius:4px;padding:10px 14px;margin-top:12px; font-size:0.875rem;">
+            <strong style="color:#1d4ed8;">{% trans "Para que serve:" %}</strong>
+            <p style="margin:6px 0; color:#4a5568;">{% trans "Armazena dados flexíveis do conteúdo, como configurações de acessibilidade, site associado, comportamento do player, etc." %}</p>
+            <p style="margin:6px 0; font-family:monospace; color:#2d3748; font-size:0.8rem;">Ex: {"legendas": true, "site_associado": "https://exemplo.com"}</p>
+            <p style="margin:6px 0; color:#718096;">{% trans "Use apenas chaves e valores válidos em JSON. Deixe vazio se não houver dados extras." %}</p>
+          </div>
+        </div>
+      </li>
+
+      <!-- ======================================================== -->
+      <!-- Status e destaque -->
+      <!-- ======================================================== -->
+      <li class="field">
+        <label class="checkbox">
+          {{ form.is_approved }}
+          <strong>{{ form.is_approved.label }}</strong>
+          <span class="help">{% trans "Somente usuários com papel coordenador+ podem aprovar conteúdo para publicação." %}</span>
+        </label>
+      </li>
+      <li class="field">
+        <label class="checkbox">
+          {{ form.is_featured }}
+          <strong>{{ form.is_featured.label }}</strong>
+          <span class="help">{% trans "Exibir em destaque na home e listagens (blocos automáticos ou pré-selecionados pelo gestor)." %}</span>
+        </label>
+      </li>
+      <li class="field">
+        <label class="checkbox">
+          {{ form.is_site }}
+          <strong>{{ form.is_site.label }}</strong>
+          <span class="help">{% trans "Marca se o conteúdo é um site associado." %}</span>
+        </label>
+      </li>
+
+    </ul>
+
+    <div class="buttons" style="margin-top: 24px;">
+      <button type="submit" class="button button-success button-serial">
+        {% trans "Salvar e Publicar Conteúdo" %}
+      </button>
+      <a href="{% url 'admin:index' %}" class="button button-secondary">
+        {% trans "Cancelar" %}
+      </a>
+    </div>
+  </form>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<style>
+  .required {
+    color: #c53030;
+    font-weight: bold;
+    margin-left: 4px;
+  }
+  .field-block {
+    margin: 12px 0;
+    padding: 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+  }
+  input[readonly], select[readonly], input[disabled], select[disabled] {
+    background-color: #edf2f7;
+    color: #718096;
+    cursor: not-allowed;
+    border-color: #cbd5e0;
+  }
+  #btn-remover-arquivo {
+    background: #fed7d7;
+    color: #c53030;
+    border: 1px solid #fc8181;
+  }
+  #btn-remover-arquivo:hover {
+    background: #fc8181;
+    color: #fff;
+  }
+</style>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const ehEpisodioCheckbox = document.querySelector('input[name="eh_episodio"]');
+  const blocoSerie = document.getElementById("bloco-serie");
+  const serieSelect = document.querySelector('select[name="serie"]');
+  const serieNovaInput = document.querySelector('input[name="serie_nova_nome"]');
+  const temporadaSelect = document.querySelector('select[name="temporada"]');
+  const temporadaNovaInput = document.querySelector('input[name="temporada_nova_numero"]');
+  const numeroEpisodioInput = document.querySelector('input[name="numero_episodio"]');
+  const arquivoInput = document.querySelector('input[name="arquivo"]');
+  const btnRemoverArquivo = document.getElementById("btn-remover-arquivo");
+  const sourceInput = document.querySelector('input[name="source"]');
+  const tipoSelect = document.querySelector('select[name="tipo"]');
+
+  // ====================================================================
+  // 12. Episódio de Série - toggle dinâmico
+  // ====================================================================
+  function toggleSerieBloco() {
+    if (ehEpisodioCheckbox.checked) {
+      blocoSerie.style.display = "block";
+      serieSelect.removeAttribute("disabled");
+      temporadaSelect.removeAttribute("disabled");
+      numeroEpisodioInput.removeAttribute("disabled");
+    } else {
+      blocoSerie.style.display = "none";
+      serieSelect.setAttribute("disabled", "disabled");
+      temporadaSelect.setAttribute("disabled", "disabled");
+      numeroEpisodioInput.setAttribute("disabled", "disabled");
+    }
+  }
+
+  ehEpisodioCheckbox.addEventListener("change", toggleSerieBloco);
+  toggleSerieBloco(); // estado inicial
+
+  // ====================================================================
+  // 12. Série nova vs existente - habilitar campos apropriados
+  // ====================================================================
+  serieSelect.addEventListener("change", function () {
+    const temSerieExistente = this.value !== "";
+    serieNovaInput.disabled = temSerieExistente;
+    temporadaNovaInput.disabled = !temSerieExistente;
+    if (!temSerieExistente) {
+      temporadaSelect.innerHTML = '<option value="">{% trans "Selecione uma temporada" %}</option>';
+      temporadaSelect.setAttribute("disabled", "disabled");
+    } else {
+      carregarTemporadas(this.value);
+    }
+  });
+
+  serieNovaInput.addEventListener("input", function () {
+    const temSerieNova = this.value.trim() !== "";
+    serieSelect.disabled = temSerieNova;
+    temporadaSelect.disabled = !temSerieNova;
+    temporadaNovaInput.disabled = !temSerieNova;
+    if (temSerieNova) {
+      serieSelect.innerHTML = '<option value="">{% trans "Selecionar série existente" %}</option>';
+      serieSelect.setAttribute("disabled", "disabled");
+    }
+  });
+
+  temporadaNovaInput.addEventListener("input", function () {
+    const temTemporadaNova = this.value.trim() !== "";
+    temporadaSelect.disabled = temTemporadaNova;
+    if (temTemporadaNova) {
+      temporadaSelect.innerHTML = '<option value="">{% trans "Selecione uma temporada existente" %}</option>';
+      temporadaSelect.setAttribute("disabled", "disabled");
+    } else if (serieSelect.value) {
+      carregarTemporadas(serieSelect.value);
+    }
+  });
+
+  // ====================================================================
+  // 12. Carregar temporadas via AJAX
+  // ====================================================================
+  function carregarTemporadas(serieId) {
+    if (!serieId) return;
+    temporadaSelect.innerHTML = '<option value="">{% trans "Carregando temporadas..." %}</option>';
+    fetch(`/conteudos/api/series/${serieId}/temporadas/`)
+      .then((resp) => resp.json())
+      .then((data) => {
+        temporadaSelect.innerHTML = '<option value="">{% trans "Selecione uma temporada" %}</option>';
+        data.temporadas.forEach(function (t) {
+          const opt = document.createElement("option");
+          opt.value = t.id;
+          opt.textContent = "Temporada " + t.numero + (t.sinopse ? " - " + t.sinopse : "");
+          temporadaSelect.appendChild(opt);
+        });
+        temporadaSelect.removeAttribute("disabled");
+      })
+      .catch(() => {
+        temporadaSelect.innerHTML = '<option value="">{% trans "Erro ao carregar temporadas" %}</option>';
+      });
+  }
+
+  // ====================================================================
+  // 2. Campo Arquivo - "x" para remover seleção
+  // ====================================================================
+  arquivoInput.addEventListener("change", function () {
+    const temArquivo = this.files && this.files.length > 0;
+    btnRemoverArquivo.style.display = temArquivo ? "inline-block" : "none";
+
+    // Travamento mútuo: arquivo ativo => URL desabilitada
+    sourceInput.disabled = temArquivo;
+    if (temArquivo) {
+      sourceInput.classList.add("disabled");
+      sourceInput.setAttribute("readonly", "readonly");
+    } else {
+      sourceInput.classList.remove("disabled");
+      sourceInput.removeAttribute("readonly");
+    }
+  });
+
+  btnRemoverArquivo.addEventListener("click", function () {
+    arquivoInput.value = "";
+    btnRemoverArquivo.style.display = "none";
+    sourceInput.disabled = false;
+    sourceInput.classList.remove("disabled");
+    sourceInput.removeAttribute("readonly");
+  });
+
+  // ====================================================================
+  // 9. Travamento mútuo Arquivo × URL
+  // ====================================================================
+  function toggleArquivoUrl() {
+    const temArquivo = arquivoInput.files && arquivoInput.files.length > 0;
+    const temUrl = sourceInput.value.trim() !== "";
+
+    sourceInput.disabled = temArquivo;
+    arquivoInput.disabled = temUrl;
+
+    btnRemoverArquivo.style.display = temArquivo ? "inline-block" : "none";
+
+    if (temArquivo) {
+      sourceInput.classList.add("disabled");
+      sourceInput.setAttribute("readonly", "readonly");
+    } else {
+      sourceInput.classList.remove("disabled");
+      sourceInput.removeAttribute("readonly");
+    }
+    if (temUrl) {
+      arquivoInput.classList.add("disabled");
+    } else {
+      arquivoInput.classList.remove("disabled");
+    }
+  }
+
+  arquivoInput.addEventListener("change", toggleArquivoUrl);
+  sourceInput.addEventListener("input", toggleArquivoUrl);
+
+  // Estado inicial
+  toggleArquivoUrl();
+
+  // ====================================================================
+  // 5. Tipo de conteúdo baseado na URL/arquivo
+  // ====================================================================
+  function atualizarTipoPelaUrlOuArquivo() {
+    let extensao = null;
+
+    if (arquivoInput.files && arquivoInput.files.length > 0) {
+      const nome = arquivoInput.files[0].name;
+      extensao = "." + nome.split(".").pop().toLowerCase();
+    } else if (sourceInput.value.trim() !== "") {
+      extensao = extrairExtensaoUrl(sourceInput.value);
+    }
+
+    if (extensao) {
+      const mapaExtensaoTipo = {
+        ".mp4": "Vídeo",
+        ".webm": "Vídeo",
+        ".mov": "Vídeo",
+        ".avi": "Vídeo",
+        ".mkv": "Vídeo",
+        ".m4v": "Vídeo",
+        ".mp3": "Áudio",
+        ".wav": "Áudio",
+        ".ogg": "Áudio",
+        ".m4a": "Áudio",
+        ".aac": "Áudio",
+        ".flac": "Áudio",
+        ".pdf": "Documento",
+        ".doc": "Documento",
+        ".docx": "Documento",
+        ".odt": "Documento",
+        ".rtf": "Documento",
+        ".txt": "Documento",
+        ".csv": "Documento",
+        ".xls": "Documento",
+        ".xlsx": "Documento",
+        ".ppt": "Apresentação",
+        ".pptx": "Apresentação",
+        ".odp": "Apresentação",
+        ".key": "Apresentação",
+        ".zip": "Download binário",
+        ".rar": "Download binário",
+        ".7z": "Download binário",
+        ".exe": "Download binário",
+        ".jpg": "Imagem",
+        ".jpeg": "Imagem",
+        ".png": "Imagem",
+        ".gif": "Imagem",
+        ".svg": "Imagem",
+        ".webp": "Imagem",
+      };
+      const tipoNome = mapaExtensaoTipo[extensao];
+      if (tipoNome && tipoSelect) {
+        for (let i = 0; i < tipoSelect.options.length; i++) {
+          if (tipoSelect.options[i].text.includes(tipoNome)) {
+            tipoSelect.selectedIndex = i;
+            break;
+          }
+        }
+      }
+    } else {
+      // URL sem extensão reconhecida -> Site Externo
+      if (tipoSelect) {
+        for (let i = 0; i < tipoSelect.options.length; i++) {
+          if (tipoSelect.options[i].text.includes("Site Externo") || tipoSelect.options[i].text.includes("Externo")) {
+            tipoSelect.selectedIndex = i;
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  arquivoInput.addEventListener("change", atualizarTipoPelaUrlOuArquivo);
+  sourceInput.addEventListener("input", atualizarTipoPelaUrlOuArquivo);
+
+  function extrairExtensaoUrl(url) {
+    if (!url) return null;
+    const caminho = url.split("?")[0].split("#")[0];
+    const partes = caminho.split(".");
+    if (partes.length > 1) return "." + partes[partes.length - 1].toLowerCase();
+    return null;
+  }
+
+  // ====================================================================
+  // 1 e 4. Botões "Criar Novo Canal" e "Criar Nova Categoria"
+  // ====================================================================
+  const btnCriarCanal = document.getElementById("btn-criar-canal");
+  const btnCriarCategoria = document.getElementById("btn-criar-categoria");
+
+  if (btnCriarCanal) {
+    btnCriarCanal.addEventListener("click", function (e) {
+      e.preventDefault();
+      window.open("/admin/pages/canais/canalpage/add/", "_blank");
+    });
+  }
+
+  if (btnCriarCategoria) {
+    btnCriarCategoria.addEventListener("click", function (e) {
+      e.preventDefault();
+      window.open("/admin/snippets/conteudos/categoriaconteudo/add/", "_blank");
+    });
+  }
+
+  // ====================================================================
+  // Tipo e mecanismo: só leitura por padrão (sem campo mecanismo no form)
+  // ====================================================================
+  if (tipoSelect) {
+    tipoSelect.setAttribute("readonly", "readonly");
+    tipoSelect.classList.add("disabled");
+  }
+});
+</script>
+{% endblock %}
