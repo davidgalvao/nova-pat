@@ -10,6 +10,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.http import JsonResponse
 from django.utils.translation import gettext_lazy as _
+from taggit.models import Tag
 
 from wagtail.models import Page
 
@@ -168,3 +169,19 @@ def api_temporadas_por_serie(request, serie_id):
         for t in temporadas
     ]
     return JsonResponse({"temporadas": dados})
+
+
+@login_required
+@user_passes_test(_pode_cadastrar_conteudo, login_url="admin:login")
+def api_tags_autocomplete(request):
+    """
+    Endpoint API para autocomplete de tags (usado via AJAX no formulário).
+    Busca tags existentes a partir de 3 caracteres, com debounce no frontend.
+    """
+    query = request.GET.get("q", "").strip()
+    if len(query) < 3:
+        return JsonResponse({"tags": []})
+
+    tags = Tag.objects.filter(name__icontains=query).order_by("name")[:20]
+    dados = [{"name": tag.name, "slug": tag.slug} for tag in tags]
+    return JsonResponse({"tags": dados})

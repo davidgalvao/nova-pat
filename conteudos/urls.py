@@ -37,4 +37,9 @@ urlpatterns = [
         views.api_temporadas_por_serie,
         name="api_temporadas_por_serie",
     ),
+path(
+        "api/tags/autocomplete/",
+        views.api_tags_autocomplete,
+        name="api_tags_autocomplete",
+    ),
 ]

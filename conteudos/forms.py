@@ -8,7 +8,7 @@ administrativa do Wagtail.
 Implementa as correções do card NOVAPAT-69 conforme feedback do usuário:
 - Layout single column (cada item abaixo do outro, na ordem solicitada)
 - Campo Arquivo com "x" para remover seleção
-- Autor pré-selecionado com o usuário logado
+- Autor pré-selecionado com o usuário logado (apenas para admin/superadmin)
 - Tipo de conteúdo: dropdown, somente leitura por padrão, ativando apenas se
   o sistema não identificar pela extensão da URL/arquivo
 - Campo "Mecanismo de exibição" REMOVIDO (a view de exibição identifica
@@ -18,12 +18,15 @@ Implementa as correções do card NOVAPAT-69 conforme feedback do usuário:
 - Episódio de Série no COMEÇO do formulário, com seleção dinâmica:
   selecionar ou cadastrar nova série, selecionar ou cadastrar nova temporada,
   editar número do episódio. Nova série cria automaticamente temporada 1.
+- Categoria não obrigatória e não escopada por canal
+- Componentes curriculares com filtro por níveis de ensino
+- Tags com autocomplete (debounce 1s, busca a partir 3ª letra)
+- JSON com exemplo para acessibilidade
 """
 from django import forms
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 import os
-import re
 
 from wagtail.models import Page
 
@@ -37,6 +40,23 @@ from conteudos.models import (
     CategoriaConteudo,
     EXTENSOES_SEGURAS,
 )
+from usuarios.models import User, Role
+
+
+class CurricularComponentSelectMultiple(forms.SelectMultiple):
+    """
+    Widget customizado para adicionar data-nivel e data-nivel-nome
+    nas options de componentes curriculares, permitindo filtro por nível de ensino no frontend.
+    """
+    def create_option(self, name, value, label, selected, index, subindex=None, attrs=None):
+        option = super().create_option(name, value, label, selected, index, subindex, attrs)
+        if value and hasattr(value, 'instance'):
+            comp = value.instance
+            if comp.nivel_id:
+                option['attrs']['data-nivel'] = str(comp.nivel_id)
+                option['attrs']['data-nivel-nome'] = comp.nivel.name
+        return option
+
 
 # Mapeamento de extensão -> nome do Tipo pedagógico
 EXTENSAO_PARA_TIPO = {
@@ -256,25 +276,28 @@ class ConteudoCadastroForm(forms.Form):
     autor = forms.ModelChoiceField(
         label=_("Autor publicador"),
         queryset=None,  # definido no __init__
+        required=False,
         widget=forms.Select(
             attrs={
                 "class": "w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none",
             }
         ),
-        help_text=_("Usuário que está publicando este recurso."),
+        help_text=_("Usuário que está publicando este recurso. Visível apenas para administradores."),
     )
 
+    # Tags com autocomplete
     tags = forms.CharField(
         label=_("Tags"),
         required=False,
         widget=forms.TextInput(
             attrs={
                 "class": "w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none",
-                "placeholder": _("tag1, tag2, tag3"),
-                "data-role": "tags",
+                "placeholder": _("Digite para buscar tags existentes... (mín. 3 letras)"),
+                "data-role": "tags-autocomplete",
+                "autocomplete": "off",
             }
         ),
-        help_text=_("Mínimo 3, máximo 50 tags separadas por vírgula."),
+        help_text=_("Mínimo 3, máximo 50 tags separadas por vírgula. Digite 3+ letras para buscar tags existentes."),
     )
 
     # ==================================================================
@@ -352,18 +375,19 @@ class ConteudoCadastroForm(forms.Form):
     )
 
     # ==================================================================
-    # Categoria (com botão "Criar Nova Categoria")
+    # Categoria (NÃO obrigatória, NÃO escopada por canal)
     # ==================================================================
     category = forms.ModelChoiceField(
         label=_("Categoria"),
-        queryset=CategoriaConteudo.objects.filter(is_active=True).order_by("canal__title", "ordem", "name"),
+        queryset=CategoriaConteudo.objects.filter(is_active=True).order_by("ordem", "name"),
         widget=forms.Select(
             attrs={
                 "class": "w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none",
             }
         ),
-        empty_label=_("Selecione uma categoria"),
-        help_text=_("Categoria do conteúdo (árvore escopada por canal)."),
+        empty_label=_("Selecione uma categoria (opcional)"),
+        required=False,
+        help_text=_("Categoria do conteúdo (independente de canal). Ex: 'Folclore Brasileiro' pode estar no canal 'Rádio Anísio Teixeira'."),
     )
 
     # ==================================================================
@@ -383,22 +407,19 @@ class ConteudoCadastroForm(forms.Form):
     )
 
     # ==================================================================
-    # Componentes curriculares (filtro por níveis de ensino)
+    # Componentes curriculares (com filtro por níveis de ensino)
     # ==================================================================
     componentes_curriculares = forms.ModelMultipleChoiceField(
         label=_("Componentes curriculares"),
-        queryset=CurricularComponent.objects.filter(is_active=True).order_by("nivel__ordem", "category__ordem", "name"),
-        widget=forms.SelectMultiple(
+        queryset=CurricularComponent.objects.filter(is_active=True).select_related("nivel", "category").order_by("nivel__ordem", "category__ordem", "name"),
+        widget=CurricularComponentSelectMultiple(
             attrs={
                 "class": "w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none h-64",
                 "data-componente-filter": "true",
             }
         ),
         required=False,
-        help_text=_(
-            "Mínimo 1 obrigatório. Filtre por nível de ensino à esquerda para exibir "
-            "apenas os componentes daqueles anos."
-        ),
+        help_text=_("Mínimo 1 obrigatório. Filtre por nível de ensino para exibir apenas os componentes daqueles anos."),
     )
 
     # ==================================================================
@@ -423,13 +444,13 @@ class ConteudoCadastroForm(forms.Form):
         widget=forms.Textarea(
             attrs={
                 "class": "w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none font-mono text-sm",
-                "rows": 3,
-                "placeholder": '{"acessibilidade": {"legendas": true}, "site_associado": "https://exemplo.com"}',
+                "rows": 5,
+                "placeholder": '{"acessibilidade": {"legendas": true, "audiodescricao": false, "libras": false}, "site_associado": "https://exemplo.com"}',
             }
         ),
         help_text=_(
             "JSON flexível para dados adicionais (acessibilidade, site associado, etc.). "
-            "Exemplo: {\"formato\": \"16:9\", \"legendas\": true}"
+            "Exemplo para acessibilidade: {\"legendas\": true, \"audiodescricao\": false, \"libras\": true}"
         ),
     )
 
@@ -474,19 +495,29 @@ class ConteudoCadastroForm(forms.Form):
     def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
 
-        from usuarios.models import User
-
-        # Autor: pré-selecionar com o usuário logado.
-        # Nota: quando o form está bound (recebe dados GET/POST), o Django ignora
-        # o `initial` para campos não preenchidos. Forçamos o initial aqui para
-        # garantir que o autor logado apareça selecionado mesmo em GET com parâmetros
-        # (ex: ?serie=1&eh_episodio=1 do "Adicionar EP").
-        self.fields["autor"].queryset = User.objects.filter(is_active=True).order_by("username")
+        # Verificar se usuário é admin/superadmin
+        is_admin = False
         if user and user.is_authenticated:
+            if user.is_superuser:
+                is_admin = True
+            else:
+                role = getattr(user, "role", None)
+                if role and role.slug in ("super-admin", "admin"):
+                    is_admin = True
+
+        # Autor: pré-selecionar com o usuário logado
+        # Apenas mostrar para admin/superadmin
+        if is_admin:
+            self.fields["autor"].queryset = User.objects.filter(is_active=True).order_by("username")
             self.fields["autor"].initial = user.pk
             # Se o form está bound mas autor não veio nos dados, forçar o initial
             if self.is_bound and "autor" not in self.data:
                 self.fields["autor"].initial = user.pk
+        else:
+            # Para não-admin, não mostrar o campo (define como hidden com valor do usuário)
+            self.fields["autor"].widget = forms.HiddenInput()
+            self.fields["autor"].initial = user.pk if user and user.is_authenticated else None
+            self.fields["autor"].required = False
 
         # Temporada: começa vazia, preenchida via JS após selecionar Série
         self.fields["temporada"].queryset = Temporada.objects.none()
