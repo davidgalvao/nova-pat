@@ -3,6 +3,51 @@
 
 {% block titletag %}{{ titulo_pagina }} - Nova PAT{% endblock %}
 
+{% block extra_css %}
+<style>
+  .separador-bloco {
+    border: none;
+    border-top: 1px solid var(--w-color-grey-200, #e2e8f0);
+    margin: 1.5rem 0;
+    opacity: 0.5;
+  }
+  .tooltip-help {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 1px solid #cbd5e0;
+    background: #f8fafc;
+    color: #718096;
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1;
+    cursor: help;
+    margin-left: 6px;
+  }
+  .tooltip-help:hover {
+    background: #e2e8f0;
+    color: #2d3748;
+  }
+  .checkbox-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+  }
+  .checkbox-inline input {
+    margin: 0;
+  }
+  .checkbox-inline label {
+    margin: 0;
+    font-weight: 500;
+    cursor: pointer;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="nice-padding">
 
@@ -12,6 +57,8 @@
       {% trans "Cadastro de conteúdo de mídia educacional: vídeo, áudio, documento, apresentação, link externo ou animação externa." %}
     </p>
   </header>
+
+  <div style="margin-bottom: 2rem;"></div>
 
   {% if messages %}
     {% include "wagtailadmin/shared/messages.html" %}
@@ -31,7 +78,7 @@
     <!-- ======================================================== -->
     <fieldset class="w-fieldset">
       <legend class="w-fieldset__legend">
-        <span class="w-fieldset__legend-text">{% trans "Episódio de Série" %}</span>
+        <span class="w-fieldset__legend-text" style="font-size:1.125rem;font-weight:700;">{% trans "Episódio de Série" %}</span>
         <span class="w-fieldset__legend-description">{% trans "Marque se este conteúdo faz parte de uma série com temporadas e episódios numerados." %}</span>
       </legend>
 
@@ -62,12 +109,14 @@
       </div>
     </fieldset>
 
+    <hr class="separador-bloco">
+
     <!-- ======================================================== -->
     <!-- Identificação Básica -->
     <!-- ======================================================== -->
     <fieldset class="w-fieldset">
       <legend class="w-fieldset__legend">
-        <span class="w-fieldset__legend-text">{% trans "Identificação" %}</span>
+        <span class="w-fieldset__legend-text" style="font-size:1.125rem;font-weight:700;">{% trans "Identificação" %}</span>
         <span class="w-fieldset__legend-description">{% trans "Título, descrição curta e autor do conteúdo." %}</span>
       </legend>
 
@@ -88,30 +137,14 @@
       </ul>
     </fieldset>
 
-    <!-- ======================================================== -->
-    <!-- Tags -->
-    <!-- ======================================================== -->
-    <fieldset class="w-fieldset">
-      <legend class="w-fieldset__legend">
-        <span class="w-fieldset__legend-text">{% trans "Tags" %}</span>
-        <span class="w-fieldset__legend-description">{% trans "Palavras-chave para busca e filtros (mínimo 3, máximo 50)." %}</span>
-      </legend>
-
-      <ul class="fields">
-        <li class="field">
-          {% formattedfield form.tags %}
-          <div id="tags-autocomplete-dropdown" class="tags-autocomplete-dropdown" style="display:none;"></div>
-          <div id="selected-tags-display" style="margin-top:8px;"></div>
-        </li>
-      </ul>
-    </fieldset>
+    <hr class="separador-bloco">
 
     <!-- ======================================================== -->
     <!-- Canal -->
     <!-- ======================================================== -->
     <fieldset class="w-fieldset">
       <legend class="w-fieldset__legend">
-        <span class="w-fieldset__legend-text">{% trans "Canal" %}</span>
+        <span class="w-fieldset__legend-text" style="font-size:1.125rem;font-weight:700;">{% trans "Canal" %}</span>
         <span class="w-fieldset__legend-description">{% trans "Canal onde o conteúdo será publicado." %}</span>
       </legend>
 
@@ -127,12 +160,34 @@
       </ul>
     </fieldset>
 
+    <hr class="separador-bloco">
+
+    <!-- ======================================================== -->
+    <!-- Tags -->
+    <!-- ======================================================== -->
+    <fieldset class="w-fieldset">
+      <legend class="w-fieldset__legend">
+        <span class="w-fieldset__legend-text" style="font-size:1.125rem;font-weight:700;">{% trans "Tags" %}</span>
+        <span class="w-fieldset__legend-description">{% trans "Palavras-chave para busca e filtros (mínimo 3, máximo 50)." %}</span>
+      </legend>
+
+      <ul class="fields">
+        <li class="field">
+          {% formattedfield form.tags %}
+          <div id="tags-autocomplete-dropdown" class="tags-autocomplete-dropdown" style="display:none;"></div>
+          <div id="selected-tags-display" style="margin-top:8px;"></div>
+        </li>
+      </ul>
+    </fieldset>
+
+    <hr class="separador-bloco">
+
     <!-- ======================================================== -->
     <!-- Mídia: Arquivo ou URL Externa -->
     <!-- ======================================================== -->
     <fieldset class="w-fieldset">
       <legend class="w-fieldset__legend">
-        <span class="w-fieldset__legend-text">{% trans "Arquivo ou Link Externo" %}</span>
+        <span class="w-fieldset__legend-text" style="font-size:1.125rem;font-weight:700;">{% trans "Arquivo ou Link Externo" %}</span>
         <span class="w-fieldset__legend-description">{% trans "Faça upload de um arquivo OU informe uma URL externa. Um desabilita o outro." %}</span>
       </legend>
 
@@ -156,12 +211,14 @@
       </div>
     </fieldset>
 
+    <hr class="separador-bloco">
+
     <!-- ======================================================== -->
     <!-- Classificação -->
     <!-- ======================================================== -->
     <fieldset class="w-fieldset">
       <legend class="w-fieldset__legend">
-        <span class="w-fieldset__legend-text">{% trans "Classificação" %}</span>
+        <span class="w-fieldset__legend-text" style="font-size:1.125rem;font-weight:700;">{% trans "Classificação" %}</span>
         <span class="w-fieldset__legend-description">{% trans "Tipo (detectado automaticamente), categoria opcional e licença." %}</span>
       </legend>
 
@@ -183,39 +240,41 @@
       </ul>
     </fieldset>
 
+    <hr class="separador-bloco">
+
     <!-- ======================================================== -->
     <!-- Componentes Curriculares -->
     <!-- ======================================================== -->
     <fieldset class="w-fieldset">
       <legend class="w-fieldset__legend">
-        <span class="w-fieldset__legend-text">{% trans "Componentes Curriculares" %}</span>
-        <span class="w-fieldset__legend-description">{% trans "Selecione os componentes relacionados. Use o filtro por nível de ensino para reduzir a lista." %}</span>
+        <span class="w-fieldset__legend-text" style="font-size:1.125rem;font-weight:700;">{% trans "Componentes Curriculares" %}</span>
+        <span class="w-fieldset__legend-description">{% trans "Use o filtro por nível de ensino para reduzir a lista." %}</span>
       </legend>
 
       <ul class="fields">
         <li class="field">
           <div class="field-content">
-            <label class="label">{{ form.componentes_curriculares.label }}{% if form.componentes_curriculares.field.required %}<span class="required">*</span>{% endif %}</label>
             <div class="input">
-              <div class="help-block" style="background:#f7f9fc;border:1px solid #d1dbe5;border-radius:4px;padding:12px;margin-bottom:12px;">
+              <div class="help-block" style="padding:12px;margin-bottom:12px;">
                 <strong>{% trans "Filtrar por nível de ensino:" %}</strong>
                 <div id="filtro-niveis" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;"></div>
-                <p class="help" style="margin-top:8px;">{% trans "Marque os níveis desejados. Se nenhum estiver marcado, todos os componentes serão exibidos." %}</p>
+                <p class="help" style="margin-top:8px;">{% trans "Segure CTRL para selecionar múltiplos itens. Marque os níveis desejados. Se nenhum estiver marcado, todos os componentes serão exibidos." %}</p>
               </div>
               {% formattedfield form.componentes_curriculares %}
-              {% if form.componentes_curriculares.help_text %}<p class="help">{{ form.componentes_curriculares.help_text }}</p>{% endif %}
             </div>
           </div>
         </li>
       </ul>
     </fieldset>
 
+    <hr class="separador-bloco">
+
     <!-- ======================================================== -->
     <!-- Opções Extras (JSON) -->
     <!-- ======================================================== -->
     <fieldset class="w-fieldset">
       <legend class="w-fieldset__legend">
-        <span class="w-fieldset__legend-text">{% trans "Opções Extras (JSON)" %}</span>
+        <span class="w-fieldset__legend-text" style="font-size:1.125rem;font-weight:700;">{% trans "Opções Extras (JSON)" %}</span>
         <span class="w-fieldset__legend-description">{% trans "Configurações avançadas de acessibilidade, metadados do player e links associados." %}</span>
       </legend>
 
@@ -242,24 +301,29 @@
       </div>
     </fieldset>
 
+    <hr class="separador-bloco">
+
     <!-- ======================================================== -->
     <!-- Status e Destaque -->
     <!-- ======================================================== -->
     <fieldset class="w-fieldset">
       <legend class="w-fieldset__legend">
-        <span class="w-fieldset__legend-text">{% trans "Status e Destaque" %}</span>
+        <span class="w-fieldset__legend-text" style="font-size:1.125rem;font-weight:700;">{% trans "Status e Destaque" %}</span>
         <span class="w-fieldset__legend-description">{% trans "Controle de aprovação, destaque na home e marcação de site associado." %}</span>
       </legend>
 
       <ul class="fields">
-        <li class="field">
+        <li class="field checkbox-inline">
           {% formattedfield form.is_approved %}
+          <span class="tooltip-help" title="Aprova o conteúdo para publicação. Apenas usuários com papel coordenador+ podem aprovar.">i</span>
         </li>
-        <li class="field">
+        <li class="field checkbox-inline">
           {% formattedfield form.is_featured %}
+          <span class="tooltip-help" title="Exibe o conteúdo em destaque na home e listagens.">i</span>
         </li>
-        <li class="field">
+        <li class="field checkbox-inline">
           {% formattedfield form.is_site %}
+          <span class="tooltip-help" title="Marca se o conteúdo é um site associado.">i</span>
         </li>
       </ul>
     </fieldset>
@@ -667,7 +731,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const label = document.createElement("label");
       label.style.cssText = "display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:#edf2f7;border:1px solid #cbd5e0;border-radius:9999px;cursor:pointer;font-size:0.875rem;";
       label.innerHTML = `
-        <input type="checkbox" value="${nivelId}" checked style="width:1rem;height:1rem;accent-color:#1d4ed8;">
+        <input type="checkbox" value="${nivelId}" style="width:1rem;height:1rem;accent-color:#1d4ed8;">
         <span>${escapeHtml(nivelNome)}</span>
       `;
       label.querySelector("input").addEventListener("change", function () {

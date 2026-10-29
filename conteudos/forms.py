@@ -415,7 +415,7 @@ class ConteudoCadastroForm(forms.Form):
             }
         ),
         required=False,
-        help_text=_("Mínimo 1 obrigatório. Filtre por nível de ensino para exibir apenas os componentes daqueles anos."),
+        help_text=_("Segure CTRL para selecionar múltiplos itens. Use o filtro por nível de ensino para exibir apenas os componentes daqueles anos."),
     )
 
     # ==================================================================
