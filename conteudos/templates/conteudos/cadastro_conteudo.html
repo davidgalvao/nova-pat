@@ -9,7 +9,7 @@
   <header class="page-header">
     <h1 class="icon icon-doc-full-inverse">{{ titulo_pagina }}</h1>
     <p class="help">
-      {% trans "Cadastro dedicado de conteúdo de mídia educacional (vídeo, áudio, documento, apresentação, link externo, animação externa)." %}
+      {% trans "Cadastro de conteúdo de mídia educacional: vídeo, áudio, documento, apresentação, link externo ou animação externa." %}
     </p>
   </header>
 
@@ -27,12 +27,12 @@
     {% endif %}
 
     <!-- ======================================================== -->
-    <!-- 12. Episódio de Série — COMEÇO do formulário -->
+    <!-- Episódio de Série -->
     <!-- ======================================================== -->
     <fieldset class="w-fieldset">
       <legend class="w-fieldset__legend">
-        <span class="w-fieldset__legend-text">{% trans "Episódio de Série (RF008)" %}</span>
-        <span class="w-fieldset__legend-description">{% trans "Marque se este conteúdo é um episódio de uma série (estilo Netflix)." %}</span>
+        <span class="w-fieldset__legend-text">{% trans "Episódio de Série" %}</span>
+        <span class="w-fieldset__legend-description">{% trans "Marque se este conteúdo faz parte de uma série com temporadas e episódios numerados." %}</span>
       </legend>
 
       <ul class="fields">
@@ -64,12 +64,12 @@
     </fieldset>
 
     <!-- ======================================================== -->
-    <!-- Identificação básica -->
+    <!-- Identificação Básica -->
     <!-- ======================================================== -->
     <fieldset class="w-fieldset">
       <legend class="w-fieldset__legend">
-        <span class="w-fieldset__legend-text">{% trans "Identificação Básica" %}</span>
-        <span class="w-fieldset__legend-description">{% trans "Título, descrição e autor do conteúdo." %}</span>
+        <span class="w-fieldset__legend-text">{% trans "Identificação" %}</span>
+        <span class="w-fieldset__legend-description">{% trans "Título, descrição curta e autor do conteúdo." %}</span>
       </legend>
 
       <ul class="fields">
@@ -95,7 +95,7 @@
     <fieldset class="w-fieldset">
       <legend class="w-fieldset__legend">
         <span class="w-fieldset__legend-text">{% trans "Tags" %}</span>
-        <span class="w-fieldset__legend-description">{% trans "Palavras-chave para busca e organização (mín. 3, máx. 50)." %}</span>
+        <span class="w-fieldset__legend-description">{% trans "Palavras-chave para busca e filtros (mínimo 3, máximo 50)." %}</span>
       </legend>
 
       <ul class="fields">
@@ -112,8 +112,8 @@
     <!-- ======================================================== -->
     <fieldset class="w-fieldset">
       <legend class="w-fieldset__legend">
-        <span class="w-fieldset__legend-text">{% trans "Canal de Publicação" %}</span>
-        <span class="w-fieldset__legend-description">{% trans "Canal onde o conteúdo será publicado (metadado, não pai hierárquico)." %}</span>
+        <span class="w-fieldset__legend-text">{% trans "Canal" %}</span>
+        <span class="w-fieldset__legend-description">{% trans "Canal onde o conteúdo será publicado." %}</span>
       </legend>
 
       <ul class="fields">
@@ -129,12 +129,12 @@
     </fieldset>
 
     <!-- ======================================================== -->
-    <!-- Arquivo de mídia × URL externa -->
+    <!-- Mídia: Arquivo ou URL Externa -->
     <!-- ======================================================== -->
     <fieldset class="w-fieldset">
       <legend class="w-fieldset__legend">
-        <span class="w-fieldset__legend-text">{% trans "Mídia: Arquivo ou URL Externa" %}</span>
-        <span class="w-fieldset__legend-description">{% trans "Selecione um arquivo OU informe uma URL. Não é possível preencher ambos." %}</span>
+        <span class="w-fieldset__legend-text">{% trans "Arquivo ou Link Externo" %}</span>
+        <span class="w-fieldset__legend-description">{% trans "Faça upload de um arquivo OU informe uma URL externa. Um desabilita o outro." %}</span>
       </legend>
 
       <ul class="fields">
@@ -150,20 +150,20 @@
       </ul>
 
       <div class="help-block" style="background:#fff3cd;border:1px solid #ffc107;border-radius:4px;padding:12px;margin:16px 0;">
-        <strong>{% trans "Seleção exclusiva:" %}</strong>
+        <strong>{% trans "Regra de exclusão:" %}</strong>
         <p style="margin:8px 0 0 0;">
-          {% trans "Ao enviar um arquivo, o campo URL fica desabilitado. Ao colar uma URL, o campo Arquivo fica desabilitado. Não é possível preencher ambos." %}
+          {% trans "Se enviar um arquivo, o campo URL será desabilitado. Se colar uma URL, o upload será desabilitado. Preencha apenas um." %}
         </p>
       </div>
     </fieldset>
 
     <!-- ======================================================== -->
-    <!-- Classificação (Tipo, Categoria, Licença) -->
+    <!-- Classificação -->
     <!-- ======================================================== -->
     <fieldset class="w-fieldset">
       <legend class="w-fieldset__legend">
-        <span class="w-fieldset__legend-text">{% trans "Classificação do Conteúdo" %}</span>
-        <span class="w-fieldset__legend-description">{% trans "Tipo (auto-detectado), categoria opcional e licença de uso." %}</span>
+        <span class="w-fieldset__legend-text">{% trans "Classificação" %}</span>
+        <span class="w-fieldset__legend-description">{% trans "Tipo (detectado automaticamente), categoria opcional e licença." %}</span>
       </legend>
 
       <ul class="fields">
@@ -185,12 +185,12 @@
     </fieldset>
 
     <!-- ======================================================== -->
-    <!-- Componentes curriculares -->
+    <!-- Componentes Curriculares -->
     <!-- ======================================================== -->
     <fieldset class="w-fieldset">
       <legend class="w-fieldset__legend">
         <span class="w-fieldset__legend-text">{% trans "Componentes Curriculares" %}</span>
-        <span class="w-fieldset__legend-description">{% trans "Selecione os componentes curriculares relacionados. Filtre por nível de ensino." %}</span>
+        <span class="w-fieldset__legend-description">{% trans "Selecione os componentes relacionados. Use o filtro por nível de ensino para reduzir a lista." %}</span>
       </legend>
 
       <ul class="fields">
@@ -199,9 +199,9 @@
             <label class="label">{{ form.componentes_curriculares.label }}{% if form.componentes_curriculares.field.required %}<span class="required">*</span>{% endif %}</label>
             <div class="input">
               <div class="help-block" style="background:#f7f9fc;border:1px solid #d1dbe5;border-radius:4px;padding:12px;margin-bottom:12px;">
-                <strong>{% trans "Filtre por nível de ensino:" %}</strong>
+                <strong>{% trans "Filtrar por nível de ensino:" %}</strong>
                 <div id="filtro-niveis" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;"></div>
-                <p class="help" style="margin-top:8px;">{% trans "Marque os níveis de ensino para exibir apenas os componentes daqueles anos. Ao desmarcar todos, todos os componentes são exibidos." %}</p>
+                <p class="help" style="margin-top:8px;">{% trans "Marque os níveis desejados. Se nenhum estiver marcado, todos os componentes serão exibidos." %}</p>
               </div>
               {% formattedfield form.componentes_curriculares %}
               {% if form.componentes_curriculares.help_text %}<p class="help">{{ form.componentes_curriculares.help_text }}</p>{% endif %}
@@ -212,12 +212,12 @@
     </fieldset>
 
     <!-- ======================================================== -->
-    <!-- Opções extras (JSON) -->
+    <!-- Opções Extras (JSON) -->
     <!-- ======================================================== -->
     <fieldset class="w-fieldset">
       <legend class="w-fieldset__legend">
         <span class="w-fieldset__legend-text">{% trans "Opções Extras (JSON)" %}</span>
-        <span class="w-fieldset__legend-description">{% trans "Configurações avançadas: acessibilidade, site associado, formato, duração." %}</span>
+        <span class="w-fieldset__legend-description">{% trans "Configurações avançadas de acessibilidade, metadados do player e links associados." %}</span>
       </legend>
 
       <ul class="fields">
@@ -227,7 +227,7 @@
       </ul>
 
       <div class="help-block" style="background:#f7f9fc;border:1px solid #d1dbe5;border-radius:4px;padding:12px;margin-top:12px;">
-        <strong>{% trans "Exemplo para acessibilidade:" %}</strong>
+        <strong>{% trans "Exemplo de estrutura para acessibilidade:" %}</strong>
         <pre style="margin:8px 0; padding:8px; background:#fff; border:1px solid #d1dbe5; border-radius:4px; font-size:0.8125rem; overflow-x:auto;"><code>{
   "acessibilidade": {
     "legendas": true,
@@ -239,17 +239,17 @@
   "formato_video": "16:9",
   "duracao_segundos": 1200
 }</code></pre>
-        <p class="help" style="margin-top:8px;">{% trans "Use apenas chaves e valores válidos em JSON. Deixe vazio se não houver dados extras. As chaves de acessibilidade ajudam na exibição correta do conteúdo." %}</p>
+        <p class="help" style="margin-top:8px;">{% trans "JSON válido apenas. Deixe vazio se não houver dados extras. As chaves de acessibilidade controlam a exibição de recursos no player." %}</p>
       </div>
     </fieldset>
 
     <!-- ======================================================== -->
-    <!-- Status e destaque -->
+    <!-- Status e Destaque -->
     <!-- ======================================================== -->
     <fieldset class="w-fieldset">
       <legend class="w-fieldset__legend">
         <span class="w-fieldset__legend-text">{% trans "Status e Destaque" %}</span>
-        <span class="w-fieldset__legend-description">{% trans "Controle de publicação e exibição em destaque." %}</span>
+        <span class="w-fieldset__legend-description">{% trans "Controle de aprovação, destaque na home e marcação de site associado." %}</span>
       </legend>
 
       <ul class="fields">
@@ -267,7 +267,7 @@
 
     <div class="buttons">
       <button type="submit" class="button button-success button-serial">
-        {% trans "Salvar e Publicar Conteúdo" %}
+        {% trans "Salvar e Publicar" %}
       </button>
       <a href="{% url 'admin:index' %}" class="button button-secondary">
         {% trans "Cancelar" %}
@@ -307,7 +307,7 @@ document.addEventListener("DOMContentLoaded", function () {
   let selectedTags = [];
 
   // ====================================================================
-  // 12. Episódio de Série - toggle dinâmico + lógica nova/existente
+  // Episódio de Série - toggle dinâmico + lógica nova/existente
   // ====================================================================
   function toggleSerieBloco() {
     if (ehEpisodioCheckbox.checked) {
@@ -366,7 +366,7 @@ document.addEventListener("DOMContentLoaded", function () {
   toggleSerieBloco(); // estado inicial
 
   // ====================================================================
-  // 12. Carregar temporadas via AJAX
+  // Carregar temporadas via AJAX
   // ====================================================================
   function carregarTemporadas(serieId) {
     if (!serieId) return;
@@ -389,7 +389,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // ====================================================================
-  // 2. Campo Arquivo - "x" para remover seleção
+  // Campo Arquivo - "x" para remover seleção
   // ====================================================================
   arquivoInput.addEventListener("change", function () {
     const temArquivo = this.files && this.files.length > 0;
@@ -416,7 +416,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   // ====================================================================
-  // 9. Travamento mútuo Arquivo × URL
+  // Travamento mútuo Arquivo × URL
   // ====================================================================
   function toggleArquivoUrl() {
     const temArquivo = arquivoInput.files && arquivoInput.files.length > 0;
@@ -447,7 +447,7 @@ document.addEventListener("DOMContentLoaded", function () {
   toggleArquivoUrl();
 
   // ====================================================================
-  // 5. Tipo de conteúdo baseado na URL/arquivo
+  // Tipo de conteúdo baseado na URL/arquivo
   // ====================================================================
   function atualizarTipoPelaUrlOuArquivo() {
     let extensao = null;
@@ -502,7 +502,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // ====================================================================
-  // 1 e 4. Botões "Criar Novo Canal" e "Criar Nova Categoria"
+  // Botões "Criar Novo Canal" e "Criar Nova Categoria"
   // ====================================================================
   const btnCriarCanal = document.getElementById("btn-criar-canal");
   const btnCriarCategoria = document.getElementById("btn-criar-categoria");
@@ -530,7 +530,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // ====================================================================
-  // 5. Tags Autocomplete (debounce 1s, busca a partir 3ª letra)
+  // Tags Autocomplete (debounce 1s, busca a partir 3ª letra)
   // ====================================================================
   if (tagsInput && tagsDropdown && selectedTagsDisplay) {
     function parseTags() {
@@ -644,7 +644,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // ====================================================================
-  // 7. Componentes curriculares - filtro por níveis de ensino
+  // Componentes curriculares - filtro por níveis de ensino
   // ====================================================================
   if (componentesSelect && filtroNiveisContainer) {
     Array.from(componentesSelect.options).forEach(function (opt) {
