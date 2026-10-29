@@ -168,10 +168,6 @@ class ConteudoCadastroForm(forms.Form):
                 "data-toggle-serie": "true",
             }
         ),
-        help_text=_(
-            "Marque se este conteúdo é um episódio de uma série (estilo Netflix). "
-            "Esta é uma das primeiras opções no fluxo de cadastro."
-        ),
     )
 
     serie = forms.ModelChoiceField(
