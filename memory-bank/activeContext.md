@@ -10,3 +10,4 @@
   - NOVAPAT-58 — app analytics, RF006 (relatórios de uso)
   - NOVAPAT-59 — importação de planilha via gspread (importador)
 - Nenhum card em Develop/Review/Test/Staging no momento.
+- O roadmap macro do projeto está detalhado em docs/plano-implementacao.md.
