@@ -3,6 +3,17 @@
 Instruções para agentes de IA (Cursor, Cline, etc) trabalhando neste projeto.
 Para documentação humana, veja `README.md` e `docs/`.
 
+## Memory Bank
+Antes de iniciar qualquer tarefa, leia os arquivos da pasta `memory-bank/` para entender o contexto do projeto:
+- `projectbrief.md`: visão geral e escopo
+- `productContext.md`: por que o projeto existe
+- `activeContext.md`: foco atual e próximos passos
+- `systemPatterns.md`: arquitetura e padrões
+- `techContext.md`: stack e comandos
+- `progress.md`: o que já foi feito e o que falta
+
+Atualize o `activeContext.md` e o `progress.md` ao final de cada tarefa concluída.
+
 ## Contexto do projeto
 - **Transposição de stack**, não greenfield: o sistema legado (Laravel + Vue.js)
   está **em produção** e está sendo reescrito em Django + Wagtail.

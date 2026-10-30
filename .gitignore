@@ -48,3 +48,7 @@ static/
 
 #PAT Legado
 pat_legado/
+
+# DSH e Worktrees
+.worktrees/
+.dsh/
